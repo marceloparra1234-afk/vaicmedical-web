@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { PageHeading } from "@/components/admin/AdminDashboard";
+import {
+  ClientPagePreview,
+  type PreviewContent,
+} from "@/components/admin/ClientPagePreview";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 type EditorWorkspaceProps = {
@@ -12,22 +16,67 @@ type EditorWorkspaceProps = {
   previewType?: "page" | "popup";
 };
 
-type SectionContent = {
-  title: string;
-  subtitle: string;
-  content: string;
+type SectionContent = PreviewContent;
+
+const homeDefaults: Record<string, SectionContent> = {
+  "Hero principal": {
+    title: "Soporte técnico para mantener operativa la atención en salud.",
+    subtitle: "Mantención y reparación de equipos médicos",
+    content:
+      "Reparamos y mantenemos camas clínicas, camillas, mesas quirúrgicas, lámparas, monitores multiparámetros y otros equipos esenciales para la continuidad asistencial.",
+  },
+  "Método de trabajo": {
+    title: "Solicitud, diagnóstico, reparación e informe.",
+    subtitle: "Método de trabajo",
+    content:
+      "Recibimos el requerimiento y clasificamos la criticidad para iniciar una atención técnica ordenada.",
+  },
+  Nosotros: {
+    title: "Trabajo técnico para equipos que no pueden quedar fuera de servicio.",
+    subtitle:
+      "Recuperar y mantener equipos médicos críticos con respuesta técnica clara y trazable.",
+    content:
+      "VaicMedical se enfoca en diagnosticar, reparar y mantener equipos médicos de uso intensivo. Nuestro trabajo combina coordinación, criterio técnico y documentación.",
+  },
+  Servicios: {
+    title:
+      "Mantención preventiva, reparación correctiva y soporte en terreno.",
+    subtitle: "Servicios",
+    content:
+      "Atendemos equipos esenciales para la operación diaria, con foco en recuperar disponibilidad y reducir tiempos fuera de servicio.",
+  },
+  "Productos destacados": {
+    title: "Categorías para ordenar equipos, repuestos y solicitudes técnicas.",
+    subtitle: "Productos y líneas destacadas",
+    content:
+      "Revisa una selección de equipos, componentes y servicios técnicos. Cada producto cuenta con información, galería y acceso directo para realizar consultas.",
+  },
+  "Noticias destacadas": {
+    title: "Criterios técnicos para cuidar equipos médicos.",
+    subtitle: "Noticias y artículos técnicos",
+    content:
+      "Publicaciones sobre mantención, reparación y continuidad técnica de equipos médicos.",
+  },
+  Contacto: {
+    title: "Coordinemos una evaluación técnica para tus equipos.",
+    subtitle: "Contacto",
+    content:
+      "Puedes solicitar una visita, coordinar una reparación o consultar por mantenciones programadas.",
+  },
 };
 
-function createInitialContent(sections: string[]) {
+function createInitialContent(contentKey: string, sections: string[]) {
   return Object.fromEntries(
     sections.map((section) => [
       section,
-      {
-        title: `<strong>${section}</strong>`,
-        subtitle: "Texto secundario de la sección",
-        content:
-          "Contenido editable de esta sección. Los cambios y formatos aparecen inmediatamente en la vista previa.",
-      },
+      contentKey === "inicio" && homeDefaults[section]
+        ? homeDefaults[section]
+        : {
+            title: `<strong>${section}</strong>`,
+            subtitle: "Texto secundario de la sección",
+            content:
+              "Contenido editable de esta sección. Los cambios y formatos aparecen inmediatamente en la vista previa.",
+          },
     ]),
   ) as Record<string, SectionContent>;
 }
@@ -40,7 +89,9 @@ export function AdminEditorWorkspace({
   previewType = "page",
 }: EditorWorkspaceProps) {
   const [selected, setSelected] = useState(sections[0]);
-  const [content, setContent] = useState(() => createInitialContent(sections));
+  const [content, setContent] = useState(() =>
+    createInitialContent(contentKey, sections),
+  );
   const [saveStatus, setSaveStatus] = useState("");
 
   useEffect(() => {
@@ -135,7 +186,7 @@ export function AdminEditorWorkspace({
                 content={selectedContent}
                 onChange={updateField}
                 onDiscard={() => {
-                  setContent(createInitialContent(sections));
+                  setContent(createInitialContent(contentKey, sections));
                   setSaveStatus("Cambios descartados");
                 }}
                 onSave={saveChanges}
@@ -159,7 +210,11 @@ export function AdminEditorWorkspace({
             {previewType === "popup" ? (
               <PopupPreview content={selectedContent} section={selected} />
             ) : (
-              <PagePreview content={selectedContent} section={selected} />
+              <ClientPagePreview
+                content={selectedContent}
+                contentKey={contentKey}
+                section={selected}
+              />
             )}
           </section>
         </div>
@@ -259,47 +314,6 @@ export function UploadGuide({
 
 function RichPreview({ html, className }: { html: string; className: string }) {
   return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;
-}
-
-function PagePreview({
-  section,
-  content,
-}: {
-  section: string;
-  content: SectionContent;
-}) {
-  return (
-    <div className="min-h-[610px] overflow-hidden rounded-lg border border-[#d7e9ef] bg-white shadow-sm">
-      <div className="flex h-14 items-center justify-between border-b border-[#d7e9ef] px-5">
-        <span className="font-bold text-[#213255]">VaicMedical</span>
-        <div className="flex gap-3 text-[10px] text-[#667085]">
-          <span>Inicio</span>
-          <span>Nosotros</span>
-          <span>Servicios</span>
-          <span>Contacto</span>
-        </div>
-      </div>
-      <div className="grid min-h-[430px] place-items-center bg-[#eaf8fc] p-8 text-center">
-        <div className="max-w-3xl">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#58c3de]">
-            {section}
-          </p>
-          <RichPreview
-            className="rich-preview mt-4 text-4xl font-bold text-[#213255]"
-            html={content.title}
-          />
-          <RichPreview
-            className="rich-preview mt-4 text-lg text-[#34466f]"
-            html={content.subtitle}
-          />
-          <RichPreview
-            className="rich-preview mx-auto mt-5 max-w-2xl text-sm leading-7 text-[#34466f]"
-            html={content.content}
-          />
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function PopupPreview({

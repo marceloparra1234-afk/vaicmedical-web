@@ -1,22 +1,89 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeading } from "@/components/admin/AdminDashboard";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 type EditorWorkspaceProps = {
+  contentKey: string;
   title: string;
   description: string;
   sections: string[];
   previewType?: "page" | "popup";
 };
 
+type SectionContent = {
+  title: string;
+  subtitle: string;
+  content: string;
+};
+
+function createInitialContent(sections: string[]) {
+  return Object.fromEntries(
+    sections.map((section) => [
+      section,
+      {
+        title: `<strong>${section}</strong>`,
+        subtitle: "Texto secundario de la sección",
+        content:
+          "Contenido editable de esta sección. Los cambios y formatos aparecen inmediatamente en la vista previa.",
+      },
+    ]),
+  ) as Record<string, SectionContent>;
+}
+
 export function AdminEditorWorkspace({
+  contentKey,
   title,
   description,
   sections,
   previewType = "page",
 }: EditorWorkspaceProps) {
   const [selected, setSelected] = useState(sections[0]);
+  const [content, setContent] = useState(() => createInitialContent(sections));
+  const [saveStatus, setSaveStatus] = useState("");
+
+  useEffect(() => {
+    fetch(`/api/admin/content?pageKey=${encodeURIComponent(contentKey)}`)
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json();
+      })
+      .then((result) => {
+        if (result?.content) {
+          setContent((current) => ({ ...current, ...result.content }));
+        }
+      })
+      .catch(() => undefined);
+  }, [contentKey]);
+
+  const selectedContent = content[selected];
+
+  function updateField(field: keyof SectionContent, value: string) {
+    setContent((current) => ({
+      ...current,
+      [selected]: { ...current[selected], [field]: value },
+    }));
+    setSaveStatus("Cambios sin guardar");
+  }
+
+  async function saveChanges() {
+    setSaveStatus("Guardando...");
+
+    const response = await fetch("/api/admin/content", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pageKey: contentKey, content }),
+    });
+
+    if (response.ok) {
+      setSaveStatus("Cambios guardados en Supabase");
+      return;
+    }
+
+    const result = await response.json().catch(() => null);
+    setSaveStatus(result?.error || "Supabase aún no está configurado");
+  }
 
   return (
     <div className="mx-auto max-w-[1600px]">
@@ -50,16 +117,30 @@ export function AdminEditorWorkspace({
           </div>
         </section>
 
-        <div className="grid min-h-[690px] xl:grid-cols-[380px_minmax(0,1fr)]">
+        <div className="grid min-h-[690px] xl:grid-cols-[520px_minmax(0,1fr)]">
           <section className="border-b border-[#d7e9ef] bg-white xl:border-b-0 xl:border-r">
-            <div className="border-b border-[#d7e9ef] px-5 py-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#58c3de]">
-                Editando sección
-              </p>
-              <h2 className="mt-1 font-bold">{selected}</h2>
+            <div className="flex items-center justify-between gap-3 border-b border-[#d7e9ef] px-5 py-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#58c3de]">
+                  Editando sección
+                </p>
+                <h2 className="mt-1 font-bold">{selected}</h2>
+              </div>
+              <span className="text-right text-[11px] text-[#667085]">
+                {saveStatus}
+              </span>
             </div>
             <div className="max-h-[calc(100vh-245px)] overflow-y-auto">
-              <EditorFields section={selected} previewType={previewType} />
+              <EditorFields
+                content={selectedContent}
+                onChange={updateField}
+                onDiscard={() => {
+                  setContent(createInitialContent(sections));
+                  setSaveStatus("Cambios descartados");
+                }}
+                onSave={saveChanges}
+                previewType={previewType}
+              />
             </div>
           </section>
 
@@ -67,7 +148,7 @@ export function AdminEditorWorkspace({
             <div className="mb-4 flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#58c3de]">
-                  Vista previa
+                  Vista previa en tiempo real
                 </p>
                 <h2 className="mt-1 font-bold">{selected}</h2>
               </div>
@@ -76,9 +157,9 @@ export function AdminEditorWorkspace({
               </span>
             </div>
             {previewType === "popup" ? (
-              <PopupPreview section={selected} />
+              <PopupPreview content={selectedContent} section={selected} />
             ) : (
-              <PagePreview section={selected} title={title} />
+              <PagePreview content={selectedContent} section={selected} />
             )}
           </section>
         </div>
@@ -88,23 +169,38 @@ export function AdminEditorWorkspace({
 }
 
 function EditorFields({
-  section,
+  content,
   previewType,
+  onChange,
+  onDiscard,
+  onSave,
 }: {
-  section: string;
+  content: SectionContent;
   previewType: "page" | "popup";
+  onChange: (field: keyof SectionContent, value: string) => void;
+  onDiscard: () => void;
+  onSave: () => void;
 }) {
   return (
     <div className="grid gap-5 p-5">
-      <Field label="Título" placeholder={`Título de ${section}`} />
-      <Field label="Subtítulo" placeholder="Texto secundario de la sección" />
-      <label className="text-xs font-semibold text-[#34466f]">
-        Contenido
-        <textarea
-          className="mt-2 min-h-28 w-full resize-y rounded-lg border border-[#d7e9ef] bg-white p-3 text-sm outline-none focus:border-[#58c3de]"
-          defaultValue="Contenido editable de esta sección."
-        />
-      </label>
+      <RichTextEditor
+        label="Título"
+        minHeight="76px"
+        onChange={(value) => onChange("title", value)}
+        value={content.title}
+      />
+      <RichTextEditor
+        label="Subtítulo"
+        minHeight="86px"
+        onChange={(value) => onChange("subtitle", value)}
+        value={content.subtitle}
+      />
+      <RichTextEditor
+        label="Contenido"
+        minHeight="140px"
+        onChange={(value) => onChange("content", value)}
+        value={content.content}
+      />
       <UploadGuide
         formats="JPG, PNG, WEBP"
         maxSize="Máximo 5 MB"
@@ -118,30 +214,20 @@ function EditorFields({
       <div className="grid grid-cols-2 gap-3">
         <button
           className="rounded-lg border border-[#d7e9ef] px-4 py-3 text-sm font-semibold text-[#667085]"
+          onClick={onDiscard}
           type="button"
         >
           Descartar
         </button>
         <button
           className="rounded-lg bg-[#213255] px-4 py-3 text-sm font-semibold text-white"
+          onClick={onSave}
           type="button"
         >
           Guardar cambios
         </button>
       </div>
     </div>
-  );
-}
-
-function Field({ label, placeholder }: { label: string; placeholder: string }) {
-  return (
-    <label className="text-xs font-semibold text-[#34466f]">
-      {label}
-      <input
-        className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] px-3 text-sm outline-none focus:border-[#58c3de]"
-        placeholder={placeholder}
-      />
-    </label>
   );
 }
 
@@ -171,7 +257,17 @@ export function UploadGuide({
   );
 }
 
-function PagePreview({ section, title }: { section: string; title: string }) {
+function RichPreview({ html, className }: { html: string; className: string }) {
+  return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+function PagePreview({
+  section,
+  content,
+}: {
+  section: string;
+  content: SectionContent;
+}) {
   return (
     <div className="min-h-[610px] overflow-hidden rounded-lg border border-[#d7e9ef] bg-white shadow-sm">
       <div className="flex h-14 items-center justify-between border-b border-[#d7e9ef] px-5">
@@ -183,33 +279,36 @@ function PagePreview({ section, title }: { section: string; title: string }) {
           <span>Contacto</span>
         </div>
       </div>
-      <div className="grid min-h-[360px] place-items-center bg-[#eaf8fc] p-8 text-center">
-        <div>
+      <div className="grid min-h-[430px] place-items-center bg-[#eaf8fc] p-8 text-center">
+        <div className="max-w-3xl">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#58c3de]">
             {section}
           </p>
-          <h3 className="mx-auto mt-4 max-w-xl text-4xl font-bold text-[#213255]">
-            Vista previa de {title}
-          </h3>
-          <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-[#34466f]">
-            Aquí se actualizará únicamente la sección seleccionada mientras se
-            edita su contenido.
-          </p>
-        </div>
-      </div>
-      <div className="grid gap-4 p-6 sm:grid-cols-3">
-        {[1, 2, 3].map((item) => (
-          <div
-            className="h-32 rounded-lg border border-[#d7e9ef] bg-[#f6fbfd]"
-            key={item}
+          <RichPreview
+            className="rich-preview mt-4 text-4xl font-bold text-[#213255]"
+            html={content.title}
           />
-        ))}
+          <RichPreview
+            className="rich-preview mt-4 text-lg text-[#34466f]"
+            html={content.subtitle}
+          />
+          <RichPreview
+            className="rich-preview mx-auto mt-5 max-w-2xl text-sm leading-7 text-[#34466f]"
+            html={content.content}
+          />
+        </div>
       </div>
     </div>
   );
 }
 
-function PopupPreview({ section }: { section: string }) {
+function PopupPreview({
+  section,
+  content,
+}: {
+  section: string;
+  content: SectionContent;
+}) {
   return (
     <div className="grid min-h-[610px] place-items-center rounded-lg bg-[#213255]/65 p-7">
       <div className="grid w-full max-w-3xl overflow-hidden rounded-[24px] bg-white shadow-2xl md:grid-cols-2">
@@ -220,10 +319,18 @@ function PopupPreview({ section }: { section: string }) {
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#58c3de]">
             {section}
           </p>
-          <h3 className="mt-3 text-2xl font-bold">Ventana emergente VaicMedical</h3>
-          <p className="mt-4 text-sm leading-6 text-[#667085]">
-            Esta vista previa mostrará los cambios de la ventana emergente.
-          </p>
+          <RichPreview
+            className="rich-preview mt-3 text-2xl font-bold"
+            html={content.title}
+          />
+          <RichPreview
+            className="rich-preview mt-3 text-sm text-[#34466f]"
+            html={content.subtitle}
+          />
+          <RichPreview
+            className="rich-preview mt-4 text-sm leading-6 text-[#667085]"
+            html={content.content}
+          />
           <button
             className="mt-6 w-fit rounded-lg bg-[#213255] px-5 py-3 text-sm font-bold text-white"
             type="button"

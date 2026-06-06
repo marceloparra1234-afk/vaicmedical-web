@@ -139,21 +139,33 @@ export default function Home() {
       </section>
 
       <section className="bg-[#213255] px-5 py-20 text-center text-white sm:px-8">
-        <div className="mx-auto max-w-5xl">
-          <SectionLabel>Servicios</SectionLabel>
-          <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">
-            Mantención preventiva, reparación correctiva y soporte en terreno.
-          </h2>
-          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/70">
-            Atendemos equipos esenciales para la operación diaria, con foco en
-            recuperar disponibilidad y reducir tiempos fuera de servicio.
-          </p>
-          <Link
-            className="mt-8 inline-flex rounded-full bg-[#58c3de] px-7 py-4 font-semibold text-[#213255] transition hover:bg-white"
-            href="/servicios"
-          >
-            Ver servicios
-          </Link>
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
+          <div className="text-center">
+            <SectionLabel>Servicios</SectionLabel>
+            <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">
+              Mantención preventiva, reparación correctiva y soporte en terreno.
+            </h2>
+            <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/70">
+              Atendemos equipos esenciales para la operación diaria, con foco en
+              recuperar disponibilidad y reducir tiempos fuera de servicio.
+            </p>
+            <Link
+              className="mt-8 inline-flex rounded-full bg-[#58c3de] px-7 py-4 font-semibold text-[#213255] transition hover:bg-white"
+              href="/servicios"
+            >
+              Ver servicios
+            </Link>
+          </div>
+
+          <div className="overflow-hidden rounded-[2rem] border border-[#58c3de]/35 bg-[#eaf8fc] shadow-2xl shadow-black/20">
+            <Image
+              src="/service-maintenance.svg"
+              alt="Representación de mantención y reparación de equipos médicos"
+              width={900}
+              height={620}
+              className="h-auto w-full"
+            />
+          </div>
         </div>
       </section>
 

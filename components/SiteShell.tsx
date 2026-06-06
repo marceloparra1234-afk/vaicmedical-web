@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SitePopup } from "@/components/SitePopup";
 
 const navItems = [
   { label: "Inicio", href: "/" },
@@ -141,6 +142,8 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           2026 VaicMedical. Todos los derechos reservados.
         </div>
       </footer>
+
+      <SitePopup />
     </div>
   );
 }

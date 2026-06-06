@@ -1,24 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import { blogPosts } from "@/data/blog-posts";
+import { getFeaturedCatalogProducts } from "@/data/catalog-products";
 
 const workflow = [
   ["Solicitud", "Recibimos el requerimiento y clasificamos la criticidad."],
   ["Diagnóstico", "Evaluamos la falla, el estado del equipo y sus condiciones de uso."],
   ["Reparación", "Ejecutamos mantención o reparación con criterio técnico."],
   ["Informe", "Documentamos el trabajo realizado y las recomendaciones."],
-];
-
-const catalogItems = [
-  "Camas clínicas",
-  "Camillas",
-  "Mesas quirúrgicas",
-  "Lámparas",
-];
-
-const posts = [
-  "Señales de desgaste en camas clínicas antes de una falla crítica",
-  "Mantención preventiva en camillas: puntos que conviene revisar",
-  "Cómo documentar reparaciones para mejorar la continuidad técnica",
 ];
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -30,6 +19,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default function Home() {
+  const featuredProducts = getFeaturedCatalogProducts().slice(0, 4);
+  const latestPosts = blogPosts.slice(0, 3);
+
   return (
     <main>
       <section className="w-full border-b border-[#d7e9ef] bg-white">
@@ -177,8 +169,9 @@ export default function Home() {
               Categorías para ordenar equipos, repuestos y solicitudes técnicas.
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-[#34466f]">
-              El catálogo será la base para fichas, fotografías, referencias,
-              repuestos y requerimientos asociados a cada equipo.
+              Revisa una selección de equipos, componentes y servicios
+              técnicos. Cada producto cuenta con información, galería y acceso
+              directo para realizar consultas.
             </p>
             <Link
               className="mt-8 inline-flex rounded-full bg-[#213255] px-7 py-4 font-semibold text-white transition hover:bg-[#34466f]"
@@ -188,17 +181,33 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            {catalogItems.map((item) => (
+            {featuredProducts.map((product) => (
               <Link
-                className="group flex aspect-square flex-col justify-between rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] p-6 transition hover:border-[#58c3de] hover:bg-white"
-                href="/catalogo"
-                key={item}
+                className="group overflow-hidden rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] transition hover:-translate-y-1 hover:border-[#58c3de] hover:bg-white hover:shadow-lg"
+                href={`/catalogo/${product.slug}`}
+                key={product.slug}
               >
-                <div className="flex-1 rounded-xl bg-gradient-to-br from-[#dff6fb] to-white" />
-                <div className="pt-5">
-                  <h3 className="text-xl font-semibold">{item}</h3>
-                  <p className="mt-2 text-sm font-semibold text-[#58c3de]">
-                    Ver categoría
+                <div className="relative aspect-square border-b border-[#d7e9ef] bg-[#eaf8fc]">
+                  <Image
+                    alt={product.name}
+                    className="object-contain p-7 transition duration-300 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 640px) 100vw, 320px"
+                    src={product.image}
+                  />
+                </div>
+                <div className="p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#58c3de]">
+                    {product.lineName}
+                  </p>
+                  <h3 className="mt-2 text-xl font-semibold text-[#213255]">
+                    {product.name}
+                  </h3>
+                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#34466f]">
+                    {product.description}
+                  </p>
+                  <p className="mt-4 text-sm font-semibold text-[#58c3de]">
+                    Ver producto
                   </p>
                 </div>
               </Link>
@@ -224,16 +233,39 @@ export default function Home() {
             </Link>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {posts.map((post) => (
-              <article className="border border-[#d7e9ef] bg-white p-7" key={post}>
-                <p className="font-mono text-xs font-semibold text-[#58c3de]">
-                  VAIC INSIGHTS
-                </p>
-                <h3 className="mt-5 text-xl font-semibold leading-7">{post}</h3>
-                <p className="mt-6 text-sm font-semibold text-[#34466f]">
-                  Próximamente
-                </p>
-              </article>
+            {latestPosts.map((post) => (
+              <Link
+                className="group overflow-hidden border border-[#d7e9ef] bg-white transition hover:-translate-y-1 hover:border-[#58c3de] hover:shadow-lg"
+                href={`/blog/${post.slug}`}
+                key={post.slug}
+              >
+                <div className="relative aspect-[16/9] border-b border-[#d7e9ef] bg-[#eaf8fc]">
+                  <Image
+                    alt={post.title}
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    src={post.image}
+                  />
+                </div>
+                <article className="p-7">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-mono text-xs font-semibold text-[#58c3de]">
+                      VAIC INSIGHTS
+                    </p>
+                    <time className="text-xs text-[#667085]">{post.date}</time>
+                  </div>
+                  <h3 className="mt-5 text-xl font-semibold leading-7 text-[#213255]">
+                    {post.title}
+                  </h3>
+                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-[#34466f]">
+                    {post.excerpt}
+                  </p>
+                  <p className="mt-6 text-sm font-semibold text-[#58c3de]">
+                    Leer artículo
+                  </p>
+                </article>
+              </Link>
             ))}
           </div>
         </div>

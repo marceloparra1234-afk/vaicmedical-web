@@ -6,6 +6,7 @@ export type CatalogDocument = {
 export type CatalogProduct = {
   slug: string;
   name: string;
+  featured?: boolean;
   type: string;
   description: string;
   longDescription: string;
@@ -53,6 +54,7 @@ export const catalogLines: CatalogLine[] = [
       {
         slug: "camas-clinicas-electricas",
         name: "Camas clínicas eléctricas",
+        featured: true,
         type: "Equipo clínico",
         description:
           "Revisión de actuadores, barandas, controles, ruedas, frenos y sistemas de elevación.",
@@ -111,6 +113,7 @@ export const catalogLines: CatalogLine[] = [
       {
         slug: "mesas-quirurgicas",
         name: "Mesas quirúrgicas",
+        featured: true,
         type: "Pabellón",
         description:
           "Diagnóstico de movimientos, controles, columnas, bases, frenos y módulos de operación.",
@@ -169,6 +172,7 @@ export const catalogLines: CatalogLine[] = [
       {
         slug: "monitores-multiparametros",
         name: "Monitores multiparámetros",
+        featured: true,
         type: "Monitoreo",
         description:
           "Evaluación de funcionamiento, conectores, módulos, alarmas, fuentes y accesorios.",
@@ -227,6 +231,7 @@ export const catalogLines: CatalogLine[] = [
       {
         slug: "actuadores-y-motores",
         name: "Actuadores y motores",
+        featured: true,
         type: "Repuesto",
         description:
           "Componentes para sistemas de elevación, respaldo, inclinación y ajuste de equipos.",
@@ -283,4 +288,12 @@ export function findCatalogProduct(slug: string) {
   }
 
   return null;
+}
+
+export function getFeaturedCatalogProducts() {
+  return catalogLines.flatMap((line) =>
+    line.products
+      .filter((product) => product.featured)
+      .map((product) => ({ ...product, lineName: line.name })),
+  );
 }

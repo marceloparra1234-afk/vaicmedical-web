@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ProductGallery } from "@/components/ProductGallery";
 import {
   catalogLines,
   findCatalogProduct,
@@ -73,37 +74,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </nav>
 
         <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1.25fr)_430px]">
-          <div>
-            <div className="relative min-h-[420px] overflow-hidden rounded-[28px] border border-[#d7e9ef] bg-white sm:min-h-[560px]">
-              <Image
-                alt={product.name}
-                className="object-contain p-8 sm:p-14"
-                fill
-                priority
-                sizes="(max-width: 1280px) 100vw, 65vw"
-                src={product.image}
-              />
-            </div>
-
-            {product.gallery.length > 0 && (
-              <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3.5">
-                {[product.image, ...product.gallery].map((image, index) => (
-                  <div
-                    className="relative h-[92px] overflow-hidden rounded-2xl border border-[#d7e9ef] bg-white"
-                    key={`${image}-${index}`}
-                  >
-                    <Image
-                      alt={`${product.name} ${index + 1}`}
-                      className="object-cover"
-                      fill
-                      sizes="150px"
-                      src={image}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProductGallery
+            gallery={product.gallery}
+            name={product.name}
+            primaryImage={product.image}
+          />
 
           <aside className="rounded-[28px] border border-[#d7e9ef] bg-white p-6 sm:p-8 xl:sticky xl:top-24">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#58c3de]">

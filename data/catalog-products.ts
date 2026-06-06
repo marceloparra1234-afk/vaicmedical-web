@@ -38,6 +38,9 @@ const emptyDocuments: CatalogProduct["documents"] = {
   brochure: null,
 };
 
+const serviceGallery = ["/medical-dashboard.svg", "/blog-article.svg"];
+const monitoringGallery = ["/service-maintenance.svg", "/blog-article.svg"];
+
 export const catalogLines: CatalogLine[] = [
   {
     id: "camas-camillas",
@@ -60,7 +63,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-CCE-001",
         tags: "Mantención, reparación, diagnóstico",
         image: "/service-maintenance.svg",
-        gallery: [],
+        gallery: serviceGallery,
         documents: emptyDocuments,
       },
       {
@@ -76,7 +79,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-CT-002",
         tags: "Traslado, seguridad, reparación",
         image: "/service-maintenance.svg",
-        gallery: [],
+        gallery: serviceGallery,
         documents: emptyDocuments,
       },
       {
@@ -92,7 +95,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-BA-003",
         tags: "Accesorios, seguridad, repuestos",
         image: "/service-maintenance.svg",
-        gallery: [],
+        gallery: serviceGallery,
         documents: emptyDocuments,
       },
     ],
@@ -118,7 +121,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-MQ-004",
         tags: "Pabellón, precisión, reparación",
         image: "/service-maintenance.svg",
-        gallery: [],
+        gallery: serviceGallery,
         documents: emptyDocuments,
       },
       {
@@ -134,7 +137,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-LQ-005",
         tags: "Iluminación, pabellón, mantención",
         image: "/service-maintenance.svg",
-        gallery: [],
+        gallery: serviceGallery,
         documents: emptyDocuments,
       },
       {
@@ -150,7 +153,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-BS-006",
         tags: "Soportes, ajuste, seguridad",
         image: "/service-maintenance.svg",
-        gallery: [],
+        gallery: serviceGallery,
         documents: emptyDocuments,
       },
     ],
@@ -176,7 +179,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-MM-007",
         tags: "Monitoreo, diagnóstico, reparación",
         image: "/medical-dashboard.svg",
-        gallery: [],
+        gallery: monitoringGallery,
         documents: emptyDocuments,
       },
       {
@@ -192,7 +195,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-CS-008",
         tags: "Accesorios, conectividad, revisión",
         image: "/medical-dashboard.svg",
-        gallery: [],
+        gallery: monitoringGallery,
         documents: emptyDocuments,
       },
       {
@@ -208,7 +211,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-FM-009",
         tags: "Electrónica, módulos, diagnóstico",
         image: "/medical-dashboard.svg",
-        gallery: [],
+        gallery: monitoringGallery,
         documents: emptyDocuments,
       },
     ],
@@ -234,7 +237,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-AM-010",
         tags: "Repuestos, movimiento, reparación",
         image: "/service-maintenance.svg",
-        gallery: [],
+        gallery: serviceGallery,
         documents: emptyDocuments,
       },
       {
@@ -250,7 +253,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-CB-011",
         tags: "Controles, electrónica, repuestos",
         image: "/service-maintenance.svg",
-        gallery: [],
+        gallery: serviceGallery,
         documents: emptyDocuments,
       },
       {
@@ -266,7 +269,7 @@ export const catalogLines: CatalogLine[] = [
         internalCode: "VM-RF-012",
         tags: "Movilidad, seguridad, repuestos",
         image: "/service-maintenance.svg",
-        gallery: [],
+        gallery: serviceGallery,
         documents: emptyDocuments,
       },
     ],

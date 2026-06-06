@@ -18,7 +18,7 @@ type EditorWorkspaceProps = {
 
 type SectionContent = PreviewContent;
 
-const homeDefaults: Record<string, SectionContent> = {
+const homeDefaults: Record<string, Partial<SectionContent>> = {
   "Hero principal": {
     title: "Soporte técnico para mantener operativa la atención en salud.",
     subtitle: "Mantención y reparación de equipos médicos",
@@ -65,18 +65,93 @@ const homeDefaults: Record<string, SectionContent> = {
   },
 };
 
+const defaultSteps = [
+  {
+    id: "solicitud",
+    number: "01",
+    title: "Solicitud",
+    text: "Recibimos el requerimiento y clasificamos la criticidad.",
+    visible: true,
+  },
+  {
+    id: "diagnostico",
+    number: "02",
+    title: "Diagnóstico",
+    text: "Evaluamos la falla, el estado del equipo y sus condiciones de uso.",
+    visible: true,
+  },
+  {
+    id: "reparacion",
+    number: "03",
+    title: "Reparación",
+    text: "Ejecutamos mantención o reparación con criterio técnico.",
+    visible: true,
+  },
+  {
+    id: "informe",
+    number: "04",
+    title: "Informe",
+    text: "Documentamos el trabajo realizado y las recomendaciones.",
+    visible: true,
+  },
+];
+
+function completeSection(section: string, value: Partial<SectionContent>): SectionContent {
+  const isMethod = section === "Método de trabajo";
+  return {
+    title: value.title || `<strong>${section}</strong>`,
+    subtitle: value.subtitle || "Texto secundario de la sección",
+    content: value.content || "Contenido editable de esta sección.",
+    visible: value.visible ?? true,
+    eyebrow: value.eyebrow || (isMethod ? "Método de trabajo" : section),
+    shape: value.shape || (isMethod ? "arrow" : "rounded"),
+    backgroundColor: value.backgroundColor || "#f6fbfd",
+    itemColor: value.itemColor || "#213255",
+    accentColor: value.accentColor || "#58c3de",
+    textColor: value.textColor || "#ffffff",
+    columns: value.columns || 4,
+    buttons:
+      value.buttons ||
+      [
+        { id: "primary", label: "Botón principal", href: "/", visible: true },
+        { id: "secondary", label: "Botón secundario", href: "/", visible: true },
+      ],
+    items: value.items || (isMethod ? defaultSteps : []),
+  };
+}
+
 function createInitialContent(contentKey: string, sections: string[]) {
   return Object.fromEntries(
     sections.map((section) => [
       section,
-      contentKey === "inicio" && homeDefaults[section]
-        ? homeDefaults[section]
-        : {
+      completeSection(
+        section,
+        contentKey === "inicio" && homeDefaults[section]
+          ? {
+              ...homeDefaults[section],
+              eyebrow:
+                section === "Productos destacados"
+                  ? "Catálogo"
+                  : section === "Noticias destacadas"
+                    ? "Blog"
+                    : section,
+              buttons:
+                section === "Hero principal"
+                  ? [
+                      { id: "support", label: "Solicitar soporte", href: "/contacto", visible: true },
+                      { id: "services", label: "Ver servicios", href: "/servicios", visible: true },
+                    ]
+                  : [
+                      { id: "primary", label: section === "Servicios" ? "Ver servicios" : "Conocer más", href: "/", visible: true },
+                    ],
+            }
+          : {
             title: `<strong>${section}</strong>`,
             subtitle: "Texto secundario de la sección",
             content:
               "Contenido editable de esta sección. Los cambios y formatos aparecen inmediatamente en la vista previa.",
           },
+      ),
     ]),
   ) as Record<string, SectionContent>;
 }
@@ -102,18 +177,34 @@ export function AdminEditorWorkspace({
       })
       .then((result) => {
         if (result?.content) {
-          setContent((current) => ({ ...current, ...result.content }));
+          setContent((current) => {
+            const stored = result.content as Record<string, Partial<SectionContent>>;
+            return Object.fromEntries(
+              sections.map((section) => [
+                section,
+                completeSection(section, { ...current[section], ...stored[section] }),
+              ]),
+            );
+          });
         }
       })
       .catch(() => undefined);
-  }, [contentKey]);
+  }, [contentKey, sections]);
 
   const selectedContent = content[selected];
 
-  function updateField(field: keyof SectionContent, value: string) {
+  function updateField(field: "title" | "subtitle" | "content", value: string) {
     setContent((current) => ({
       ...current,
       [selected]: { ...current[selected], [field]: value },
+    }));
+    setSaveStatus("Cambios sin guardar");
+  }
+
+  function updateSection(changes: Partial<SectionContent>) {
+    setContent((current) => ({
+      ...current,
+      [selected]: { ...current[selected], ...changes },
     }));
     setSaveStatus("Cambios sin guardar");
   }
@@ -185,6 +276,7 @@ export function AdminEditorWorkspace({
               <EditorFields
                 content={selectedContent}
                 onChange={updateField}
+                onUpdate={updateSection}
                 onDiscard={() => {
                   setContent(createInitialContent(contentKey, sections));
                   setSaveStatus("Cambios descartados");
@@ -227,23 +319,30 @@ function EditorFields({
   content,
   previewType,
   onChange,
+  onUpdate,
   onDiscard,
   onSave,
 }: {
   content: SectionContent;
   previewType: "page" | "popup";
-  onChange: (field: keyof SectionContent, value: string) => void;
+  onChange: (field: "title" | "subtitle" | "content", value: string) => void;
+  onUpdate: (changes: Partial<SectionContent>) => void;
   onDiscard: () => void;
   onSave: () => void;
 }) {
   return (
     <div className="grid gap-5 p-5">
+      <CommonSectionControls content={content} onUpdate={onUpdate} />
       <RichTextEditor
         label="Título"
         minHeight="76px"
         onChange={(value) => onChange("title", value)}
         value={content.title}
       />
+      {content.items.length > 0 && (
+        <RepeatableItemsEditor content={content} onUpdate={onUpdate} />
+      )}
+      <ButtonsEditor content={content} onUpdate={onUpdate} />
       <RichTextEditor
         label="Subtítulo"
         minHeight="86px"
@@ -284,6 +383,191 @@ function EditorFields({
       </div>
     </div>
   );
+}
+
+function CommonSectionControls({
+  content,
+  onUpdate,
+}: {
+  content: SectionContent;
+  onUpdate: (changes: Partial<SectionContent>) => void;
+}) {
+  return (
+    <div className="grid gap-4 rounded-lg border border-[#d7e9ef] bg-[#f7fafb] p-4">
+      <label className="flex items-center justify-between gap-3 text-xs font-semibold">
+        Mostrar sección al cliente
+        <input
+          checked={content.visible}
+          className="h-4 w-4 accent-[#58c3de]"
+          onChange={(event) => onUpdate({ visible: event.target.checked })}
+          type="checkbox"
+        />
+      </label>
+      <TextInput label="Etiqueta de la sección" value={content.eyebrow} onChange={(eyebrow) => onUpdate({ eyebrow })} />
+      <div className="grid grid-cols-2 gap-3">
+        <ColorInput label="Fondo" value={content.backgroundColor} onChange={(backgroundColor) => onUpdate({ backgroundColor })} />
+        <ColorInput label="Acento" value={content.accentColor} onChange={(accentColor) => onUpdate({ accentColor })} />
+      </div>
+      {content.items.length > 0 && (
+        <>
+          <label className="text-xs font-semibold text-[#34466f]">
+            Forma de los elementos
+            <select
+              className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3"
+              onChange={(event) => onUpdate({ shape: event.target.value as SectionContent["shape"] })}
+              value={content.shape}
+            >
+              <option value="arrow">Flechas de proyecto</option>
+              <option value="rectangle">Rectángulos</option>
+              <option value="rounded">Tarjetas redondeadas</option>
+              <option value="circle">Círculos</option>
+              <option value="hexagon">Hexágonos</option>
+            </select>
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <ColorInput label="Color forma" value={content.itemColor} onChange={(itemColor) => onUpdate({ itemColor })} />
+            <ColorInput label="Color texto" value={content.textColor} onChange={(textColor) => onUpdate({ textColor })} />
+          </div>
+          <label className="text-xs font-semibold text-[#34466f]">
+            Columnas
+            <input
+              className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] px-3"
+              max={6}
+              min={1}
+              onChange={(event) => onUpdate({ columns: Number(event.target.value) })}
+              type="number"
+              value={content.columns}
+            />
+          </label>
+        </>
+      )}
+    </div>
+  );
+}
+
+function RepeatableItemsEditor({
+  content,
+  onUpdate,
+}: {
+  content: SectionContent;
+  onUpdate: (changes: Partial<SectionContent>) => void;
+}) {
+  function updateItem(index: number, changes: Partial<SectionContent["items"][number]>) {
+    onUpdate({
+      items: content.items.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, ...changes } : item,
+      ),
+    });
+  }
+
+  function move(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= content.items.length) return;
+    const items = [...content.items];
+    [items[index], items[target]] = [items[target], items[index]];
+    onUpdate({ items });
+  }
+
+  return (
+    <div className="grid gap-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#58c3de]">
+          Elementos de la sección
+        </p>
+        <button
+          className="rounded-md bg-[#58c3de] px-3 py-2 text-xs font-bold text-[#213255]"
+          onClick={() =>
+            onUpdate({
+              items: [
+                ...content.items,
+                {
+                  id: `item-${Date.now()}`,
+                  number: String(content.items.length + 1).padStart(2, "0"),
+                  title: "Nuevo paso",
+                  text: "Descripción del nuevo paso.",
+                  visible: true,
+                },
+              ],
+            })
+          }
+          type="button"
+        >
+          Agregar elemento
+        </button>
+      </div>
+      {content.items.map((item, index) => (
+        <details className="rounded-lg border border-[#d7e9ef] p-3" key={item.id} open={index === 0}>
+          <summary className="cursor-pointer text-sm font-semibold">
+            {item.number} · {stripHtml(item.title)}
+          </summary>
+          <div className="mt-4 grid gap-4">
+            <div className="flex gap-2">
+              <button className="rounded border px-2 py-1 text-xs" onClick={() => move(index, -1)} type="button">Subir</button>
+              <button className="rounded border px-2 py-1 text-xs" onClick={() => move(index, 1)} type="button">Bajar</button>
+              <button
+                className="rounded border border-red-200 px-2 py-1 text-xs text-red-600"
+                onClick={() => onUpdate({ items: content.items.filter((_, itemIndex) => itemIndex !== index) })}
+                type="button"
+              >
+                Eliminar
+              </button>
+              <label className="ml-auto flex items-center gap-2 text-xs">
+                Visible
+                <input checked={item.visible} onChange={(event) => updateItem(index, { visible: event.target.checked })} type="checkbox" />
+              </label>
+            </div>
+            <TextInput label="Número" value={item.number} onChange={(number) => updateItem(index, { number })} />
+            <RichTextEditor label="Título del elemento" minHeight="65px" value={item.title} onChange={(title) => updateItem(index, { title })} />
+            <RichTextEditor label="Texto del elemento" minHeight="90px" value={item.text} onChange={(text) => updateItem(index, { text })} />
+          </div>
+        </details>
+      ))}
+    </div>
+  );
+}
+
+function ButtonsEditor({ content, onUpdate }: { content: SectionContent; onUpdate: (changes: Partial<SectionContent>) => void }) {
+  return (
+    <div className="grid gap-3 rounded-lg border border-[#d7e9ef] p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#58c3de]">Botones</p>
+      {content.buttons.map((button, index) => (
+        <div className="grid gap-3 rounded-lg bg-[#f7fafb] p-3" key={button.id}>
+          <label className="flex justify-between text-xs font-semibold">
+            Mostrar botón
+            <input
+              checked={button.visible}
+              onChange={(event) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, visible: event.target.checked } : item) })}
+              type="checkbox"
+            />
+          </label>
+          <TextInput label="Nombre del botón" value={button.label} onChange={(label) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, label } : item) })} />
+          <TextInput label="Enlace" value={button.href} onChange={(href) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, href } : item) })} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TextInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="text-xs font-semibold text-[#34466f]">
+      {label}
+      <input className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3" onChange={(event) => onChange(event.target.value)} value={value} />
+    </label>
+  );
+}
+
+function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="text-xs font-semibold text-[#34466f]">
+      {label}
+      <input className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white p-1" onChange={(event) => onChange(event.target.value)} type="color" value={value} />
+    </label>
+  );
+}
+
+function stripHtml(value: string) {
+  return value.replace(/<[^>]*>/g, "");
 }
 
 export function UploadGuide({

@@ -6,6 +6,27 @@ export type PreviewContent = {
   title: string;
   subtitle: string;
   content: string;
+  visible: boolean;
+  eyebrow: string;
+  shape: "arrow" | "rectangle" | "rounded" | "circle" | "hexagon";
+  backgroundColor: string;
+  itemColor: string;
+  accentColor: string;
+  textColor: string;
+  columns: number;
+  buttons: Array<{
+    id: string;
+    label: string;
+    href: string;
+    visible: boolean;
+  }>;
+  items: Array<{
+    id: string;
+    number: string;
+    title: string;
+    text: string;
+    visible: boolean;
+  }>;
 };
 
 export function ClientPagePreview({
@@ -66,6 +87,14 @@ function HomeSectionPreview({
   section: string;
   content: PreviewContent;
 }) {
+  if (!content.visible) {
+    return (
+      <div className="grid min-h-[360px] place-items-center bg-[#f6fbfd] p-8 text-center text-sm text-[#667085]">
+        Esta sección está oculta para la vista del cliente.
+      </div>
+    );
+  }
+
   if (section === "Hero principal") {
     return (
       <section className="grid min-h-[430px] items-center gap-6 bg-white p-8 lg:grid-cols-[0.8fr_1.2fr]">
@@ -83,12 +112,18 @@ function HomeSectionPreview({
             html={content.content}
           />
           <div className="mt-6 flex justify-center gap-3">
-            <span className="rounded-full bg-[#213255] px-5 py-3 text-xs font-semibold text-white">
-              Solicitar soporte
-            </span>
-            <span className="rounded-full border border-[#9eddea] px-5 py-3 text-xs font-semibold">
-              Ver servicios
-            </span>
+            {content.buttons.filter((button) => button.visible).map((button, index) => (
+              <span
+                className={
+                  index === 0
+                    ? "rounded-full bg-[#213255] px-5 py-3 text-xs font-semibold text-white"
+                    : "rounded-full border border-[#9eddea] px-5 py-3 text-xs font-semibold"
+                }
+                key={button.id}
+              >
+                {button.label}
+              </span>
+            ))}
           </div>
         </div>
         <div className="overflow-hidden rounded-[24px] border border-[#d7e9ef] bg-[#eaf8fc]">
@@ -105,26 +140,44 @@ function HomeSectionPreview({
   }
 
   if (section === "Método de trabajo") {
+    const visibleItems = content.items.filter((item) => item.visible);
     return (
-      <section className="bg-[#f6fbfd] p-8">
-        <div className="grid gap-0 lg:grid-cols-4">
-          {["Solicitud", "Diagnóstico", "Reparación", "Informe"].map(
-            (item, index) => (
+      <section className="p-8" style={{ backgroundColor: content.backgroundColor }}>
+        {content.eyebrow && (
+          <p className="mb-6 text-center text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: content.accentColor }}>
+            {content.eyebrow}
+          </p>
+        )}
+        <div
+          className="grid gap-4"
+          style={{ gridTemplateColumns: `repeat(${Math.min(content.columns, visibleItems.length || 1)}, minmax(0, 1fr))` }}
+        >
+          {visibleItems.map((item, index) => (
               <article
-                className="relative flex min-h-40 flex-col items-center justify-center bg-[#213255] px-5 py-6 text-center text-white lg:mr-4 lg:[clip-path:polygon(0_0,calc(100%-18px)_0,100%_50%,calc(100%-18px)_100%,0_100%,18px_50%)] lg:first:[clip-path:polygon(0_0,calc(100%-18px)_0,100%_50%,calc(100%-18px)_100%,0_100%)]"
-                key={item}
+                className={`relative flex min-h-40 flex-col items-center justify-center px-5 py-6 text-center ${
+                  content.shape === "rounded" ? "rounded-3xl" : ""
+                } ${content.shape === "circle" ? "aspect-square rounded-full" : ""} ${
+                  content.shape === "hexagon" ? "vm-hex aspect-square" : ""
+                }`}
+                key={item.id}
+                style={{
+                  backgroundColor: content.itemColor,
+                  color: content.textColor,
+                  clipPath:
+                    content.shape === "arrow"
+                      ? index === 0
+                        ? "polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%)"
+                        : "polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%, 18px 50%)"
+                      : undefined,
+                }}
               >
-                <span className="text-[10px] text-[#58c3de]">0{index + 1}</span>
-                <h3 className="mt-2 font-semibold">{item}</h3>
-                {index === 0 && (
-                  <Rich
-                    className="rich-preview mt-2 text-xs leading-5 text-white/70"
-                    html={content.content}
-                  />
-                )}
+                <span className="text-[10px]" style={{ color: content.accentColor }}>
+                  {item.number || String(index + 1).padStart(2, "0")}
+                </span>
+                <Rich className="rich-preview mt-2 font-semibold" html={item.title} />
+                <Rich className="rich-preview mt-2 text-xs leading-5 opacity-75" html={item.text} />
               </article>
-            ),
-          )}
+            ))}
         </div>
       </section>
     );
@@ -136,7 +189,7 @@ function HomeSectionPreview({
         <div className="grid items-center gap-8 lg:grid-cols-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
-              Nosotros
+              {content.eyebrow}
             </p>
             <Rich
               className="rich-preview mt-3 text-4xl font-semibold leading-tight"
@@ -148,9 +201,11 @@ function HomeSectionPreview({
               className="rich-preview text-sm leading-7 text-[#34466f]"
               html={content.content}
             />
-            <span className="mt-5 inline-flex rounded-full bg-[#213255] px-5 py-3 text-xs font-semibold text-white">
-              Conocer VaicMedical
-            </span>
+            {content.buttons.filter((button) => button.visible).slice(0, 1).map((button) => (
+              <span className="mt-5 inline-flex rounded-full bg-[#213255] px-5 py-3 text-xs font-semibold text-white" key={button.id}>
+                {button.label}
+              </span>
+            ))}
           </div>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -177,7 +232,7 @@ function HomeSectionPreview({
       <section className="grid items-center gap-8 bg-[#213255] p-9 text-center text-white lg:grid-cols-[1fr_0.9fr]">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
-            Servicios
+            {content.eyebrow}
           </p>
           <Rich
             className="rich-preview mt-3 text-4xl font-semibold leading-tight"
@@ -187,9 +242,11 @@ function HomeSectionPreview({
             className="rich-preview mt-5 text-sm leading-7 text-white/70"
             html={content.content}
           />
-          <span className="mt-6 inline-flex rounded-full bg-[#58c3de] px-5 py-3 text-xs font-semibold text-[#213255]">
-            Ver servicios
-          </span>
+          {content.buttons.filter((button) => button.visible).slice(0, 1).map((button) => (
+            <span className="mt-6 inline-flex rounded-full bg-[#58c3de] px-5 py-3 text-xs font-semibold text-[#213255]" key={button.id}>
+              {button.label}
+            </span>
+          ))}
         </div>
         <div className="overflow-hidden rounded-[24px] border border-[#58c3de]/35 bg-[#eaf8fc]">
           <Image alt="" height={620} src="/service-maintenance.svg" width={900} />
@@ -203,7 +260,7 @@ function HomeSectionPreview({
       <section className="grid gap-8 bg-white p-9 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
-            Catálogo
+          {content.eyebrow}
           </p>
           <Rich
             className="rich-preview mt-3 text-4xl font-semibold leading-tight"
@@ -237,7 +294,7 @@ function HomeSectionPreview({
     return (
       <section className="bg-[#f6fbfd] p-9">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
-          Blog
+          {content.eyebrow}
         </p>
         <Rich
           className="rich-preview mt-3 max-w-3xl text-4xl font-semibold leading-tight"
@@ -267,7 +324,7 @@ function HomeSectionPreview({
     <section className="grid gap-8 bg-white p-9 lg:grid-cols-[1fr_0.75fr]">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
-          Contacto
+          {content.eyebrow}
         </p>
         <Rich
           className="rich-preview mt-3 text-4xl font-semibold leading-tight"
@@ -283,9 +340,11 @@ function HomeSectionPreview({
           Canal directo
         </p>
         <p className="mt-4 text-xl font-semibold">contacto@vaicmedical.cl</p>
-        <span className="mt-5 inline-flex rounded-full bg-[#58c3de] px-5 py-3 text-xs font-semibold text-[#213255]">
-          Solicitar soporte
-        </span>
+        {content.buttons.filter((button) => button.visible).slice(0, 1).map((button) => (
+          <span className="mt-5 inline-flex rounded-full bg-[#58c3de] px-5 py-3 text-xs font-semibold text-[#213255]" key={button.id}>
+            {button.label}
+          </span>
+        ))}
       </div>
     </section>
   );

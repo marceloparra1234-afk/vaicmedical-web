@@ -1,115 +1,5 @@
 import Link from "next/link";
-
-const catalogLines = [
-  {
-    id: "camas-camillas",
-    name: "Camas clínicas y camillas",
-    description:
-      "Equipos de traslado, hospitalización y apoyo diario para servicios clínicos.",
-    summary: "Mantención, diagnóstico y reparación de sistemas mecánicos y eléctricos.",
-    products: [
-      {
-        name: "Camas clínicas eléctricas",
-        type: "Equipo clínico",
-        description:
-          "Revisión de actuadores, barandas, controles, ruedas, frenos y sistemas de elevación.",
-      },
-      {
-        name: "Camillas de traslado",
-        type: "Traslado",
-        description:
-          "Ajuste de estructura, ruedas, frenos, barandas y mecanismos de altura o respaldo.",
-      },
-      {
-        name: "Barandas y accesorios",
-        type: "Componente",
-        description:
-          "Evaluación y reposición de piezas asociadas a seguridad, fijación y operación.",
-      },
-    ],
-  },
-  {
-    id: "pabellon-procedimientos",
-    name: "Pabellón y procedimientos",
-    description:
-      "Soporte técnico para equipos usados en pabellones, unidades críticas y salas de procedimiento.",
-    summary: "Trabajo técnico sobre equipos que requieren continuidad, precisión y seguridad.",
-    products: [
-      {
-        name: "Mesas quirúrgicas",
-        type: "Pabellón",
-        description:
-          "Diagnóstico de movimientos, controles, columnas, bases, frenos y módulos de operación.",
-      },
-      {
-        name: "Lámparas quirúrgicas",
-        type: "Iluminación",
-        description:
-          "Revisión de brazos, cabezales, intensidad lumínica, alimentación y conexiones.",
-      },
-      {
-        name: "Brazos y soportes",
-        type: "Accesorio",
-        description:
-          "Ajuste de articulaciones, fijaciones, estabilidad y funcionamiento de componentes móviles.",
-      },
-    ],
-  },
-  {
-    id: "monitoreo-equipos",
-    name: "Monitoreo y equipos clínicos",
-    description:
-      "Revisión técnica de equipos de apoyo clínico, monitoreo y continuidad asistencial.",
-    summary: "Inspección, evaluación funcional y reparación según condiciones de uso.",
-    products: [
-      {
-        name: "Monitores multiparámetros",
-        type: "Monitoreo",
-        description:
-          "Evaluación de funcionamiento, conectores, módulos, alarmas, fuentes y accesorios.",
-      },
-      {
-        name: "Cables y sensores",
-        type: "Accesorio",
-        description:
-          "Revisión de continuidad, conectividad, desgaste físico y compatibilidad operativa.",
-      },
-      {
-        name: "Fuentes y módulos",
-        type: "Componente",
-        description:
-          "Diagnóstico de alimentación, módulos internos y fallas asociadas a operación.",
-      },
-    ],
-  },
-  {
-    id: "repuestos-soporte",
-    name: "Repuestos y soporte técnico",
-    description:
-      "Componentes y apoyo técnico para extender la vida útil de equipos médicos esenciales.",
-    summary: "Gestión de repuestos, informes técnicos y recomendaciones de continuidad.",
-    products: [
-      {
-        name: "Actuadores y motores",
-        type: "Repuesto",
-        description:
-          "Componentes para sistemas de elevación, respaldo, inclinación y ajuste de equipos.",
-      },
-      {
-        name: "Controles y botoneras",
-        type: "Control",
-        description:
-          "Revisión o reposición de mandos, placas, cables y puntos de operación del usuario.",
-      },
-      {
-        name: "Ruedas y frenos",
-        type: "Movilidad",
-        description:
-          "Componentes para traslado seguro, bloqueo, estabilidad y maniobrabilidad.",
-      },
-    ],
-  },
-];
+import { catalogLines } from "@/data/catalog-products";
 
 export default function CatalogoPage() {
   return (
@@ -212,9 +102,9 @@ export default function CatalogoPage() {
                       </p>
                       <Link
                         className="mt-6 inline-flex rounded-full border border-[#58c3de] px-5 py-3 text-sm font-semibold text-[#213255] transition hover:bg-[#58c3de] hover:text-white"
-                        href="/contacto"
+                        href={`/catalogo/${product.slug}`}
                       >
-                        Consultar
+                        Ver producto
                       </Link>
                     </div>
                   </article>

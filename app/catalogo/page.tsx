@@ -5,16 +5,14 @@ export default function CatalogoPage() {
   return (
     <main className="bg-white">
       <section className="border-b border-[#d7e9ef] bg-[#f2fbfd]">
-        <div className="mx-auto grid max-w-[1500px] gap-10 px-6 py-16 sm:px-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:px-14">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
-              Catálogo
-            </p>
-            <h1 className="mt-4 max-w-4xl text-5xl font-semibold leading-tight text-[#213255] sm:text-6xl">
-              Líneas y productos para organizar solicitudes técnicas.
-            </h1>
-          </div>
-          <p className="max-w-3xl text-lg leading-8 text-[#34466f] lg:justify-self-end">
+        <div className="mx-auto max-w-[1500px] px-6 py-16 sm:px-10 lg:px-14">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
+            Catálogo
+          </p>
+          <h1 className="mt-4 max-w-[1280px] text-5xl font-semibold leading-tight text-[#213255] sm:text-6xl">
+            Líneas y productos para organizar solicitudes técnicas.
+          </h1>
+          <p className="mt-6 max-w-4xl text-lg leading-8 text-[#34466f]">
             Una vista inicial para ordenar equipos, repuestos y servicios por
             línea. Más adelante podremos conectar esta sección con el editor
             para cargar fotografías, fichas y disponibilidad.
@@ -24,27 +22,25 @@ export default function CatalogoPage() {
 
       <section className="mx-auto grid max-w-[1500px] gap-8 px-6 py-14 sm:px-10 lg:grid-cols-[320px_1fr] lg:px-14">
         <aside className="lg:sticky lg:top-28 lg:self-start">
-          <div className="rounded-[28px] border border-[#ccebf2] bg-white p-5 shadow-sm">
-            <p className="px-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
-              Líneas
-            </p>
-            <nav className="mt-4 grid gap-2">
-              {catalogLines.map((line, index) => (
-                <a
-                  className="group rounded-2xl border border-transparent px-4 py-4 transition hover:border-[#b9e7f1] hover:bg-[#eef9fc]"
-                  href={`#${line.id}`}
-                  key={line.id}
-                >
-                  <span className="text-xs font-semibold text-[#58c3de]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <span className="mt-1 block text-lg font-semibold text-[#213255]">
-                    {line.name}
-                  </span>
-                </a>
-              ))}
-            </nav>
-          </div>
+          <p className="mb-4 px-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
+            Líneas
+          </p>
+          <nav className="grid gap-3">
+            {catalogLines.map((line, index) => (
+              <a
+                className="group rounded-[22px] border border-[#ccebf2] bg-white px-5 py-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#58c3de] hover:bg-[#eef9fc] hover:shadow-md"
+                href={`#${line.id}`}
+                key={line.id}
+              >
+                <span className="text-xs font-semibold text-[#58c3de]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="mt-1 block text-lg font-semibold text-[#213255]">
+                  {line.name}
+                </span>
+              </a>
+            ))}
+          </nav>
         </aside>
 
         <div className="grid gap-10">

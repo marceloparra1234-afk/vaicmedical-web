@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { SitePopup } from "@/components/SitePopup";
 
 const navItems = [
@@ -36,6 +39,13 @@ function FooterColumn({
 }
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isAdminRoute = pathname.startsWith("/admin");
+
+  if (isAdminRoute) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[#f6fbfd] text-[#213255]">
       <header className="sticky top-0 z-20 border-b border-[#d7e9ef] bg-[#f6fbfd]/92 backdrop-blur">
@@ -138,8 +148,16 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <div className="border-t border-white/10 py-6 text-center text-xs text-white/45">
-          2026 VaicMedical. Todos los derechos reservados.
+        <div className="border-t border-white/10 px-5 py-5 text-xs text-white/45 sm:px-8">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
+            <span>2026 VaicMedical. Todos los derechos reservados.</span>
+            <Link
+              className="rounded-lg border border-white/15 px-4 py-2 font-semibold text-white/65 transition hover:border-[#58c3de] hover:text-[#58c3de]"
+              href="/admin"
+            >
+              Editar página
+            </Link>
+          </div>
         </div>
       </footer>
 

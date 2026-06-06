@@ -22,51 +22,66 @@ export function AdminEditorWorkspace({
     <div className="mx-auto max-w-[1600px]">
       <PageHeading eyebrow="Editor de página" title={title} text={description} />
 
-      <div className="mt-7 grid min-h-[700px] overflow-hidden rounded-xl border border-[#d7e9ef] bg-white shadow-sm xl:grid-cols-[430px_1fr]">
-        <section className="border-b border-[#d7e9ef] bg-white xl:border-b-0 xl:border-r">
-          <div className="border-b border-[#d7e9ef] p-5">
-            <h2 className="font-bold">Secciones</h2>
-            <p className="mt-1 text-xs text-[#667085]">
-              Selecciona una sección para editarla y verla en la vista previa.
-            </p>
+      <div className="mt-7 min-h-[760px] overflow-hidden rounded-xl border border-[#d7e9ef] bg-white shadow-sm">
+        <section className="border-b border-[#d7e9ef] bg-white">
+          <div className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="shrink-0">
+              <h2 className="font-bold">Secciones</h2>
+              <p className="mt-1 text-xs text-[#667085]">
+                Selecciona una sección para editarla y verla en la vista previa.
+              </p>
+            </div>
+            <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1 lg:justify-end">
+              {sections.map((section) => (
+                <button
+                  className={`min-h-11 shrink-0 rounded-lg border px-4 py-3 text-center text-xs font-semibold transition ${
+                    selected === section
+                      ? "border-[#58c3de] bg-[#eaf8fc] text-[#213255]"
+                      : "border-[#d7e9ef] text-[#667085] hover:border-[#58c3de]"
+                  }`}
+                  key={section}
+                  onClick={() => setSelected(section)}
+                  type="button"
+                >
+                  {section}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 border-b border-[#d7e9ef] p-4">
-            {sections.map((section) => (
-              <button
-                className={`rounded-lg border px-3 py-3 text-left text-xs font-semibold transition ${
-                  selected === section
-                    ? "border-[#58c3de] bg-[#eaf8fc] text-[#213255]"
-                    : "border-[#d7e9ef] text-[#667085] hover:border-[#58c3de]"
-                }`}
-                key={section}
-                onClick={() => setSelected(section)}
-                type="button"
-              >
-                {section}
-              </button>
-            ))}
-          </div>
-          <EditorFields section={selected} previewType={previewType} />
         </section>
 
-        <section className="bg-[#eef5f7] p-5 sm:p-7">
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <div>
+        <div className="grid min-h-[690px] xl:grid-cols-[380px_minmax(0,1fr)]">
+          <section className="border-b border-[#d7e9ef] bg-white xl:border-b-0 xl:border-r">
+            <div className="border-b border-[#d7e9ef] px-5 py-4">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#58c3de]">
-                Vista previa
+                Editando sección
               </p>
               <h2 className="mt-1 font-bold">{selected}</h2>
             </div>
-            <span className="rounded-lg border border-[#d7e9ef] bg-white px-3 py-2 text-xs text-[#667085]">
-              Escritorio
-            </span>
-          </div>
-          {previewType === "popup" ? (
-            <PopupPreview section={selected} />
-          ) : (
-            <PagePreview section={selected} title={title} />
-          )}
-        </section>
+            <div className="max-h-[calc(100vh-245px)] overflow-y-auto">
+              <EditorFields section={selected} previewType={previewType} />
+            </div>
+          </section>
+
+          <section className="bg-[#eef5f7] p-5 sm:p-7">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#58c3de]">
+                  Vista previa
+                </p>
+                <h2 className="mt-1 font-bold">{selected}</h2>
+              </div>
+              <span className="rounded-lg border border-[#d7e9ef] bg-white px-3 py-2 text-xs text-[#667085]">
+                Escritorio
+              </span>
+            </div>
+            {previewType === "popup" ? (
+              <PopupPreview section={selected} />
+            ) : (
+              <PagePreview section={selected} title={title} />
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

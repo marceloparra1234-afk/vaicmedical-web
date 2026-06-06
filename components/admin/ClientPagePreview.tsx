@@ -8,7 +8,8 @@ export type PreviewContent = {
   content: string;
   visible: boolean;
   eyebrow: string;
-  shape: "arrow" | "rectangle" | "rounded" | "circle" | "hexagon";
+  shape: "arrow" | "rectangle" | "rounded" | "circle" | "hexagon" | "custom";
+  customShapeImage: string;
   backgroundColor: string;
   itemColor: string;
   accentColor: string;
@@ -97,15 +98,22 @@ function HomeSectionPreview({
 
   if (section === "Hero principal") {
     return (
-      <section className="grid min-h-[430px] items-center gap-6 bg-white p-8 lg:grid-cols-[0.8fr_1.2fr]">
+      <section
+        className="grid min-h-[430px] items-center gap-6 p-8 lg:grid-cols-[0.8fr_1.2fr]"
+        style={{ backgroundColor: content.backgroundColor }}
+      >
         <div className="text-center">
+          <Rich
+            className="rich-preview mb-5 inline-flex rounded-full border px-5 py-2 text-xs font-semibold text-[#213255]"
+            html={content.subtitle}
+            style={{
+              backgroundColor: `${content.accentColor}18`,
+              borderColor: content.accentColor,
+            }}
+          />
           <Rich
             className="rich-preview text-4xl font-semibold leading-tight text-[#213255]"
             html={content.title}
-          />
-          <Rich
-            className="rich-preview mt-4 text-sm leading-6 text-[#34466f]"
-            html={content.subtitle}
           />
           <Rich
             className="rich-preview mt-4 text-sm leading-6 text-[#34466f]"
@@ -116,10 +124,15 @@ function HomeSectionPreview({
               <span
                 className={
                   index === 0
-                    ? "rounded-full bg-[#213255] px-5 py-3 text-xs font-semibold text-white"
-                    : "rounded-full border border-[#9eddea] px-5 py-3 text-xs font-semibold"
+                    ? "rounded-full px-5 py-3 text-xs font-semibold text-white"
+                    : "rounded-full border px-5 py-3 text-xs font-semibold"
                 }
                 key={button.id}
+                style={
+                  index === 0
+                    ? { backgroundColor: content.accentColor }
+                    : { borderColor: content.accentColor }
+                }
               >
                 {button.label}
               </span>
@@ -161,7 +174,15 @@ function HomeSectionPreview({
                 }`}
                 key={item.id}
                 style={{
-                  backgroundColor: content.itemColor,
+                  backgroundColor:
+                    content.shape === "custom" ? "transparent" : content.itemColor,
+                  backgroundImage:
+                    content.shape === "custom" && content.customShapeImage
+                      ? `url(${content.customShapeImage})`
+                      : undefined,
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "contain",
                   color: content.textColor,
                   clipPath:
                     content.shape === "arrow"
@@ -406,6 +427,20 @@ function InternalPagePreview({
   );
 }
 
-function Rich({ html, className }: { html: string; className: string }) {
-  return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+function Rich({
+  html,
+  className,
+  style,
+}: {
+  html: string;
+  className: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <div
+      className={className}
+      dangerouslySetInnerHTML={{ __html: html }}
+      style={style}
+    />
+  );
 }

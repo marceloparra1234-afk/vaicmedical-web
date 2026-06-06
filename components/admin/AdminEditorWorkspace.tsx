@@ -103,19 +103,22 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
     subtitle: value.subtitle || "Texto secundario de la sección",
     content: value.content || "Contenido editable de esta sección.",
     visible: value.visible ?? true,
-    eyebrow: value.eyebrow || (isMethod ? "Método de trabajo" : section),
+    eyebrow: value.eyebrow ?? (isMethod ? "" : section),
     shape: value.shape || (isMethod ? "arrow" : "rounded"),
+    customShapeImage: value.customShapeImage || "",
     backgroundColor: value.backgroundColor || "#f6fbfd",
     itemColor: value.itemColor || "#213255",
     accentColor: value.accentColor || "#58c3de",
     textColor: value.textColor || "#ffffff",
     columns: value.columns || 4,
     buttons:
-      value.buttons ||
-      [
-        { id: "primary", label: "Botón principal", href: "/", visible: true },
-        { id: "secondary", label: "Botón secundario", href: "/", visible: true },
-      ],
+      value.buttons ??
+      (isMethod
+        ? []
+        : [
+            { id: "primary", label: "Botón principal", href: "/", visible: true },
+            { id: "secondary", label: "Botón secundario", href: "/", visible: true },
+          ]),
     items: value.items || (isMethod ? defaultSteps : []),
   };
 }
@@ -130,13 +133,17 @@ function createInitialContent(contentKey: string, sections: string[]) {
           ? {
               ...homeDefaults[section],
               eyebrow:
-                section === "Productos destacados"
+                section === "Método de trabajo"
+                  ? ""
+                  : section === "Productos destacados"
                   ? "Catálogo"
                   : section === "Noticias destacadas"
                     ? "Blog"
                     : section,
               buttons:
-                section === "Hero principal"
+                section === "Método de trabajo"
+                  ? []
+                  : section === "Hero principal"
                   ? [
                       { id: "support", label: "Solicitar soporte", href: "/contacto", visible: true },
                       { id: "services", label: "Ver servicios", href: "/servicios", visible: true },
@@ -332,39 +339,48 @@ function EditorFields({
 }) {
   return (
     <div className="grid gap-5 p-5">
-      <CommonSectionControls content={content} onUpdate={onUpdate} />
-      <RichTextEditor
-        label="Título"
-        minHeight="76px"
-        onChange={(value) => onChange("title", value)}
-        value={content.title}
-      />
+      <VisibilityControl content={content} onUpdate={onUpdate} />
+      {content.items.length === 0 && (
+        <>
+          <RichTextEditor
+            label="Título"
+            minHeight="76px"
+            onChange={(value) => onChange("title", value)}
+            value={content.title}
+          />
+          <RichTextEditor
+            label="Subtítulo"
+            minHeight="86px"
+            onChange={(value) => onChange("subtitle", value)}
+            value={content.subtitle}
+          />
+          <RichTextEditor
+            label="Texto"
+            minHeight="140px"
+            onChange={(value) => onChange("content", value)}
+            value={content.content}
+          />
+        </>
+      )}
+      <AppearanceControls content={content} onUpdate={onUpdate} />
       {content.items.length > 0 && (
         <RepeatableItemsEditor content={content} onUpdate={onUpdate} />
       )}
-      <ButtonsEditor content={content} onUpdate={onUpdate} />
-      <RichTextEditor
-        label="Subtítulo"
-        minHeight="86px"
-        onChange={(value) => onChange("subtitle", value)}
-        value={content.subtitle}
-      />
-      <RichTextEditor
-        label="Contenido"
-        minHeight="140px"
-        onChange={(value) => onChange("content", value)}
-        value={content.content}
-      />
-      <UploadGuide
-        formats="JPG, PNG, WEBP"
-        maxSize="Máximo 5 MB"
-        recommended={
-          previewType === "popup"
-            ? "Recomendado: 1200 × 1200 px"
-            : "Recomendado: 1920 × 1080 px"
-        }
-        title="Imagen de la sección"
-      />
+      {content.buttons.length > 0 && (
+        <ButtonsEditor content={content} onUpdate={onUpdate} />
+      )}
+      {content.items.length === 0 && (
+        <UploadGuide
+          formats="JPG, PNG, WEBP"
+          maxSize="Máximo 5 MB"
+          recommended={
+            previewType === "popup"
+              ? "Recomendado: 1200 × 1200 px"
+              : "Recomendado: 1920 × 1080 px"
+          }
+          title="Imagen de la sección"
+        />
+      )}
       <div className="grid grid-cols-2 gap-3">
         <button
           className="rounded-lg border border-[#d7e9ef] px-4 py-3 text-sm font-semibold text-[#667085]"
@@ -385,7 +401,7 @@ function EditorFields({
   );
 }
 
-function CommonSectionControls({
+function VisibilityControl({
   content,
   onUpdate,
 }: {
@@ -393,7 +409,7 @@ function CommonSectionControls({
   onUpdate: (changes: Partial<SectionContent>) => void;
 }) {
   return (
-    <div className="grid gap-4 rounded-lg border border-[#d7e9ef] bg-[#f7fafb] p-4">
+    <div className="rounded-lg border border-[#d7e9ef] bg-[#f7fafb] p-4">
       <label className="flex items-center justify-between gap-3 text-xs font-semibold">
         Mostrar sección al cliente
         <input
@@ -403,7 +419,22 @@ function CommonSectionControls({
           type="checkbox"
         />
       </label>
-      <TextInput label="Etiqueta de la sección" value={content.eyebrow} onChange={(eyebrow) => onUpdate({ eyebrow })} />
+    </div>
+  );
+}
+
+function AppearanceControls({
+  content,
+  onUpdate,
+}: {
+  content: SectionContent;
+  onUpdate: (changes: Partial<SectionContent>) => void;
+}) {
+  return (
+    <div className="grid gap-4 rounded-lg border border-[#d7e9ef] bg-[#f7fafb] p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#58c3de]">
+        Apariencia
+      </p>
       <div className="grid grid-cols-2 gap-3">
         <ColorInput label="Fondo" value={content.backgroundColor} onChange={(backgroundColor) => onUpdate({ backgroundColor })} />
         <ColorInput label="Acento" value={content.accentColor} onChange={(accentColor) => onUpdate({ accentColor })} />
@@ -422,8 +453,30 @@ function CommonSectionControls({
               <option value="rounded">Tarjetas redondeadas</option>
               <option value="circle">Círculos</option>
               <option value="hexagon">Hexágonos</option>
+              <option value="custom">Cargar figura</option>
             </select>
           </label>
+          {content.shape === "custom" && (
+            <label className="rounded-lg border border-dashed border-[#9eddea] bg-white p-3 text-xs font-semibold text-[#34466f]">
+              Figura personalizada
+              <span className="mt-1 block font-normal text-[#667085]">
+                PNG, WEBP o SVG transparente · 800 × 800 px · máximo 2 MB
+              </span>
+              <input
+                accept="image/png,image/webp,image/svg+xml"
+                className="mt-3 block w-full text-xs"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () =>
+                    onUpdate({ customShapeImage: String(reader.result || "") });
+                  reader.readAsDataURL(file);
+                }}
+                type="file"
+              />
+            </label>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <ColorInput label="Color forma" value={content.itemColor} onChange={(itemColor) => onUpdate({ itemColor })} />
             <ColorInput label="Color texto" value={content.textColor} onChange={(textColor) => onUpdate({ textColor })} />
@@ -541,12 +594,41 @@ function ButtonsEditor({ content, onUpdate }: { content: SectionContent; onUpdat
             />
           </label>
           <TextInput label="Nombre del botón" value={button.label} onChange={(label) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, label } : item) })} />
-          <TextInput label="Enlace" value={button.href} onChange={(href) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, href } : item) })} />
+          <label className="text-xs font-semibold text-[#34466f]">
+            Enlace del botón
+            <select
+              className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3"
+              onChange={(event) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, href: event.target.value } : item) })}
+              value={button.href}
+            >
+              {linkOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       ))}
     </div>
   );
 }
+
+const linkOptions = [
+  { label: "Inicio", value: "/" },
+  { label: "Inicio · Hero principal", value: "/#hero" },
+  { label: "Inicio · Método de trabajo", value: "/#metodo" },
+  { label: "Inicio · Nosotros", value: "/#nosotros" },
+  { label: "Inicio · Servicios", value: "/#servicios" },
+  { label: "Inicio · Productos destacados", value: "/#catalogo" },
+  { label: "Inicio · Noticias destacadas", value: "/#blog" },
+  { label: "Inicio · Contacto", value: "/#contacto" },
+  { label: "Página Nosotros", value: "/nosotros" },
+  { label: "Página Servicios", value: "/servicios" },
+  { label: "Página Blog", value: "/blog" },
+  { label: "Página Catálogo", value: "/catalogo" },
+  { label: "Página Contacto", value: "/contacto" },
+];
 
 function TextInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (

@@ -1,8 +1,5 @@
-const posts = [
-  "Señales de desgaste en camas clínicas antes de una falla crítica",
-  "Mantención preventiva en camillas: puntos que conviene revisar",
-  "Cómo documentar reparaciones para mejorar la continuidad técnica",
-];
+import Link from "next/link";
+import { blogPosts } from "@/data/blog-posts";
 
 export default function BlogPage() {
   return (
@@ -17,19 +14,23 @@ export default function BlogPage() {
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-5 px-5 pb-20 sm:px-8 md:grid-cols-3">
-        {posts.map((post) => (
-          <article
-            key={post}
-            className="rounded-2xl border border-[#d7e9ef] bg-white p-7 shadow-sm"
+        {blogPosts.map((post) => (
+          <Link
+            key={post.slug}
+            href={`/blog/${post.slug}`}
+            className="group rounded-3xl border border-[#d7e9ef] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#213255]/10"
           >
             <p className="font-mono text-xs font-semibold text-[#58c3de]">
               VAIC INSIGHTS
             </p>
-            <h2 className="mt-5 text-xl font-semibold leading-7">{post}</h2>
-            <p className="mt-5 text-sm font-semibold text-[#34466f]">
-              Próximamente
+            <h2 className="mt-5 text-xl font-semibold leading-7">
+              {post.title}
+            </h2>
+            <p className="mt-4 leading-7 text-[#34466f]">{post.excerpt}</p>
+            <p className="mt-6 text-sm font-semibold text-[#213255] transition group-hover:text-[#58c3de]">
+              Leer artículo
             </p>
-          </article>
+          </Link>
         ))}
       </section>
     </main>

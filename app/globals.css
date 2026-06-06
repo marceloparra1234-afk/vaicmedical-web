@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6fbfd;
+  --foreground: #213255;
+  --vm-blue: #213255;
+  --vm-sky: #58c3de;
+  --vm-blue-soft: #34466f;
+  --vm-sky-soft: #dff6fb;
+  --vm-line: #d7e9ef;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: var(--vm-sky);
+  color: var(--vm-blue);
+}
+
+.vm-hex {
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+
+.contact-input {
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(20, 36, 68, 0.74);
+  padding: 15px 18px;
+  color: white;
+  outline: none;
+}
+
+.contact-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.contact-input option {
+  color: #213255;
+}
+
+.contact-input-light {
+  display: block;
+  margin-top: 10px;
+  width: 100%;
+  min-height: 54px;
+  border-radius: 16px;
+  border: 1.5px solid #b9dce6;
+  background: #ffffff;
+  padding: 15px 18px;
+  color: #213255;
+  outline: none;
+  box-shadow: 0 1px 0 rgba(33, 50, 85, 0.04);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.contact-input-light::placeholder {
+  color: rgba(52, 70, 111, 0.55);
+}
+
+.contact-input-light:focus {
+  border-color: #58c3de;
+  background: #fafdff;
+  box-shadow: 0 0 0 4px rgba(88, 195, 222, 0.18);
+}
+
+textarea.contact-input-light {
+  min-height: 150px;
+  resize: vertical;
+}
+
+select.contact-input-light {
+  cursor: pointer;
 }

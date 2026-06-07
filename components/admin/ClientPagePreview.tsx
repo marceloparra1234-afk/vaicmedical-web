@@ -27,6 +27,10 @@ export type PreviewContent = {
     title: string;
     text: string;
     visible: boolean;
+    backgroundColor: string;
+    borderColor: string;
+    textColor: string;
+    image: string;
   }>;
 };
 
@@ -230,16 +234,24 @@ function HomeSectionPreview({
           </div>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {["Misión", "Visión", "Valores"].map((item) => (
+          {content.items.filter((item) => item.visible).map((item) => (
             <article
-              className="rounded-2xl border border-[#c7e9f2] bg-white p-5"
-              key={item}
+              className={cardShapeClass(content.shape)}
+              key={item.id}
+              style={{
+                backgroundColor: item.backgroundColor,
+                borderColor: item.borderColor,
+                color: item.textColor,
+              }}
             >
-              <div className="mb-4 h-1.5 w-12 rounded-full bg-[#58c3de]" />
-              <h3 className="text-xl font-semibold">{item}</h3>
+              <div
+                className="mb-4 h-1.5 w-12 rounded-full"
+                style={{ backgroundColor: content.accentColor }}
+              />
+              <Rich className="rich-preview text-xl font-semibold" html={item.title} />
               <Rich
-                className="rich-preview mt-3 text-xs leading-6 text-[#34466f]"
-                html={content.subtitle}
+                className="rich-preview mt-3 text-xs leading-6"
+                html={item.text}
               />
             </article>
           ))}
@@ -293,16 +305,21 @@ function HomeSectionPreview({
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {["Camas clínicas", "Mesas quirúrgicas", "Monitores", "Actuadores"].map(
+          {content.items.filter((item) => item.visible).map(
             (item) => (
               <article
-                className="overflow-hidden rounded-2xl border border-[#d7e9ef] bg-[#f6fbfd]"
-                key={item}
+                className={`overflow-hidden ${cardShapeClass(content.shape)}`}
+                key={item.id}
+                style={{
+                  backgroundColor: item.backgroundColor,
+                  borderColor: item.borderColor,
+                  color: item.textColor,
+                }}
               >
                 <div className="aspect-square bg-[#eaf8fc] p-4">
-                  <Image alt="" height={200} src="/service-maintenance.svg" width={200} />
+                  <Image alt="" height={200} src={item.image || "/service-maintenance.svg"} width={200} />
                 </div>
-                <p className="p-3 text-xs font-semibold">{item}</p>
+                <Rich className="rich-preview p-3 text-xs font-semibold" html={item.title} />
               </article>
             ),
           )}
@@ -322,17 +339,26 @@ function HomeSectionPreview({
           html={content.title}
         />
         <div className="mt-7 grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((item) => (
-            <article className="border border-[#d7e9ef] bg-white" key={item}>
-              <Image alt="" height={180} src="/blog-article.svg" width={320} />
+          {content.items.filter((item) => item.visible).map((item) => (
+            <article
+              className={cardShapeClass(content.shape)}
+              key={item.id}
+              style={{
+                backgroundColor: item.backgroundColor,
+                borderColor: item.borderColor,
+                color: item.textColor,
+              }}
+            >
+              <Image alt="" height={180} src={item.image || "/blog-article.svg"} width={320} />
               <div className="p-4">
                 <p className="text-[10px] font-semibold text-[#58c3de]">
                   VAIC INSIGHTS
                 </p>
                 <Rich
                   className="rich-preview mt-3 text-sm font-semibold"
-                  html={content.subtitle}
+                  html={item.title}
                 />
+                <Rich className="rich-preview mt-2 text-xs leading-5 opacity-75" html={item.text} />
               </div>
             </article>
           ))}
@@ -380,51 +406,201 @@ function InternalPagePreview({
   section: string;
   content: PreviewContent;
 }) {
-  const isDark =
-    contentKey === "servicios" &&
-    (section === "Soporte técnico" || section === "Llamado a contacto");
+  if (!content.visible) {
+    return <HiddenSection />;
+  }
+
+  if (contentKey === "nosotros") {
+    return <AboutPageSection content={content} section={section} />;
+  }
+
+  if (contentKey === "servicios") {
+    return <ServicesPageSection content={content} section={section} />;
+  }
+
+  if (contentKey === "blog" || contentKey === "blog-vista") {
+    return <BlogPageSection content={content} section={section} />;
+  }
+
+  if (contentKey.startsWith("catalogo")) {
+    return <CatalogPageSection content={content} section={section} />;
+  }
+
+  if (contentKey === "contacto") {
+    return <ContactPageSection content={content} section={section} />;
+  }
+
+  return <StandardSection content={content} section={section} />;
+}
+
+function AboutPageSection({ content, section }: SectionPreviewProps) {
+  if (section === "Hero" || section === "Presentación") {
+    return <PublicHero content={content} eyebrow="Nosotros" />;
+  }
 
   return (
-    <section className={isDark ? "bg-[#213255] p-10 text-white" : "bg-white p-10"}>
+    <section className="bg-[#eaf8fc] p-9">
+      <div className="rounded-[28px] border border-[#c7e9f2] bg-white p-7">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
+          {section}
+        </p>
+        <Rich className="rich-preview mt-3 text-4xl font-semibold" html={content.title} />
+        <Rich className="rich-preview mt-4 text-sm leading-7 text-[#34466f]" html={content.content} />
+        <EditableCards content={content} />
+      </div>
+    </section>
+  );
+}
+
+function ServicesPageSection({ content, section }: SectionPreviewProps) {
+  if (section === "Hero") return <PublicHero content={content} eyebrow="Servicios" />;
+
+  if (section === "Llamado a contacto") {
+    return (
+      <section className="bg-[#213255] p-10 text-white">
+        <Rich className="rich-preview max-w-3xl text-4xl font-semibold" html={content.title} />
+        <Rich className="rich-preview mt-4 max-w-2xl text-sm leading-7 text-white/70" html={content.content} />
+        <span className="mt-6 inline-flex rounded-full bg-[#58c3de] px-5 py-3 text-xs font-semibold text-[#213255]">
+          {content.buttons[0]?.label || "Solicitar soporte"}
+        </span>
+      </section>
+    );
+  }
+
+  return (
+    <section className="bg-white p-9">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
         {section}
       </p>
-      <Rich
-        className="rich-preview mt-3 max-w-4xl text-5xl font-semibold leading-tight"
-        html={content.title}
-      />
-      <Rich
-        className={`rich-preview mt-5 max-w-3xl text-lg leading-8 ${
-          isDark ? "text-white/75" : "text-[#34466f]"
-        }`}
-        html={content.subtitle}
-      />
-      <Rich
-        className={`rich-preview mt-5 max-w-3xl text-sm leading-7 ${
-          isDark ? "text-white/70" : "text-[#34466f]"
-        }`}
-        html={content.content}
-      />
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
-        {[1, 2, 3].map((item) => (
-          <div
-            className={`min-h-36 rounded-2xl border p-5 ${
-              isDark
-                ? "border-white/15 bg-white/5"
-                : "border-[#d7e9ef] bg-[#f6fbfd]"
-            }`}
-            key={item}
-          >
-            <div className="mb-4 h-1.5 w-12 rounded-full bg-[#58c3de]" />
-            <Rich
-              className="rich-preview text-sm font-semibold"
-              html={content.subtitle}
-            />
+      <Rich className="rich-preview mt-3 text-4xl font-semibold" html={content.title} />
+      <EditableCards content={content} />
+    </section>
+  );
+}
+
+function BlogPageSection({ content, section }: SectionPreviewProps) {
+  if (section === "Encabezado" || section === "Título y fecha") {
+    return <PublicHero content={content} eyebrow="Blog" />;
+  }
+  return (
+    <section className="bg-[#f6fbfd] p-9">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
+        {section}
+      </p>
+      <Rich className="rich-preview mt-3 text-4xl font-semibold" html={content.title} />
+      <EditableCards content={content} imageMode />
+    </section>
+  );
+}
+
+function CatalogPageSection({ content, section }: SectionPreviewProps) {
+  if (section === "Encabezado" || section === "Título de línea") {
+    return <PublicHero content={content} eyebrow="Catálogo" />;
+  }
+  return (
+    <section className="bg-white p-9">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
+        {section}
+      </p>
+      <Rich className="rich-preview mt-3 text-4xl font-semibold" html={content.title} />
+      <EditableCards content={content} imageMode />
+    </section>
+  );
+}
+
+function ContactPageSection({ content, section }: SectionPreviewProps) {
+  return (
+    <section className="grid gap-7 bg-[#f6fbfd] p-9 lg:grid-cols-[0.8fr_1.2fr]">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
+          {section}
+        </p>
+        <Rich className="rich-preview mt-3 text-4xl font-semibold" html={content.title} />
+        <Rich className="rich-preview mt-4 text-sm leading-7 text-[#34466f]" html={content.content} />
+      </div>
+      <div className="grid gap-3 rounded-2xl border border-[#d7e9ef] bg-white p-5">
+        {["Nombre", "Correo", "Institución", "Mensaje"].map((field) => (
+          <div className="h-11 rounded-lg border border-[#b9dce6] px-3 py-3 text-xs text-[#667085]" key={field}>
+            {field}
           </div>
         ))}
       </div>
     </section>
   );
+}
+
+function PublicHero({ content, eyebrow }: { content: PreviewContent; eyebrow: string }) {
+  return (
+    <section className="bg-white p-10" style={{ backgroundColor: content.backgroundColor }}>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: content.accentColor }}>
+        {content.eyebrow || eyebrow}
+      </p>
+      <Rich className="rich-preview mt-3 max-w-5xl text-5xl font-semibold leading-tight" html={content.title} />
+      <Rich className="rich-preview mt-5 max-w-3xl text-lg leading-8 text-[#34466f]" html={content.subtitle} />
+      <Rich className="rich-preview mt-4 max-w-3xl text-sm leading-7 text-[#34466f]" html={content.content} />
+    </section>
+  );
+}
+
+function EditableCards({ content, imageMode = false }: { content: PreviewContent; imageMode?: boolean }) {
+  const items = content.items.filter((item) => item.visible);
+  return (
+    <div className="mt-7 grid gap-4 md:grid-cols-3">
+      {(items.length ? items : [createPreviewItem("Caja editable")]).map((item) => (
+        <article
+          className={`overflow-hidden ${cardShapeClass(content.shape)}`}
+          key={item.id}
+          style={{
+            backgroundColor: item.backgroundColor,
+            borderColor: item.borderColor,
+            color: item.textColor,
+          }}
+        >
+          {imageMode && (
+            <Image alt="" height={180} src={item.image || "/service-maintenance.svg"} width={320} />
+          )}
+          <Rich className="rich-preview text-lg font-semibold" html={item.title} />
+          <Rich className="rich-preview mt-3 text-xs leading-6 opacity-75" html={item.text} />
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function StandardSection({ content, section }: SectionPreviewProps) {
+  return (
+    <section className="bg-white p-10">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">{section}</p>
+      <Rich className="rich-preview mt-3 text-5xl font-semibold" html={content.title} />
+      <Rich className="rich-preview mt-5 text-lg text-[#34466f]" html={content.subtitle} />
+      <Rich className="rich-preview mt-4 text-sm leading-7 text-[#34466f]" html={content.content} />
+      <EditableCards content={content} />
+    </section>
+  );
+}
+
+function HiddenSection() {
+  return (
+    <div className="grid min-h-[360px] place-items-center bg-[#f6fbfd] p-8 text-sm text-[#667085]">
+      Esta sección está oculta para la vista del cliente.
+    </div>
+  );
+}
+
+type SectionPreviewProps = { content: PreviewContent; section: string };
+
+function createPreviewItem(title: string): PreviewContent["items"][number] {
+  return {
+    id: "preview",
+    number: "",
+    title,
+    text: "Contenido editable de esta caja.",
+    visible: true,
+    backgroundColor: "#f6fbfd",
+    borderColor: "#d7e9ef",
+    textColor: "#213255",
+    image: "",
+  };
 }
 
 function Rich({
@@ -443,4 +619,11 @@ function Rich({
       style={style}
     />
   );
+}
+
+function cardShapeClass(shape: PreviewContent["shape"]) {
+  if (shape === "rectangle") return "border p-5";
+  if (shape === "circle") return "aspect-square rounded-full border p-6";
+  if (shape === "hexagon") return "vm-hex aspect-square border p-7";
+  return "rounded-2xl border p-5";
 }

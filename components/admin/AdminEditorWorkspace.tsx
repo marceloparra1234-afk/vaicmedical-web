@@ -72,6 +72,10 @@ const defaultSteps = [
     title: "Solicitud",
     text: "Recibimos el requerimiento y clasificamos la criticidad.",
     visible: true,
+    backgroundColor: "#213255",
+    borderColor: "#213255",
+    textColor: "#ffffff",
+    image: "",
   },
   {
     id: "diagnostico",
@@ -79,6 +83,10 @@ const defaultSteps = [
     title: "Diagnóstico",
     text: "Evaluamos la falla, el estado del equipo y sus condiciones de uso.",
     visible: true,
+    backgroundColor: "#213255",
+    borderColor: "#213255",
+    textColor: "#ffffff",
+    image: "",
   },
   {
     id: "reparacion",
@@ -86,6 +94,10 @@ const defaultSteps = [
     title: "Reparación",
     text: "Ejecutamos mantención o reparación con criterio técnico.",
     visible: true,
+    backgroundColor: "#213255",
+    borderColor: "#213255",
+    textColor: "#ffffff",
+    image: "",
   },
   {
     id: "informe",
@@ -93,8 +105,83 @@ const defaultSteps = [
     title: "Informe",
     text: "Documentamos el trabajo realizado y las recomendaciones.",
     visible: true,
+    backgroundColor: "#213255",
+    borderColor: "#213255",
+    textColor: "#ffffff",
+    image: "",
   },
 ];
+
+const repeatableDefaults: Record<string, SectionContent["items"]> = {
+  Nosotros: [
+    createCard("mision", "Misión", "Recuperar y mantener equipos médicos críticos con respuesta técnica clara y trazable."),
+    createCard("vision", "Visión", "Ser un aliado confiable para instituciones que necesitan continuidad operativa."),
+    createCard("valores", "Valores", "Rigor técnico, responsabilidad, orden documental y compromiso."),
+  ],
+  "Productos destacados": [
+    createCard("camas", "Camas clínicas", "Mantención y reparación de equipos clínicos.", "/service-maintenance.svg"),
+    createCard("mesas", "Mesas quirúrgicas", "Diagnóstico y recuperación operativa.", "/service-maintenance.svg"),
+    createCard("monitores", "Monitores multiparámetros", "Revisión técnica y reparación.", "/medical-dashboard.svg"),
+    createCard("actuadores", "Actuadores y motores", "Componentes y soporte técnico.", "/service-maintenance.svg"),
+  ],
+  "Noticias destacadas": [
+    createCard("noticia-1", "Señales de desgaste en camas clínicas", "Indicadores que conviene detectar antes de una falla crítica.", "/blog-article.svg"),
+    createCard("noticia-2", "Mantención preventiva en camillas", "Puntos esenciales que conviene revisar.", "/blog-article.svg"),
+    createCard("noticia-3", "Cómo documentar reparaciones", "Información útil para mejorar continuidad técnica.", "/blog-article.svg"),
+  ],
+  Misión: [createCard("mision", "Misión", "Recuperar y mantener equipos médicos críticos con respuesta técnica clara y trazable.")],
+  Visión: [createCard("vision", "Visión", "Ser un aliado confiable para instituciones que necesitan continuidad operativa.")],
+  "Valores VAIC": [
+    createCard("vida", "Vida", "Trabajamos para preservar lo más valioso: la vida."),
+    createCard("atencion", "Atención", "Escuchamos, entendemos y respondemos con excelencia."),
+    createCard("innovacion", "Innovación", "Innovamos para anticipar y servir mejor."),
+    createCard("cuidado", "Cuidado", "Cada detalle importa; cuidamos personas, procesos y equipos."),
+  ],
+  "Mantención preventiva": [createCard("preventiva", "Mantención preventiva", "Revisión programada, ajustes, limpieza técnica y control de condiciones.")],
+  "Reparación correctiva": [createCard("correctiva", "Reparación correctiva", "Diagnóstico y reparación de equipos médicos.")],
+  "Soporte técnico": [createCard("soporte", "Soporte técnico", "Respuesta en terreno, evaluación de fallas e informes técnicos.")],
+  "Listado de publicaciones": [
+    createCard("post-1", "Publicación técnica", "Breve reseña de la publicación.", "/blog-article.svg"),
+    createCard("post-2", "Noticia VaicMedical", "Breve reseña de la noticia.", "/blog-article.svg"),
+    createCard("post-3", "Artículo especializado", "Breve reseña del artículo.", "/blog-article.svg"),
+  ],
+  "Navegación de líneas": [
+    createCard("linea-1", "Camas clínicas y camillas", "Equipos de traslado y hospitalización."),
+    createCard("linea-2", "Pabellón y procedimientos", "Equipos utilizados en pabellón."),
+    createCard("linea-3", "Monitoreo y equipos clínicos", "Equipos de monitoreo y apoyo clínico."),
+  ],
+  "Bloques de líneas": [
+    createCard("linea-1", "Camas clínicas y camillas", "Equipos de traslado y hospitalización."),
+    createCard("linea-2", "Pabellón y procedimientos", "Equipos utilizados en pabellón."),
+  ],
+  "Tarjetas de productos": [
+    createCard("producto-1", "Camas clínicas eléctricas", "Revisión de actuadores y controles.", "/service-maintenance.svg"),
+    createCard("producto-2", "Mesas quirúrgicas", "Diagnóstico de movimientos y módulos.", "/service-maintenance.svg"),
+    createCard("producto-3", "Monitores multiparámetros", "Evaluación de funcionamiento y accesorios.", "/medical-dashboard.svg"),
+  ],
+  "Grilla de productos": [
+    createCard("producto-1", "Producto de la línea", "Descripción corta del producto.", "/service-maintenance.svg"),
+    createCard("producto-2", "Producto de la línea", "Descripción corta del producto.", "/service-maintenance.svg"),
+  ],
+  "Productos relacionados": [
+    createCard("relacionado-1", "Producto relacionado", "Modelo según equipo.", "/service-maintenance.svg"),
+    createCard("relacionado-2", "Producto relacionado", "Modelo según equipo.", "/service-maintenance.svg"),
+  ],
+};
+
+function createCard(id: string, title: string, text: string, image = "") {
+  return {
+    id,
+    number: "",
+    title,
+    text,
+    visible: true,
+    backgroundColor: "#ffffff",
+    borderColor: "#d7e9ef",
+    textColor: "#213255",
+    image,
+  };
+}
 
 function completeSection(section: string, value: Partial<SectionContent>): SectionContent {
   const isMethod = section === "Método de trabajo";
@@ -119,8 +206,20 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
             { id: "primary", label: "Botón principal", href: "/", visible: true },
             { id: "secondary", label: "Botón secundario", href: "/", visible: true },
           ]),
-    items: value.items || (isMethod ? defaultSteps : []),
+    items: normalizeItems(
+      value.items || (isMethod ? defaultSteps : repeatableDefaults[section] || []),
+    ),
   };
+}
+
+function normalizeItems(items: SectionContent["items"]) {
+  return items.map((item) => ({
+    ...item,
+    backgroundColor: item.backgroundColor || "#ffffff",
+    borderColor: item.borderColor || "#d7e9ef",
+    textColor: item.textColor || "#213255",
+    image: item.image || "",
+  }));
 }
 
 function createInitialContent(contentKey: string, sections: string[]) {
@@ -337,10 +436,13 @@ function EditorFields({
   onDiscard: () => void;
   onSave: () => void;
 }) {
+  const isWorkflow =
+    content.items.length > 0 && content.items.every((item) => Boolean(item.number));
+
   return (
     <div className="grid gap-5 p-5">
       <VisibilityControl content={content} onUpdate={onUpdate} />
-      {content.items.length === 0 && (
+      {!isWorkflow && (
         <>
           <RichTextEditor
             label="Título"
@@ -369,7 +471,7 @@ function EditorFields({
       {content.buttons.length > 0 && (
         <ButtonsEditor content={content} onUpdate={onUpdate} />
       )}
-      {content.items.length === 0 && (
+      {!isWorkflow && (
         <UploadGuide
           formats="JPG, PNG, WEBP"
           maxSize="Máximo 5 MB"
@@ -539,6 +641,10 @@ function RepeatableItemsEditor({
                   title: "Nuevo paso",
                   text: "Descripción del nuevo paso.",
                   visible: true,
+                  backgroundColor: content.itemColor,
+                  borderColor: content.accentColor,
+                  textColor: content.textColor,
+                  image: "",
                 },
               ],
             })
@@ -572,6 +678,26 @@ function RepeatableItemsEditor({
             <TextInput label="Número" value={item.number} onChange={(number) => updateItem(index, { number })} />
             <RichTextEditor label="Título del elemento" minHeight="65px" value={item.title} onChange={(title) => updateItem(index, { title })} />
             <RichTextEditor label="Texto del elemento" minHeight="90px" value={item.text} onChange={(text) => updateItem(index, { text })} />
+            <div className="grid grid-cols-3 gap-2">
+              <ColorInput label="Fondo caja" value={item.backgroundColor} onChange={(backgroundColor) => updateItem(index, { backgroundColor })} />
+              <ColorInput label="Borde caja" value={item.borderColor} onChange={(borderColor) => updateItem(index, { borderColor })} />
+              <ColorInput label="Texto caja" value={item.textColor} onChange={(textColor) => updateItem(index, { textColor })} />
+            </div>
+            <label className="text-xs font-semibold text-[#34466f]">
+              Imagen de la caja
+              <input
+                accept="image/*"
+                className="mt-2 block w-full text-xs"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => updateItem(index, { image: String(reader.result || "") });
+                  reader.readAsDataURL(file);
+                }}
+                type="file"
+              />
+            </label>
           </div>
         </details>
       ))}

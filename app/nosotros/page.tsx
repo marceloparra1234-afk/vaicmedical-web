@@ -45,7 +45,7 @@ export default function NosotrosPage() {
       </section>
 
       <section className="bg-[#eaf8fc]">
-        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8" data-editor-section="identidad-corporativa">
           <div className="grid gap-5 md:grid-cols-2" data-editor-section="mision-vision">
             {[
               [
@@ -72,14 +72,14 @@ export default function NosotrosPage() {
           <div className="mt-8 rounded-[2rem] border border-[#c7e9f2] bg-white p-6 shadow-sm sm:p-8" data-editor-section="valores">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end" data-editor-section="valores-intro">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]" data-editor-field="section-eyebrow">
                   Valores
                 </p>
-                <h2 className="mt-3 text-4xl font-semibold leading-tight">
+                <h2 className="mt-3 text-4xl font-semibold leading-tight" data-editor-field="section-title">
                   VAIC como forma de trabajo.
                 </h2>
               </div>
-              <p className="max-w-xl leading-7 text-[#34466f]">
+              <p className="max-w-xl leading-7 text-[#34466f]" data-editor-field="section-intro">
                 Nuestros valores ordenan la manera en que atendemos cada
                 requerimiento técnico.
               </p>

@@ -81,21 +81,7 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
       editableFields: ["eyebrow", "title", "content"],
       buttons: [],
     },
-    Misión: {
-      title: "Misión",
-      content:
-        "Recuperar y mantener equipos médicos críticos con respuesta técnica clara, trazable y orientada a la continuidad de la atención.",
-      editableFields: ["title", "content"],
-      buttons: [],
-    },
-    Visión: {
-      title: "Visión",
-      content:
-        "Ser un aliado confiable para instituciones que necesitan equipos disponibles, procesos ordenados y soporte técnico oportuno.",
-      editableFields: ["title", "content"],
-      buttons: [],
-    },
-    Valores: {
+    "Contenedor interno": {
       eyebrow: "Valores",
       title: "VAIC como forma de trabajo.",
       content:
@@ -103,6 +89,8 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
       editableFields: ["eyebrow", "title", "content"],
       buttons: [],
       items: [
+        createCard("mision", "Misión", "Recuperar y mantener equipos médicos críticos con respuesta técnica clara, trazable y orientada a la continuidad de la atención."),
+        createCard("vision", "Visión", "Ser un aliado confiable para instituciones que necesitan equipos disponibles, procesos ordenados y soporte técnico oportuno."),
         createCard("vida", "Vida", "Trabajamos para preservar lo más valioso: la vida."),
         createCard("atencion", "Atención", "Escuchamos, entendemos y respondemos con excelencia."),
         createCard("innovacion", "Innovación", "Innovamos para anticipar y servir mejor."),
@@ -991,10 +979,31 @@ function ColorInput({ label, value, onChange }: { label: string; value: string; 
   return (
     <label className="text-xs font-semibold text-[#34466f]">
       {label}
-      <input className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white p-1" onChange={(event) => onChange(event.target.value)} type="color" value={value} />
+      <select
+        className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3"
+        onChange={(event) => onChange(event.target.value)}
+        value={vaicColorOptions.some((option) => option.value === value) ? value : "#213255"}
+      >
+        {vaicColorOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }
+
+const vaicColorOptions = [
+  { label: "Azul VaicMedical", value: "#213255" },
+  { label: "Azul medio", value: "#34466f" },
+  { label: "Azul profundo", value: "#17243f" },
+  { label: "Celeste VaicMedical", value: "#58c3de" },
+  { label: "Celeste suave", value: "#eaf8fc" },
+  { label: "Celeste muy suave", value: "#f6fbfd" },
+  { label: "Borde celeste", value: "#d7e9ef" },
+  { label: "Blanco de soporte", value: "#ffffff" },
+];
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, "");

@@ -27,9 +27,7 @@ const sectionSelectors: Record<string, Record<string, string>> = {
   },
   nosotros: {
     "Hero principal": "[data-editor-section='hero']",
-    Misión: "[data-editor-section='mision']",
-    Visión: "[data-editor-section='vision']",
-    Valores: "[data-editor-section='valores']",
+    "Contenedor interno": "[data-editor-section='identidad-corporativa']",
     "Llamado a servicios": "[data-editor-section='cta-servicios']",
   },
   servicios: {
@@ -230,15 +228,31 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
   target.style.display = content.visible ? "" : "none";
   target.style.backgroundColor = content.backgroundColor || "";
 
+  const sectionEyebrow = target.querySelector("[data-editor-field='section-eyebrow']");
+  if (sectionEyebrow instanceof HTMLElement && content.eyebrow) {
+    sectionEyebrow.innerHTML = content.eyebrow;
+    sectionEyebrow.style.color = content.accentColor || "";
+  }
+
+  const sectionTitle = target.querySelector("[data-editor-field='section-title']");
+  if (sectionTitle instanceof HTMLElement) {
+    sectionTitle.innerHTML = content.title;
+  }
+
+  const sectionIntro = target.querySelector("[data-editor-field='section-intro']");
+  if (sectionIntro instanceof HTMLElement) {
+    sectionIntro.innerHTML = content.content;
+  }
+
   const eyebrow = first(target, [
     "p.text-sm.font-semibold.uppercase",
     "p.text-xs.font-semibold.uppercase",
     "p.font-mono",
   ]);
-  if (eyebrow && content.eyebrow) eyebrow.innerHTML = content.eyebrow;
+  if (eyebrow && !sectionEyebrow && content.eyebrow) eyebrow.innerHTML = content.eyebrow;
 
   const heading = first(target, ["h1", "h2"]);
-  if (heading) heading.innerHTML = content.title;
+  if (heading && !sectionTitle) heading.innerHTML = content.title;
 
   const paragraphs = Array.from(target.querySelectorAll("p")).filter(
     (item) =>
@@ -246,8 +260,10 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
       !item.className.includes("font-mono") &&
       !item.closest("nav"),
   );
-  if (paragraphs[0]) paragraphs[0].innerHTML = content.subtitle || content.content;
-  if (paragraphs[1]) paragraphs[1].innerHTML = content.content;
+  if (!sectionIntro) {
+    if (paragraphs[0]) paragraphs[0].innerHTML = content.subtitle || content.content;
+    if (paragraphs[1]) paragraphs[1].innerHTML = content.content;
+  }
 
   const buttons = Array.from(target.querySelectorAll("a, button")).filter(
     (item) => !item.closest("nav"),
@@ -273,6 +289,16 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
       card.style.backgroundColor = item.backgroundColor || "";
       card.style.borderColor = item.borderColor || "";
       card.style.color = item.textColor || "";
+
+      const accent = Array.from(card.children).find(
+        (child) =>
+          child instanceof HTMLElement &&
+          child.className.includes("h-2") &&
+          child.className.includes("rounded-full"),
+      );
+      if (accent instanceof HTMLElement) {
+        accent.style.backgroundColor = item.borderColor || content.accentColor || "";
+      }
 
       const cardNumber = first(card, ["span"]);
       if (cardNumber && item.number) cardNumber.innerHTML = item.number;

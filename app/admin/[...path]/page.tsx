@@ -38,9 +38,7 @@ const editors: Record<
       "Actualiza la presentación de VaicMedical, misión, visión y valores.",
     sections: [
       "Hero principal",
-      "Misión",
-      "Visión",
-      "Valores",
+      "Contenedor interno",
       "Llamado a servicios",
     ],
   },

@@ -27,7 +27,8 @@ const sectionSelectors: Record<string, Record<string, string>> = {
   },
   nosotros: {
     "Hero principal": "[data-editor-section='hero']",
-    "Contenedor interno": "[data-editor-section='identidad-corporativa']",
+    "Misión y visión": "[data-editor-section='mision-vision']",
+    Valores: "[data-editor-section='valores']",
     "Llamado a servicios": "[data-editor-section='cta-servicios']",
   },
   servicios: {

@@ -81,7 +81,15 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
       editableFields: ["eyebrow", "title", "content"],
       buttons: [],
     },
-    "Contenedor interno": {
+    "Misión y visión": {
+      editableFields: [],
+      buttons: [],
+      items: [
+        createCard("mision", "Misión", "Recuperar y mantener equipos médicos críticos con respuesta técnica clara, trazable y orientada a la continuidad de la atención."),
+        createCard("vision", "Visión", "Ser un aliado confiable para instituciones que necesitan equipos disponibles, procesos ordenados y soporte técnico oportuno."),
+      ],
+    },
+    Valores: {
       eyebrow: "Valores",
       title: "VAIC como forma de trabajo.",
       content:
@@ -89,8 +97,6 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
       editableFields: ["eyebrow", "title", "content"],
       buttons: [],
       items: [
-        createCard("mision", "Misión", "Recuperar y mantener equipos médicos críticos con respuesta técnica clara, trazable y orientada a la continuidad de la atención."),
-        createCard("vision", "Visión", "Ser un aliado confiable para instituciones que necesitan equipos disponibles, procesos ordenados y soporte técnico oportuno."),
         createCard("vida", "Vida", "Trabajamos para preservar lo más valioso: la vida."),
         createCard("atencion", "Atención", "Escuchamos, entendemos y respondemos con excelencia."),
         createCard("innovacion", "Innovación", "Innovamos para anticipar y servir mejor."),

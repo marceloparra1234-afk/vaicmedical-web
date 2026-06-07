@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 
 const pagePaths: Record<string, string> = {
@@ -87,52 +87,78 @@ export function LiveClientPreview({
   content: PreviewContent;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [status, setStatus] = useState("Cargando sección...");
   const path = pagePaths[contentKey] || "/";
   const selector = sectionSelectors[contentKey]?.[section];
 
   useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+    let cancelled = false;
 
-    function applyDraft() {
-      const document = iframe?.contentDocument;
-      if (!document) return;
+    async function renderIsolatedSection() {
+      const iframe = iframeRef.current;
+      if (!iframe || !selector) return;
 
-      document.documentElement.style.scrollBehavior = "auto";
-      document.querySelectorAll("[data-admin-preview-active]").forEach((element) => {
-        element.removeAttribute("data-admin-preview-active");
-      });
+      setStatus("Cargando sección...");
 
-      const target = selector ? document.querySelector(selector) : null;
-      if (target instanceof HTMLElement) {
-        const clone = target.cloneNode(true);
-        if (!(clone instanceof HTMLElement)) return;
+      try {
+        const response = await fetch(`${path}${path.includes("?") ? "&" : "?"}admin-preview=1`);
+        const html = await response.text();
+        if (cancelled) return;
 
-        document.body.innerHTML = "";
-        document.body.style.margin = "0";
-        document.body.style.background = "#ffffff";
+        const sourceDocument = new DOMParser().parseFromString(html, "text/html");
+        const sourceTarget = sourceDocument.querySelector(selector);
 
-        const previewRoot = document.createElement("main");
-        previewRoot.dataset.adminPreviewActive = "true";
-        previewRoot.style.minHeight = "100vh";
-        previewRoot.style.background = "#ffffff";
-        previewRoot.appendChild(clone);
-        document.body.appendChild(previewRoot);
+        if (!(sourceTarget instanceof HTMLElement)) {
+          writeIframeDocument(
+            iframe,
+            `<div class="admin-preview-empty">No se encontró esta sección en la página pública.</div>`,
+            "",
+          );
+          setStatus("Sección no encontrada");
+          return;
+        }
 
-        applyContentToTarget(clone, content);
+        const assets = Array.from(
+          sourceDocument.head.querySelectorAll("link[rel='stylesheet'], style"),
+        )
+          .map((element) => element.outerHTML)
+          .join("\n");
+
+        writeIframeDocument(iframe, sourceTarget.outerHTML, assets);
+
+        const previewDocument = iframe.contentDocument;
+        const target = previewDocument?.querySelector(selector);
+        if (target instanceof HTMLElement) {
+          target.dataset.adminPreviewActive = "true";
+          applyContentToTarget(target, content);
+          setStatus("Mostrando solo esta sección");
+        }
+      } catch {
+        if (!cancelled) {
+          const iframe = iframeRef.current;
+          if (iframe) {
+            writeIframeDocument(
+              iframe,
+              `<div class="admin-preview-empty">No se pudo cargar la vista previa.</div>`,
+              "",
+            );
+          }
+          setStatus("Error al cargar");
+        }
       }
     }
 
-    iframe.addEventListener("load", applyDraft);
-    applyDraft();
-    return () => iframe.removeEventListener("load", applyDraft);
-  }, [selector, content]);
+    renderIsolatedSection();
+    return () => {
+      cancelled = true;
+    };
+  }, [path, selector, content]);
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#d7e9ef] bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-[#d7e9ef] bg-white px-4 py-3">
         <p className="text-xs text-[#667085]">
-          Vista pública real · {path}
+          Vista pública real · {status}
         </p>
         <a
           className="text-xs font-semibold text-[#258aa5]"
@@ -145,13 +171,59 @@ export function LiveClientPreview({
       </div>
       <iframe
         className="h-[650px] w-full bg-white"
-        key={`${contentKey}-${section}`}
         ref={iframeRef}
-        src={`${path}${path.includes("?") ? "&" : "?"}admin-preview=1`}
         title={`Vista pública real de ${section}`}
       />
     </div>
   );
+}
+
+function writeIframeDocument(
+  iframe: HTMLIFrameElement,
+  sectionHtml: string,
+  assets: string,
+) {
+  const document = iframe.contentDocument;
+  if (!document) return;
+
+  document.open();
+  document.write(`<!doctype html>
+    <html>
+      <head>
+        <base href="${window.location.origin}">
+        ${assets}
+        <style>
+          html { scroll-behavior: auto !important; }
+          body {
+            margin: 0;
+            background: #ffffff;
+            color: #213255;
+            overflow-x: hidden;
+          }
+          .admin-preview-shell {
+            min-height: 100vh;
+            background: #ffffff;
+          }
+          .admin-preview-shell > [data-editor-section] {
+            width: 100% !important;
+            max-width: none;
+          }
+          .admin-preview-empty {
+            display: grid;
+            min-height: 420px;
+            place-items: center;
+            padding: 32px;
+            color: #667085;
+            font: 600 14px system-ui, sans-serif;
+            text-align: center;
+          }
+        </style>
+      </head>
+      <body>
+        <main class="admin-preview-shell">${sectionHtml}</main>
+      </body>
+    </html>`);
+  document.close();
 }
 
 function applyContentToTarget(target: HTMLElement, content: PreviewContent) {

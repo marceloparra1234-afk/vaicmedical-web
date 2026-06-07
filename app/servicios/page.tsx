@@ -48,6 +48,11 @@ export default function ServiciosPage() {
           <article
             key={service.title}
             className="rounded-2xl border border-[#d7e9ef] bg-white p-7 shadow-sm"
+            data-editor-section={`servicio-${service.title
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .split(" ")[0]}`}
           >
             <div className="mb-8 h-2 w-14 rounded-full bg-[#58c3de]" />
             <h2 className="text-2xl font-semibold">{service.title}</h2>
@@ -86,7 +91,7 @@ export default function ServiciosPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8" data-editor-section="cta-contacto">
         <Link
           className="inline-flex rounded-full bg-[#213255] px-7 py-4 font-semibold text-white transition hover:bg-[#34466f]"
           href="/contacto"

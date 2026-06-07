@@ -59,6 +59,7 @@ export default function NosotrosPage() {
             ].map(([title, text]) => (
               <article
                 className="rounded-3xl border border-[#c7e9f2] bg-white p-8 shadow-sm"
+                data-editor-section={title === "Misión" ? "mision" : "vision"}
                 key={title}
               >
                 <div className="mb-6 h-2 w-14 rounded-full bg-[#58c3de]" />
@@ -69,7 +70,7 @@ export default function NosotrosPage() {
           </div>
 
           <div className="mt-8 rounded-[2rem] border border-[#c7e9f2] bg-white p-6 shadow-sm sm:p-8" data-editor-section="valores">
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end" data-editor-section="valores-intro">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
                   Valores
@@ -88,6 +89,7 @@ export default function NosotrosPage() {
               {values.map((value) => (
                 <article
                   className="rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] p-5"
+                  data-editor-section={`valor-${value.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`}
                   key={value.letter}
                 >
                   <div className="flex items-start gap-4">
@@ -107,7 +109,7 @@ export default function NosotrosPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8" data-editor-section="cta-servicios">
         <Link
           className="inline-flex rounded-full bg-[#213255] px-7 py-4 font-semibold text-white transition hover:bg-[#34466f]"
           href="/servicios"

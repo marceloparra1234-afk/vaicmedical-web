@@ -36,7 +36,17 @@ const editors: Record<
     title: "Editar página Nosotros",
     description:
       "Actualiza la presentación de VaicMedical, misión, visión y valores.",
-    sections: ["Hero", "Presentación", "Misión", "Visión", "Valores VAIC"],
+    sections: [
+      "Hero",
+      "Misión",
+      "Visión",
+      "Valores introducción",
+      "Valor Vida",
+      "Valor Atención",
+      "Valor Innovación",
+      "Valor Cuidado",
+      "Llamado a servicios",
+    ],
   },
   servicios: {
     contentKey: "servicios",
@@ -48,6 +58,10 @@ const editors: Record<
       "Mantención preventiva",
       "Reparación correctiva",
       "Soporte técnico",
+      "Monitores multiparámetros",
+      "Equipos de pabellón",
+      "Gestión de requerimientos",
+      "Método de trabajo",
       "Llamado a contacto",
     ],
   },
@@ -56,7 +70,7 @@ const editors: Record<
     title: "Editar página Blog",
     description:
       "Gestiona el encabezado, presentación y distribución general del blog.",
-    sections: ["Encabezado", "Noticias destacadas", "Listado de publicaciones"],
+    sections: ["Hero", "Listado de publicaciones"],
   },
   "blog/vista": {
     contentKey: "blog-vista",
@@ -70,7 +84,7 @@ const editors: Record<
     title: "Editar página Catálogo",
     description:
       "Administra el encabezado, navegación de líneas y presentación de productos.",
-    sections: ["Encabezado", "Navegación de líneas", "Bloques de líneas", "Tarjetas de productos"],
+    sections: ["Hero", "Navegación de líneas", "Línea 01", "Línea 02", "Línea 03", "Línea 04"],
   },
   "catalogo/lineas/vista": {
     contentKey: "catalogo-lineas-vista",
@@ -91,14 +105,14 @@ const editors: Record<
     title: "Editar página Contacto",
     description:
       "Actualiza los textos, canales de contacto y presentación del formulario.",
-    sections: ["Encabezado", "Información de contacto", "Formulario", "Mensaje posterior al envío"],
+    sections: ["Hero", "Tarjeta Correo", "Tarjeta Cobertura", "Tarjeta Respuesta", "Tarjeta Especialidad", "Formulario"],
   },
   "ventana-emergente": {
     contentKey: "ventana-emergente",
     title: "Editar ventana emergente",
     description:
       "Configura el contenido y apariencia de la ventana emergente del sitio.",
-    sections: ["Configuración", "Imagen", "Título y texto", "Botones", "Frecuencia"],
+    sections: ["Configuración", "Imagen", "Etiqueta", "Título", "Texto", "Botón principal", "Botón cerrar", "Frecuencia"],
     previewType: "popup",
   },
 };

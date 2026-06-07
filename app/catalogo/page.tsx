@@ -47,6 +47,7 @@ export default function CatalogoPage() {
           {catalogLines.map((line, lineIndex) => (
             <section
               className="scroll-mt-28 overflow-hidden rounded-[32px] border border-[#d7e9ef] bg-white shadow-sm"
+              data-editor-section={`linea-${String(lineIndex + 1).padStart(2, "0")}`}
               id={line.id}
               key={line.id}
             >

@@ -39,6 +39,7 @@ export default function ContactoPage() {
               {infoItems.map(([label, value]) => (
                 <div
                   className="rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] p-5"
+                  data-editor-section={`info-${label.toLowerCase()}`}
                   key={label}
                 >
                   <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#58c3de]">
@@ -52,7 +53,7 @@ export default function ContactoPage() {
             </div>
           </section>
 
-          <div className="relative">
+          <div className="relative" data-editor-section="formulario">
             <ContactForm />
           </div>
         </div>

@@ -26,29 +26,20 @@ const sectionSelectors: Record<string, Record<string, string>> = {
     Contacto: "[data-editor-section='contacto']",
   },
   nosotros: {
-    Hero: "[data-editor-section='hero']",
+    "Hero principal": "[data-editor-section='hero']",
     Misión: "[data-editor-section='mision']",
     Visión: "[data-editor-section='vision']",
-    "Valores introducción": "[data-editor-section='valores-intro']",
-    "Valor Vida": "[data-editor-section='valor-vida']",
-    "Valor Atención": "[data-editor-section='valor-atencion']",
-    "Valor Innovación": "[data-editor-section='valor-innovacion']",
-    "Valor Cuidado": "[data-editor-section='valor-cuidado']",
+    Valores: "[data-editor-section='valores']",
     "Llamado a servicios": "[data-editor-section='cta-servicios']",
   },
   servicios: {
-    Hero: "[data-editor-section='hero']",
-    "Mantención preventiva": "[data-editor-section='servicio-mantencion']",
-    "Reparación correctiva": "[data-editor-section='servicio-reparacion']",
-    "Soporte técnico": "[data-editor-section='servicio-soporte']",
-    "Monitores multiparámetros": "[data-editor-section='servicio-monitores']",
-    "Equipos de pabellón": "[data-editor-section='servicio-equipos']",
-    "Gestión de requerimientos": "[data-editor-section='servicio-gestion']",
+    "Hero principal": "[data-editor-section='hero']",
+    "Servicios técnicos": "[data-editor-section='servicios']",
     "Método de trabajo": "[data-editor-section='metodo']",
     "Llamado a contacto": "[data-editor-section='cta-contacto']",
   },
   blog: {
-    Hero: "[data-editor-section='hero']",
+    "Hero principal": "[data-editor-section='hero']",
     "Listado de publicaciones": "[data-editor-section='publicaciones']",
   },
   "blog-vista": {
@@ -59,7 +50,7 @@ const sectionSelectors: Record<string, Record<string, string>> = {
     "Contenido relacionado": "[data-editor-section='article-body']",
   },
   catalogo: {
-    Hero: "[data-editor-section='hero']",
+    "Hero principal": "[data-editor-section='hero']",
     "Navegación de líneas": "[data-editor-section='catalogo']",
     "Línea 01": "[data-editor-section='linea-01']",
     "Línea 02": "[data-editor-section='linea-02']",
@@ -80,11 +71,8 @@ const sectionSelectors: Record<string, Record<string, string>> = {
     "Productos relacionados": "[data-editor-section='product-related']",
   },
   contacto: {
-    Hero: "[data-editor-section='hero']",
-    "Tarjeta Correo": "[data-editor-section='info-correo']",
-    "Tarjeta Cobertura": "[data-editor-section='info-cobertura']",
-    "Tarjeta Respuesta": "[data-editor-section='info-respuesta']",
-    "Tarjeta Especialidad": "[data-editor-section='info-especialidad']",
+    "Hero principal": "[data-editor-section='contacto-hero']",
+    "Información de contacto": "[data-editor-section='contacto-info']",
     Formulario: "[data-editor-section='formulario']",
   },
 };
@@ -117,9 +105,21 @@ export function LiveClientPreview({
 
       const target = selector ? document.querySelector(selector) : null;
       if (target instanceof HTMLElement) {
-        target.dataset.adminPreviewActive = "true";
-        applyContentToTarget(target, content);
-        target.scrollIntoView({ block: "start" });
+        const clone = target.cloneNode(true);
+        if (!(clone instanceof HTMLElement)) return;
+
+        document.body.innerHTML = "";
+        document.body.style.margin = "0";
+        document.body.style.background = "#ffffff";
+
+        const previewRoot = document.createElement("main");
+        previewRoot.dataset.adminPreviewActive = "true";
+        previewRoot.style.minHeight = "100vh";
+        previewRoot.style.background = "#ffffff";
+        previewRoot.appendChild(clone);
+        document.body.appendChild(previewRoot);
+
+        applyContentToTarget(clone, content);
       }
     }
 
@@ -145,6 +145,7 @@ export function LiveClientPreview({
       </div>
       <iframe
         className="h-[650px] w-full bg-white"
+        key={`${contentKey}-${section}`}
         ref={iframeRef}
         src={`${path}${path.includes("?") ? "&" : "?"}admin-preview=1`}
         title={`Vista pública real de ${section}`}
@@ -204,11 +205,16 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
       const cardNumber = first(card, ["span"]);
       if (cardNumber && item.number) cardNumber.innerHTML = item.number;
 
-      const cardTitle = first(card, ["h2", "h3", ".font-semibold"]);
+      const cardTitle = first(card, ["h2", "h3", "p.uppercase", ".font-semibold"]);
       if (cardTitle) cardTitle.innerHTML = item.title;
 
-      const cardParagraph = first(card, ["p.leading-7", "p.text-sm", "p"]);
-      if (cardParagraph) cardParagraph.innerHTML = item.text;
+      const cardParagraph = Array.from(card.querySelectorAll("p")).find(
+        (paragraph) =>
+          paragraph instanceof HTMLElement &&
+          paragraph !== cardTitle &&
+          !paragraph.className.includes("uppercase"),
+      );
+      if (cardParagraph instanceof HTMLElement) cardParagraph.innerHTML = item.text;
     });
   }
 }

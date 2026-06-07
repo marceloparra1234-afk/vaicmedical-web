@@ -14,7 +14,7 @@ export default function ContactoPage() {
       <section className="relative overflow-hidden border-b border-[#d7e9ef] bg-white" data-editor-section="hero">
         <div className="absolute right-0 top-0 h-full w-1/2 bg-[#eaf8fc]" />
         <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12 lg:py-24" data-editor-section="contacto">
-          <section>
+          <section data-editor-section="contacto-hero">
             <Link
               href="/"
               className="inline-flex text-sm font-bold text-[#58c3de]"
@@ -35,7 +35,7 @@ export default function ContactoPage() {
               necesitas o qué requerimiento técnico quieres programar.
             </p>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            <div className="mt-10 grid gap-4 sm:grid-cols-2" data-editor-section="contacto-info">
               {infoItems.map(([label, value]) => (
                 <div
                   className="rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] p-5"

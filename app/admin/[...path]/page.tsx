@@ -37,14 +37,10 @@ const editors: Record<
     description:
       "Actualiza la presentación de VaicMedical, misión, visión y valores.",
     sections: [
-      "Hero",
+      "Hero principal",
       "Misión",
       "Visión",
-      "Valores introducción",
-      "Valor Vida",
-      "Valor Atención",
-      "Valor Innovación",
-      "Valor Cuidado",
+      "Valores",
       "Llamado a servicios",
     ],
   },
@@ -54,13 +50,8 @@ const editors: Record<
     description:
       "Gestiona la presentación y los bloques de servicios técnicos.",
     sections: [
-      "Hero",
-      "Mantención preventiva",
-      "Reparación correctiva",
-      "Soporte técnico",
-      "Monitores multiparámetros",
-      "Equipos de pabellón",
-      "Gestión de requerimientos",
+      "Hero principal",
+      "Servicios técnicos",
       "Método de trabajo",
       "Llamado a contacto",
     ],
@@ -70,7 +61,7 @@ const editors: Record<
     title: "Editar página Blog",
     description:
       "Gestiona el encabezado, presentación y distribución general del blog.",
-    sections: ["Hero", "Listado de publicaciones"],
+    sections: ["Hero principal", "Listado de publicaciones"],
   },
   "blog/vista": {
     contentKey: "blog-vista",
@@ -84,7 +75,7 @@ const editors: Record<
     title: "Editar página Catálogo",
     description:
       "Administra el encabezado, navegación de líneas y presentación de productos.",
-    sections: ["Hero", "Navegación de líneas", "Línea 01", "Línea 02", "Línea 03", "Línea 04"],
+    sections: ["Hero principal", "Navegación de líneas", "Línea 01", "Línea 02", "Línea 03", "Línea 04"],
   },
   "catalogo/lineas/vista": {
     contentKey: "catalogo-lineas-vista",
@@ -105,7 +96,7 @@ const editors: Record<
     title: "Editar página Contacto",
     description:
       "Actualiza los textos, canales de contacto y presentación del formulario.",
-    sections: ["Hero", "Tarjeta Correo", "Tarjeta Cobertura", "Tarjeta Respuesta", "Tarjeta Especialidad", "Formulario"],
+    sections: ["Hero principal", "Información de contacto", "Formulario"],
   },
   "ventana-emergente": {
     contentKey: "ventana-emergente",

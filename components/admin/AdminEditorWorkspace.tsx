@@ -14,7 +14,14 @@ type EditorWorkspaceProps = {
   previewType?: "page" | "popup";
 };
 
-type SectionContent = PreviewContent;
+type EditableField = "eyebrow" | "title" | "subtitle" | "content";
+
+type SectionContent = PreviewContent & {
+  editableFields?: EditableField[];
+  allowItems?: boolean;
+  allowButtons?: boolean;
+  allowUpload?: boolean;
+};
 
 const homeDefaults: Record<string, Partial<SectionContent>> = {
   "Hero principal": {
@@ -60,6 +67,200 @@ const homeDefaults: Record<string, Partial<SectionContent>> = {
     subtitle: "Contacto",
     content:
       "Puedes solicitar una visita, coordinar una reparación o consultar por mantenciones programadas.",
+  },
+};
+
+const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
+  inicio: homeDefaults,
+  nosotros: {
+    "Hero principal": {
+      eyebrow: "Nosotros",
+      title: "Equipo técnico dedicado a mantener equipos médicos operativos.",
+      content:
+        "VaicMedical trabaja en mantención y reparación de equipamiento médico, con foco en continuidad, diagnóstico claro y respuesta técnica para entornos de alta exigencia.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+    },
+    Misión: {
+      title: "Misión",
+      content:
+        "Recuperar y mantener equipos médicos críticos con respuesta técnica clara, trazable y orientada a la continuidad de la atención.",
+      editableFields: ["title", "content"],
+      buttons: [],
+    },
+    Visión: {
+      title: "Visión",
+      content:
+        "Ser un aliado confiable para instituciones que necesitan equipos disponibles, procesos ordenados y soporte técnico oportuno.",
+      editableFields: ["title", "content"],
+      buttons: [],
+    },
+    Valores: {
+      eyebrow: "Valores",
+      title: "VAIC como forma de trabajo.",
+      content:
+        "Nuestros valores ordenan la manera en que atendemos cada requerimiento técnico.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+      items: [
+        createCard("vida", "Vida", "Trabajamos para preservar lo más valioso: la vida."),
+        createCard("atencion", "Atención", "Escuchamos, entendemos y respondemos con excelencia."),
+        createCard("innovacion", "Innovación", "Innovamos para anticipar y servir mejor."),
+        createCard("cuidado", "Cuidado", "Cada detalle importa; cuidamos personas, procesos y equipos."),
+      ],
+    },
+    "Llamado a servicios": {
+      editableFields: [],
+      buttons: [{ id: "services", label: "Conocer servicios", href: "/servicios", visible: true }],
+    },
+  },
+  servicios: {
+    "Hero principal": {
+      eyebrow: "Servicios",
+      title: "Mantención y reparación para equipos médicos de uso intensivo.",
+      content:
+        "Atendemos equipos esenciales para la operación diaria, con un enfoque práctico: diagnosticar, reparar, documentar y mantener continuidad.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+    },
+    "Servicios técnicos": {
+      editableFields: [],
+      buttons: [],
+      items: [
+        createCard("preventiva", "Mantención preventiva", "Revisión programada, ajustes, limpieza técnica y control de condiciones para reducir fallas futuras."),
+        createCard("correctiva", "Reparación correctiva", "Diagnóstico y reparación de camas clínicas, camillas, mesas quirúrgicas, lámparas y otros equipos."),
+        createCard("soporte", "Soporte técnico", "Respuesta en terreno, evaluación de fallas, informes técnicos y coordinación de requerimientos."),
+        createCard("monitores", "Monitores multiparámetros", "Revisión técnica, detección de fallas, recuperación operativa y recomendaciones de continuidad."),
+        createCard("pabellon", "Equipos de pabellón", "Trabajo sobre mesas quirúrgicas, lámparas y componentes asociados a espacios de procedimiento."),
+        createCard("gestion", "Gestión de requerimientos", "Ordenamiento de solicitudes, priorización por criticidad y seguimiento del estado de atención."),
+      ],
+    },
+    "Método de trabajo": {
+      eyebrow: "Método de trabajo",
+      title: "Diagnóstico, ejecución y trazabilidad técnica.",
+      editableFields: ["eyebrow", "title"],
+      buttons: [],
+      items: [
+        createCard("solicitud", "Recibimos el requerimiento", "Clasificamos la criticidad.", ""),
+        createCard("evaluacion", "Evaluamos el equipo", "Revisamos la falla y condiciones de operación.", ""),
+        createCard("ejecucion", "Ejecutamos el trabajo", "Reparamos o mantenemos con informe de respaldo.", ""),
+      ].map((item, index) => ({ ...item, number: `0${index + 1}` })),
+    },
+    "Llamado a contacto": {
+      editableFields: [],
+      buttons: [{ id: "contact", label: "Solicitar soporte", href: "/contacto", visible: true }],
+    },
+  },
+  blog: {
+    "Hero principal": {
+      eyebrow: "Blog",
+      title: "Noticias, criterios técnicos y recomendaciones de continuidad.",
+      content:
+        "Contenido para orientar la mantención, reparación y cuidado de equipos médicos de uso intensivo.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+    },
+    "Listado de publicaciones": {
+      editableFields: [],
+      buttons: [],
+      items: [
+        createCard("post-1", "Señales de desgaste en camas clínicas", "Indicadores que conviene detectar antes de una falla crítica.", "/blog-article.svg"),
+        createCard("post-2", "Mantención preventiva en camillas", "Puntos esenciales que conviene revisar.", "/blog-article.svg"),
+        createCard("post-3", "Cómo documentar reparaciones", "Información útil para mejorar continuidad técnica.", "/blog-article.svg"),
+      ],
+    },
+  },
+  catalogo: {
+    "Hero principal": {
+      eyebrow: "Catálogo",
+      title: "Líneas y productos para organizar solicitudes técnicas.",
+      content:
+        "Una vista inicial para ordenar equipos, repuestos y servicios por línea.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+    },
+    "Navegación de líneas": {
+      editableFields: [],
+      buttons: [],
+      items: [
+        createCard("linea-1", "Camas clínicas y camillas", "Equipos de traslado y hospitalización."),
+        createCard("linea-2", "Pabellón y procedimientos", "Equipos utilizados en pabellón."),
+        createCard("linea-3", "Monitoreo y equipos clínicos", "Equipos de monitoreo y apoyo clínico."),
+        createCard("linea-4", "Componentes y accesorios", "Repuestos y componentes para continuidad técnica."),
+      ],
+    },
+    "Línea 01": {
+      eyebrow: "Línea 01",
+      title: "Camas clínicas y camillas",
+      content: "Equipos de traslado y hospitalización.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+      items: [
+        createCard("producto-1", "Camas clínicas eléctricas", "Revisión de actuadores, controles y estructura."),
+        createCard("producto-2", "Camillas de traslado", "Mantención de ruedas, frenos y barandas."),
+        createCard("producto-3", "Barandas y accesorios", "Componentes asociados a seguridad y operación."),
+      ],
+    },
+    "Línea 02": {
+      eyebrow: "Línea 02",
+      title: "Pabellón y procedimientos",
+      content: "Equipos utilizados en pabellón y espacios de procedimiento.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+      items: [
+        createCard("producto-1", "Mesas quirúrgicas", "Diagnóstico de movimientos, bases y módulos."),
+        createCard("producto-2", "Lámparas clínicas", "Revisión de iluminación, brazos y fijaciones."),
+      ],
+    },
+    "Línea 03": {
+      eyebrow: "Línea 03",
+      title: "Monitoreo y equipos clínicos",
+      content: "Equipos de monitoreo y apoyo clínico.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+      items: [
+        createCard("producto-1", "Monitores multiparámetros", "Evaluación de funcionamiento y accesorios."),
+        createCard("producto-2", "Módulos y cables", "Revisión de conectividad y componentes asociados."),
+      ],
+    },
+    "Línea 04": {
+      eyebrow: "Línea 04",
+      title: "Componentes y accesorios",
+      content: "Repuestos y componentes para continuidad técnica.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+      items: [
+        createCard("producto-1", "Actuadores y motores", "Componentes para movimientos eléctricos."),
+        createCard("producto-2", "Controles y fuentes", "Elementos de control y alimentación."),
+      ],
+    },
+  },
+  contacto: {
+    "Hero principal": {
+      eyebrow: "Contacto",
+      title: "Coordinemos una evaluación técnica para tus equipos.",
+      content:
+        "Puedes solicitar una visita, coordinar una reparación o consultar por mantenciones programadas.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [],
+    },
+    "Información de contacto": {
+      editableFields: [],
+      buttons: [],
+      items: [
+        createCard("correo", "Correo", "contacto@vaicmedical.cl"),
+        createCard("cobertura", "Cobertura", "Atención en terreno según coordinación."),
+        createCard("respuesta", "Respuesta", "Priorización según criticidad del equipo."),
+        createCard("especialidad", "Especialidad", "Mantención y reparación de equipos médicos."),
+      ],
+    },
+    Formulario: {
+      title: "Formulario de contacto",
+      content:
+        "Campos para nombre, correo, teléfono, institución, mensaje y envío de solicitud.",
+      editableFields: ["title", "content"],
+      buttons: [{ id: "send", label: "Enviar solicitud", href: "/contacto", visible: true }],
+    },
   },
 };
 
@@ -183,6 +384,7 @@ function createCard(id: string, title: string, text: string, image = "") {
 
 function completeSection(section: string, value: Partial<SectionContent>): SectionContent {
   const isMethod = section === "Método de trabajo";
+  const editableFields = value.editableFields ?? ["title", "subtitle", "content"];
   return {
     title: value.title || `<strong>${section}</strong>`,
     subtitle: value.subtitle || "Texto secundario de la sección",
@@ -207,6 +409,10 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
     items: normalizeItems(
       value.items || (isMethod ? defaultSteps : repeatableDefaults[section] || []),
     ),
+    editableFields,
+    allowItems: value.allowItems ?? true,
+    allowButtons: value.allowButtons ?? true,
+    allowUpload: value.allowUpload ?? true,
   };
 }
 
@@ -221,24 +427,27 @@ function normalizeItems(items: SectionContent["items"]) {
 }
 
 function createInitialContent(contentKey: string, sections: string[]) {
+  const defaults = pageDefaults[contentKey] || {};
   return Object.fromEntries(
     sections.map((section) => [
       section,
       completeSection(
         section,
-        contentKey === "inicio" && homeDefaults[section]
+        defaults[section]
           ? {
-              ...homeDefaults[section],
+              ...defaults[section],
               eyebrow:
-                section === "Método de trabajo"
+                defaults[section].eyebrow ??
+                (section === "Método de trabajo"
                   ? ""
                   : section === "Productos destacados"
                   ? "Catálogo"
                   : section === "Noticias destacadas"
                     ? "Blog"
-                    : section,
+                    : section),
               buttons:
-                section === "Método de trabajo"
+                defaults[section].buttons ??
+                (section === "Método de trabajo"
                   ? []
                   : section === "Hero principal"
                   ? [
@@ -247,7 +456,7 @@ function createInitialContent(contentKey: string, sections: string[]) {
                     ]
                   : [
                       { id: "primary", label: section === "Servicios" ? "Ver servicios" : "Conocer más", href: "/", visible: true },
-                    ],
+                    ]),
             }
           : {
             title: `<strong>${section}</strong>`,
@@ -297,7 +506,7 @@ export function AdminEditorWorkspace({
 
   const selectedContent = content[selected];
 
-  function updateField(field: "title" | "subtitle" | "content", value: string) {
+  function updateField(field: EditableField, value: string) {
     setContent((current) => ({
       ...current,
       [selected]: { ...current[selected], [field]: value },
@@ -429,47 +638,62 @@ function EditorFields({
 }: {
   content: SectionContent;
   previewType: "page" | "popup";
-  onChange: (field: "title" | "subtitle" | "content", value: string) => void;
+  onChange: (field: EditableField, value: string) => void;
   onUpdate: (changes: Partial<SectionContent>) => void;
   onDiscard: () => void;
   onSave: () => void;
 }) {
   const isWorkflow =
     content.items.length > 0 && content.items.every((item) => Boolean(item.number));
+  const fields = content.editableFields ?? ["title", "subtitle", "content"];
 
   return (
     <div className="grid gap-5 p-5">
       <VisibilityControl content={content} onUpdate={onUpdate} />
-      {!isWorkflow && (
+      {fields.length > 0 && (
         <>
-          <RichTextEditor
-            label="Título"
-            minHeight="76px"
-            onChange={(value) => onChange("title", value)}
-            value={content.title}
-          />
-          <RichTextEditor
-            label="Subtítulo"
-            minHeight="86px"
-            onChange={(value) => onChange("subtitle", value)}
-            value={content.subtitle}
-          />
-          <RichTextEditor
-            label="Texto"
-            minHeight="140px"
-            onChange={(value) => onChange("content", value)}
-            value={content.content}
-          />
+          {fields.includes("eyebrow") && (
+            <RichTextEditor
+              label="Etiqueta"
+              minHeight="62px"
+              onChange={(value) => onChange("eyebrow", value)}
+              value={content.eyebrow}
+            />
+          )}
+          {fields.includes("title") && (
+            <RichTextEditor
+              label="Título"
+              minHeight="76px"
+              onChange={(value) => onChange("title", value)}
+              value={content.title}
+            />
+          )}
+          {fields.includes("subtitle") && (
+            <RichTextEditor
+              label="Subtítulo"
+              minHeight="86px"
+              onChange={(value) => onChange("subtitle", value)}
+              value={content.subtitle}
+            />
+          )}
+          {fields.includes("content") && (
+            <RichTextEditor
+              label="Texto"
+              minHeight="140px"
+              onChange={(value) => onChange("content", value)}
+              value={content.content}
+            />
+          )}
         </>
       )}
       <AppearanceControls content={content} onUpdate={onUpdate} />
-      {content.items.length > 0 && (
+      {content.allowItems !== false && content.items.length > 0 && (
         <RepeatableItemsEditor content={content} onUpdate={onUpdate} />
       )}
-      {content.buttons.length > 0 && (
+      {content.allowButtons !== false && content.buttons.length > 0 && (
         <ButtonsEditor content={content} onUpdate={onUpdate} />
       )}
-      {!isWorkflow && (
+      {content.allowUpload !== false && !isWorkflow && (
         <UploadGuide
           formats="JPG, PNG, WEBP"
           maxSize="Máximo 5 MB"

@@ -191,15 +191,32 @@ function ColorControl({
 }) {
   return (
     <label
-      className="grid h-8 w-9 cursor-pointer place-items-center rounded border border-[#d7e9ef] bg-white"
+      className="grid cursor-pointer place-items-center rounded border border-[#d7e9ef] bg-white"
       title={label}
     >
-      <input
-        className="h-5 w-6 cursor-pointer border-0 bg-transparent p-0"
+      <select
+        aria-label={label}
+        className="h-8 w-28 bg-transparent px-2 text-xs"
         defaultValue={value}
         onChange={(event) => onChange(event.target.value)}
-        type="color"
-      />
+      >
+        {vaicRichColors.map((color) => (
+          <option key={color.value} value={color.value}>
+            {color.label}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }
+
+const vaicRichColors = [
+  { label: "Azul", value: "#213255" },
+  { label: "Azul medio", value: "#34466f" },
+  { label: "Azul profundo", value: "#17243f" },
+  { label: "Celeste", value: "#58c3de" },
+  { label: "Celeste suave", value: "#eaf8fc" },
+  { label: "Celeste base", value: "#f6fbfd" },
+  { label: "Borde", value: "#d7e9ef" },
+  { label: "Blanco", value: "#ffffff" },
+];

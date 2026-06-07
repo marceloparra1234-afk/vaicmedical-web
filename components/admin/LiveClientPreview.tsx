@@ -86,9 +86,14 @@ export function LiveClientPreview({
   content: PreviewContent;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const latestContentRef = useRef(content);
   const [status, setStatus] = useState("Cargando sección...");
   const path = pagePaths[contentKey] || "/";
   const selector = sectionSelectors[contentKey]?.[section];
+
+  useEffect(() => {
+    latestContentRef.current = content;
+  }, [content]);
 
   useEffect(() => {
     let cancelled = false;
@@ -129,7 +134,7 @@ export function LiveClientPreview({
         const target = previewDocument?.querySelector(selector);
         if (target instanceof HTMLElement) {
           target.dataset.adminPreviewActive = "true";
-          applyContentToTarget(target, content);
+          applyContentToTarget(target, latestContentRef.current);
           setStatus("Mostrando solo esta sección");
         }
       } catch {
@@ -151,7 +156,18 @@ export function LiveClientPreview({
     return () => {
       cancelled = true;
     };
-  }, [path, selector, content]);
+  }, [path, selector]);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    const previewDocument = iframe?.contentDocument;
+    if (!previewDocument || !selector) return;
+
+    const target = previewDocument.querySelector(selector);
+    if (target instanceof HTMLElement) {
+      applyContentToTarget(target, content);
+    }
+  }, [content, selector]);
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#d7e9ef] bg-white shadow-sm">

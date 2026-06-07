@@ -20,7 +20,7 @@ export default async function BlogArticlePage({
   return (
     <main className="bg-white text-[#213255]">
       <article>
-        <header className="mx-auto max-w-5xl px-5 py-16 sm:px-8 lg:py-20">
+        <header className="mx-auto max-w-5xl px-5 py-16 sm:px-8 lg:py-20" data-editor-section="article-header">
           <Link
             href="/blog"
             className="text-sm font-bold text-[#58c3de] transition hover:text-[#213255]"
@@ -39,7 +39,7 @@ export default async function BlogArticlePage({
           </p>
         </header>
 
-        <section className="mx-auto max-w-6xl px-5 sm:px-8">
+        <section className="mx-auto max-w-6xl px-5 sm:px-8" data-editor-section="article-image">
           <div className="overflow-hidden rounded-[2rem] border border-[#d7e9ef] bg-[#eaf8fc] shadow-xl shadow-[#213255]/10">
             <Image
               src={post.image}
@@ -52,7 +52,7 @@ export default async function BlogArticlePage({
           </div>
         </section>
 
-        <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
+        <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8" data-editor-section="article-body">
           <div className="space-y-7 text-lg leading-9 text-[#34466f]">
             {post.body.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>

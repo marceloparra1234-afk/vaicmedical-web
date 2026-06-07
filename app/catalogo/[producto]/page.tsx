@@ -74,13 +74,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </nav>
 
         <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1.25fr)_430px]">
-          <ProductGallery
-            gallery={product.gallery}
-            name={product.name}
-            primaryImage={product.image}
-          />
+          <div data-editor-section="product-gallery">
+            <ProductGallery
+              gallery={product.gallery}
+              name={product.name}
+              primaryImage={product.image}
+            />
+          </div>
 
-          <aside className="rounded-[28px] border border-[#d7e9ef] bg-white p-6 sm:p-8 xl:sticky xl:top-24">
+          <aside className="rounded-[28px] border border-[#d7e9ef] bg-white p-6 sm:p-8 xl:sticky xl:top-24" data-editor-section="product-info">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#58c3de]">
               {line.name}
             </p>
@@ -123,14 +125,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </aside>
         </div>
 
-        <section className="mt-12 max-w-[980px] rounded-[28px] border border-[#d7e9ef] bg-white p-7 sm:p-8">
+        <section className="mt-12 max-w-[980px] rounded-[28px] border border-[#d7e9ef] bg-white p-7 sm:p-8" data-editor-section="product-description">
           <h2 className="text-[26px] font-bold">Descripción del producto</h2>
           <p className="mt-4.5 whitespace-pre-line text-base leading-8 text-[#667085]">
             {product.longDescription}
           </p>
         </section>
 
-        <section className="mt-12 max-w-[980px] rounded-[28px] border border-[#d7e9ef] bg-white p-7 sm:p-8">
+        <section className="mt-12 max-w-[980px] rounded-[28px] border border-[#d7e9ef] bg-white p-7 sm:p-8" data-editor-section="product-docs">
           <h2 className="text-[26px] font-bold">Documentación</h2>
           <div className="mt-5 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
             {documents.map(({ label, item }) =>
@@ -161,7 +163,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </section>
 
         {related.length > 0 && (
-          <section className="mt-14">
+          <section className="mt-14" data-editor-section="product-related">
             <h2 className="text-[28px] font-bold">Productos relacionados</h2>
             <div className="mt-5 grid max-w-[980px] gap-5 lg:grid-cols-3">
               {related.map((item) => (

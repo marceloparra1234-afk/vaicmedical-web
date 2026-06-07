@@ -407,6 +407,7 @@ export function AdminEditorWorkspace({
               <PopupPreview content={selectedContent} section={selected} />
             ) : (
               <LiveClientPreview
+                content={selectedContent}
                 contentKey={contentKey}
                 section={selected}
               />

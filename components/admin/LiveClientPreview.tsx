@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 
 const pagePaths: Record<string, string> = {
   inicio: "/",
@@ -43,11 +44,31 @@ const sectionSelectors: Record<string, Record<string, string>> = {
     "Noticias destacadas": "[data-editor-section='publicaciones']",
     "Listado de publicaciones": "[data-editor-section='publicaciones']",
   },
+  "blog-vista": {
+    "Título y fecha": "[data-editor-section='article-header']",
+    "Breve reseña": "[data-editor-section='article-header']",
+    "Imagen principal": "[data-editor-section='article-image']",
+    Artículo: "[data-editor-section='article-body']",
+    "Contenido relacionado": "[data-editor-section='article-body']",
+  },
   catalogo: {
     Encabezado: "[data-editor-section='hero']",
     "Navegación de líneas": "[data-editor-section='catalogo']",
     "Bloques de líneas": "[data-editor-section='catalogo']",
     "Tarjetas de productos": "[data-editor-section='catalogo']",
+  },
+  "catalogo-lineas-vista": {
+    "Título de línea": "[data-editor-section='catalogo']",
+    Descripción: "[data-editor-section='catalogo']",
+    "Resumen técnico": "[data-editor-section='catalogo']",
+    "Grilla de productos": "[data-editor-section='catalogo']",
+  },
+  "catalogo-productos-vista": {
+    Galería: "[data-editor-section='product-gallery']",
+    "Información técnica": "[data-editor-section='product-info']",
+    Descripción: "[data-editor-section='product-description']",
+    Documentación: "[data-editor-section='product-docs']",
+    "Productos relacionados": "[data-editor-section='product-related']",
   },
   contacto: {
     Encabezado: "[data-editor-section='hero']",
@@ -60,9 +81,11 @@ const sectionSelectors: Record<string, Record<string, string>> = {
 export function LiveClientPreview({
   contentKey,
   section,
+  content,
 }: {
   contentKey: string;
   section: string;
+  content: PreviewContent;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const path = pagePaths[contentKey] || "/";
@@ -72,7 +95,7 @@ export function LiveClientPreview({
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    function focusSection() {
+    function applyDraft() {
       const document = iframe?.contentDocument;
       if (!document) return;
 
@@ -84,14 +107,15 @@ export function LiveClientPreview({
       const target = selector ? document.querySelector(selector) : null;
       if (target instanceof HTMLElement) {
         target.dataset.adminPreviewActive = "true";
+        applyContentToTarget(target, content);
         target.scrollIntoView({ block: "start" });
       }
     }
 
-    iframe.addEventListener("load", focusSection);
-    focusSection();
-    return () => iframe.removeEventListener("load", focusSection);
-  }, [selector]);
+    iframe.addEventListener("load", applyDraft);
+    applyDraft();
+    return () => iframe.removeEventListener("load", applyDraft);
+  }, [selector, content]);
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#d7e9ef] bg-white shadow-sm">
@@ -115,5 +139,85 @@ export function LiveClientPreview({
         title={`Vista pública real de ${section}`}
       />
     </div>
+  );
+}
+
+function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
+  target.style.display = content.visible ? "" : "none";
+  target.style.backgroundColor = content.backgroundColor || "";
+
+  const eyebrow = first(target, [
+    "p.text-sm.font-semibold.uppercase",
+    "p.text-xs.font-semibold.uppercase",
+    "p.font-mono",
+  ]);
+  if (eyebrow && content.eyebrow) eyebrow.innerHTML = content.eyebrow;
+
+  const heading = first(target, ["h1", "h2"]);
+  if (heading) heading.innerHTML = content.title;
+
+  const paragraphs = Array.from(target.querySelectorAll("p")).filter(
+    (item) =>
+      !item.className.includes("uppercase") &&
+      !item.className.includes("font-mono") &&
+      !item.closest("nav"),
+  );
+  if (paragraphs[0]) paragraphs[0].innerHTML = content.subtitle || content.content;
+  if (paragraphs[1]) paragraphs[1].innerHTML = content.content;
+
+  const buttons = Array.from(target.querySelectorAll("a, button")).filter(
+    (item) => !item.closest("nav"),
+  );
+  content.buttons.forEach((button, index) => {
+    const element = buttons[index];
+    if (!element) return;
+    if (element instanceof HTMLElement) {
+      element.style.display = button.visible ? "" : "none";
+      element.innerHTML = button.label;
+    }
+    if (element instanceof HTMLAnchorElement) {
+      element.href = button.href;
+    }
+  });
+
+  if (content.items.length) {
+    const cards = findCards(target);
+    content.items.forEach((item, index) => {
+      const card = cards[index];
+      if (!card) return;
+      card.style.display = item.visible ? "" : "none";
+      card.style.backgroundColor = item.backgroundColor || "";
+      card.style.borderColor = item.borderColor || "";
+      card.style.color = item.textColor || "";
+
+      const cardNumber = first(card, ["span"]);
+      if (cardNumber && item.number) cardNumber.innerHTML = item.number;
+
+      const cardTitle = first(card, ["h2", "h3", ".font-semibold"]);
+      if (cardTitle) cardTitle.innerHTML = item.title;
+
+      const cardParagraph = first(card, ["p.leading-7", "p.text-sm", "p"]);
+      if (cardParagraph) cardParagraph.innerHTML = item.text;
+    });
+  }
+}
+
+function first(root: Element, selectors: string[]) {
+  for (const selector of selectors) {
+    const element = root.querySelector(selector);
+    if (element instanceof HTMLElement) return element;
+  }
+  return null;
+}
+
+function findCards(target: HTMLElement) {
+  const candidates = Array.from(
+    target.querySelectorAll("article, [class*='rounded-3xl'], [class*='rounded-[22px]'], [class*='rounded-[26px]']"),
+  ).filter((element): element is HTMLElement => element instanceof HTMLElement);
+
+  if (candidates.length) return candidates;
+
+  return Array.from(target.children).filter(
+    (element): element is HTMLElement => element instanceof HTMLElement,
   );
 }

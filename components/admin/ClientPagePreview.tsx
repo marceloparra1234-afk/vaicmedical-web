@@ -14,6 +14,7 @@ export type PreviewContent = {
   itemColor: string;
   accentColor: string;
   textColor: string;
+  sectionImage: string;
   columns: number;
   buttons: Array<{
     id: string;

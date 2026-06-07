@@ -244,6 +244,10 @@ function writeIframeDocument(
 function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
   target.style.display = content.visible ? "" : "none";
   target.style.backgroundColor = content.backgroundColor || "";
+  target.style.color = content.textColor || "";
+
+  applySectionImage(target, content);
+  applyGridColumns(target, content);
 
   const sectionEyebrow = target.querySelector("[data-editor-field='section-eyebrow']");
   if (sectionEyebrow instanceof HTMLElement && content.eyebrow) {
@@ -291,6 +295,8 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
     if (element instanceof HTMLElement) {
       element.style.display = button.visible ? "" : "none";
       element.innerHTML = button.label;
+      element.style.backgroundColor = index === 0 ? content.itemColor || content.accentColor : "";
+      element.style.borderColor = content.accentColor || "";
     }
     if (element instanceof HTMLAnchorElement) {
       element.href = button.href;
@@ -303,9 +309,8 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
       const card = cards[index];
       if (!card) return;
       card.style.display = item.visible ? "" : "none";
-      card.style.backgroundColor = item.backgroundColor || "";
-      card.style.borderColor = item.borderColor || "";
-      card.style.color = item.textColor || "";
+      applyCardAppearance(card, item, content);
+      applyItemImage(card, item);
 
       const accent = Array.from(card.children).find(
         (child) =>
@@ -331,6 +336,113 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
       );
       if (cardParagraph instanceof HTMLElement) cardParagraph.innerHTML = item.text;
     });
+  }
+}
+
+function applySectionImage(target: HTMLElement, content: PreviewContent) {
+  if (!content.sectionImage) return;
+
+  const image = target.querySelector("img");
+  if (image instanceof HTMLImageElement) {
+    image.src = content.sectionImage;
+    image.srcset = "";
+    return;
+  }
+
+  const visual = Array.from(target.querySelectorAll("div, figure")).find(
+    (element) =>
+      element instanceof HTMLElement &&
+      (element.className.includes("aspect-") ||
+        element.className.includes("min-h") ||
+        element.className.includes("h-44") ||
+        element.className.includes("h-52")),
+  );
+
+  if (visual instanceof HTMLElement) {
+    visual.style.backgroundImage = `url("${content.sectionImage}")`;
+    visual.style.backgroundPosition = "center";
+    visual.style.backgroundSize = "cover";
+  }
+}
+
+function applyGridColumns(target: HTMLElement, content: PreviewContent) {
+  if (!content.items.length || !content.columns) return;
+
+  const cards = findCards(target);
+  const grid = cards[0]?.parentElement;
+  if (!grid) return;
+
+  grid.style.gridTemplateColumns = `repeat(${content.columns}, minmax(0, 1fr))`;
+}
+
+function applyCardAppearance(
+  card: HTMLElement,
+  item: PreviewContent["items"][number],
+  content: PreviewContent,
+) {
+  card.style.backgroundColor = item.backgroundColor || content.itemColor || "";
+  card.style.borderColor = item.borderColor || content.accentColor || "";
+  card.style.color = item.textColor || content.textColor || "";
+
+  card.style.clipPath = "";
+  card.style.aspectRatio = "";
+
+  if (content.shape === "rectangle") {
+    card.style.borderRadius = "0";
+  }
+
+  if (content.shape === "rounded") {
+    card.style.borderRadius = "24px";
+  }
+
+  if (content.shape === "circle") {
+    card.style.borderRadius = "9999px";
+    card.style.aspectRatio = "1 / 1";
+  }
+
+  if (content.shape === "hexagon") {
+    card.style.borderRadius = "0";
+    card.style.clipPath =
+      "polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%)";
+  }
+
+  if (content.shape === "custom" && content.customShapeImage) {
+    card.style.backgroundImage = `url("${content.customShapeImage}")`;
+    card.style.backgroundPosition = "center";
+    card.style.backgroundRepeat = "no-repeat";
+    card.style.backgroundSize = "100% 100%";
+  } else {
+    card.style.backgroundImage = "";
+  }
+}
+
+function applyItemImage(
+  card: HTMLElement,
+  item: PreviewContent["items"][number],
+) {
+  if (!item.image) return;
+
+  const image = card.querySelector("img");
+  if (image instanceof HTMLImageElement) {
+    image.src = item.image;
+    image.srcset = "";
+    return;
+  }
+
+  const visual = Array.from(card.querySelectorAll("div, span")).find(
+    (element) =>
+      element instanceof HTMLElement &&
+      (element.className.includes("h-14") ||
+        element.className.includes("h-16") ||
+        element.className.includes("aspect") ||
+        element.className.includes("rounded-2xl")),
+  );
+
+  if (visual instanceof HTMLElement) {
+    visual.style.backgroundImage = `url("${item.image}")`;
+    visual.style.backgroundPosition = "center";
+    visual.style.backgroundSize = "cover";
+    visual.textContent = "";
   }
 }
 

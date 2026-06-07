@@ -391,6 +391,7 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
     itemColor: value.itemColor || "#213255",
     accentColor: value.accentColor || "#58c3de",
     textColor: value.textColor || "#ffffff",
+    sectionImage: value.sectionImage || "",
     columns: value.columns || 4,
     buttons:
       value.buttons ??
@@ -691,6 +692,7 @@ function EditorFields({
         <UploadGuide
           formats="JPG, PNG, WEBP"
           maxSize="Máximo 5 MB"
+          onChange={(sectionImage) => onUpdate({ sectionImage })}
           recommended={
             previewType === "popup"
               ? "Recomendado: 1200 × 1200 px"
@@ -1020,11 +1022,13 @@ export function UploadGuide({
   recommended,
   maxSize,
   formats,
+  onChange,
 }: {
   title: string;
   recommended: string;
   maxSize: string;
   formats: string;
+  onChange?: (image: string) => void;
 }) {
   return (
     <label className="block cursor-pointer rounded-lg border border-dashed border-[#9eddea] bg-[#f4fbfd] p-4">
@@ -1036,7 +1040,18 @@ export function UploadGuide({
       <span className="mt-4 inline-flex rounded-md bg-[#58c3de] px-3 py-2 text-xs font-bold text-[#213255]">
         Seleccionar archivo
       </span>
-      <input className="hidden" type="file" />
+      <input
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (!file || !onChange) return;
+          const reader = new FileReader();
+          reader.onload = () => onChange(String(reader.result || ""));
+          reader.readAsDataURL(file);
+        }}
+        type="file"
+      />
     </label>
   );
 }
@@ -1055,12 +1070,22 @@ function PopupPreview({
   return (
     <div className="grid min-h-[610px] place-items-center rounded-lg bg-[#213255]/65 p-7">
       <div className="grid w-full max-w-3xl overflow-hidden rounded-[24px] bg-white shadow-2xl md:grid-cols-2">
-        <div className="grid min-h-72 place-items-center bg-[#eaf8fc] p-8 text-center text-sm text-[#667085]">
-          Imagen 1200 × 1200 px
+        <div
+          className="grid min-h-72 place-items-center bg-[#eaf8fc] bg-cover bg-center p-8 text-center text-sm text-[#667085]"
+          style={{
+            backgroundImage: content.sectionImage
+              ? `url("${content.sectionImage}")`
+              : undefined,
+          }}
+        >
+          {!content.sectionImage && "Imagen 1200 × 1200 px"}
         </div>
-        <div className="flex flex-col justify-center p-8">
+        <div
+          className="flex flex-col justify-center p-8"
+          style={{ backgroundColor: content.backgroundColor }}
+        >
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#58c3de]">
-            {section}
+            {content.eyebrow || section}
           </p>
           <RichPreview
             className="rich-preview mt-3 text-2xl font-bold"
@@ -1074,12 +1099,22 @@ function PopupPreview({
             className="rich-preview mt-4 text-sm leading-6 text-[#667085]"
             html={content.content}
           />
-          <button
-            className="mt-6 w-fit rounded-lg bg-[#213255] px-5 py-3 text-sm font-bold text-white"
-            type="button"
-          >
-            Botón principal
-          </button>
+          <div className="mt-6 flex flex-wrap gap-3">
+            {content.buttons.filter((button) => button.visible).map((button, index) => (
+              <button
+                className="w-fit rounded-lg px-5 py-3 text-sm font-bold"
+                key={button.id}
+                style={{
+                  backgroundColor: index === 0 ? content.itemColor : "#ffffff",
+                  border: `1px solid ${content.accentColor}`,
+                  color: index === 0 ? content.textColor : "#213255",
+                }}
+                type="button"
+              >
+                {button.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

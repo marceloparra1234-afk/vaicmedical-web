@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { PageHeading } from "@/components/admin/AdminDashboard";
-import {
-  ClientPagePreview,
-  type PreviewContent,
-} from "@/components/admin/ClientPagePreview";
+import type { PreviewContent } from "@/components/admin/ClientPagePreview";
+import { LiveClientPreview } from "@/components/admin/LiveClientPreview";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 type EditorWorkspaceProps = {
@@ -408,8 +406,7 @@ export function AdminEditorWorkspace({
             {previewType === "popup" ? (
               <PopupPreview content={selectedContent} section={selected} />
             ) : (
-              <ClientPagePreview
-                content={selectedContent}
+              <LiveClientPreview
                 contentKey={contentKey}
                 section={selected}
               />

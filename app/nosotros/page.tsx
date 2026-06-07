@@ -30,7 +30,7 @@ const values = [
 export default function NosotrosPage() {
   return (
     <main>
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8" data-editor-section="hero">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
           Nosotros
         </p>
@@ -46,7 +46,7 @@ export default function NosotrosPage() {
 
       <section className="bg-[#eaf8fc]">
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2" data-editor-section="mision-vision">
             {[
               [
                 "Misión",
@@ -68,7 +68,7 @@ export default function NosotrosPage() {
             ))}
           </div>
 
-          <div className="mt-8 rounded-[2rem] border border-[#c7e9f2] bg-white p-6 shadow-sm sm:p-8">
+          <div className="mt-8 rounded-[2rem] border border-[#c7e9f2] bg-white p-6 shadow-sm sm:p-8" data-editor-section="valores">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">

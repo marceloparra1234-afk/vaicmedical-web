@@ -11,9 +11,9 @@ const infoItems = [
 export default function ContactoPage() {
   return (
     <main className="bg-[#f6fbfd] text-[#213255]">
-      <section className="relative overflow-hidden border-b border-[#d7e9ef] bg-white">
+      <section className="relative overflow-hidden border-b border-[#d7e9ef] bg-white" data-editor-section="hero">
         <div className="absolute right-0 top-0 h-full w-1/2 bg-[#eaf8fc]" />
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12 lg:py-24">
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12 lg:py-24" data-editor-section="contacto">
           <section>
             <Link
               href="/"

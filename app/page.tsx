@@ -24,7 +24,7 @@ export default function Home() {
 
   return (
     <main>
-      <section className="w-full border-b border-[#d7e9ef] bg-white">
+      <section className="w-full border-b border-[#d7e9ef] bg-white" data-editor-section="hero">
         <div className="mx-auto grid max-w-[calc(100vw-4rem)] items-center gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-8 lg:py-14 lg:pl-[max(2rem,calc((100vw-80rem)/2))] lg:pr-8">
           <div className="flex max-w-[33rem] flex-col items-center text-center">
             <p className="mb-5 inline-flex max-w-full rounded-full border border-[#b9e8f2] bg-[#f6fbfd] px-5 py-2 text-sm font-semibold text-[#213255]">
@@ -69,7 +69,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-b border-[#d7e9ef] bg-[#f6fbfd]">
+      <section className="border-b border-[#d7e9ef] bg-[#f6fbfd]" data-editor-section="metodo">
         <div className="mx-auto grid max-w-7xl gap-0 px-5 py-8 sm:px-8 lg:grid-cols-4">
           {workflow.map(([title, text], index) => (
             <article
@@ -88,7 +88,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-[#eaf8fc]">
+      <section className="bg-[#eaf8fc]" data-editor-section="nosotros">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[0.95fr_1.05fr]">
           <div>
             <SectionLabel>Nosotros</SectionLabel>
@@ -130,7 +130,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-[#213255] px-5 py-20 text-center text-white sm:px-8">
+      <section className="bg-[#213255] px-5 py-20 text-center text-white sm:px-8" data-editor-section="servicios">
         <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
           <div className="text-center">
             <SectionLabel>Servicios</SectionLabel>
@@ -161,7 +161,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-white">
+      <section className="bg-white" data-editor-section="catalogo">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.95fr_1.05fr]">
           <div>
             <SectionLabel>Catálogo</SectionLabel>
@@ -216,7 +216,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-[#f6fbfd]">
+      <section className="bg-[#f6fbfd]" data-editor-section="blog">
         <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
@@ -271,7 +271,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-white">
+      <section className="bg-white" data-editor-section="contacto">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[1fr_0.75fr]">
           <div>
             <SectionLabel>Contacto</SectionLabel>

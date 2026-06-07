@@ -4,7 +4,7 @@ import { catalogLines } from "@/data/catalog-products";
 export default function CatalogoPage() {
   return (
     <main className="bg-white">
-      <section className="border-b border-[#d7e9ef] bg-[#f2fbfd]">
+      <section className="border-b border-[#d7e9ef] bg-[#f2fbfd]" data-editor-section="hero">
         <div className="mx-auto max-w-[1500px] px-6 py-16 sm:px-10 lg:px-14">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
             Catálogo
@@ -20,7 +20,7 @@ export default function CatalogoPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-[1500px] gap-8 px-6 py-14 sm:px-10 lg:grid-cols-[320px_1fr] lg:px-14">
+      <section className="mx-auto grid max-w-[1500px] gap-8 px-6 py-14 sm:px-10 lg:grid-cols-[320px_1fr] lg:px-14" data-editor-section="catalogo">
         <aside className="lg:sticky lg:top-28 lg:self-start">
           <p className="mb-4 px-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
             Líneas

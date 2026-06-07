@@ -4,7 +4,7 @@ import { blogPosts } from "@/data/blog-posts";
 export default function BlogPage() {
   return (
     <main>
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8" data-editor-section="hero">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
           Blog
         </p>
@@ -13,7 +13,7 @@ export default function BlogPage() {
         </h1>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-5 px-5 pb-20 sm:px-8 md:grid-cols-3">
+      <section className="mx-auto grid max-w-7xl gap-5 px-5 pb-20 sm:px-8 md:grid-cols-3" data-editor-section="publicaciones">
         {blogPosts.map((post) => (
           <Link
             key={post.slug}

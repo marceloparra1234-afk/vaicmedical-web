@@ -19,6 +19,13 @@ export function SitePopup() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (
+      window.self !== window.top ||
+      new URLSearchParams(window.location.search).has("admin-preview")
+    ) {
+      return;
+    }
+
     if (sessionStorage.getItem(POPUP_SESSION_KEY) === "true") return;
 
     const timer = window.setTimeout(() => setVisible(true), 900);

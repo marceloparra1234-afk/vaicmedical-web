@@ -30,7 +30,7 @@ const services = [
 export default function ServiciosPage() {
   return (
     <main>
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8" data-editor-section="hero">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
           Servicios
         </p>
@@ -43,7 +43,7 @@ export default function ServiciosPage() {
         </p>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-5 px-5 pb-20 sm:px-8 md:grid-cols-2 lg:grid-cols-3">
+      <section className="mx-auto grid max-w-7xl gap-5 px-5 pb-20 sm:px-8 md:grid-cols-2 lg:grid-cols-3" data-editor-section="servicios">
         {services.map((service) => (
           <article
             key={service.title}
@@ -56,7 +56,7 @@ export default function ServiciosPage() {
         ))}
       </section>
 
-      <section className="bg-[#213255] px-5 py-20 text-white sm:px-8">
+      <section className="bg-[#213255] px-5 py-20 text-white sm:px-8" data-editor-section="metodo">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">

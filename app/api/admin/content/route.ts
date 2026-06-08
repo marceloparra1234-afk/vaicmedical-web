@@ -76,3 +76,25 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ ok: true });
 }
+
+export async function DELETE(request: NextRequest) {
+  const config = getSupabaseConfig();
+  if (!config) {
+    return NextResponse.json({ error: "Supabase aún no está configurado" }, { status: 503 });
+  }
+  const pageKey = request.nextUrl.searchParams.get("pageKey");
+  if (!pageKey) return NextResponse.json({ error: "Falta pageKey" }, { status: 400 });
+  const response = await fetch(
+    `${config.url}/rest/v1/site_content?page_key=eq.${encodeURIComponent(pageKey)}`,
+    {
+      method: "DELETE",
+      headers: {
+        apikey: config.serviceRoleKey,
+        Authorization: `Bearer ${config.serviceRoleKey}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+  if (!response.ok) return NextResponse.json({ error: "No se pudo eliminar el contenido" }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}

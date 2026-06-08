@@ -455,6 +455,7 @@ export function AdminEditorWorkspace({
     createInitialContent(contentKey, sections),
   );
   const [saveStatus, setSaveStatus] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     fetch(`/api/admin/content?pageKey=${encodeURIComponent(contentKey)}`)
@@ -497,21 +498,30 @@ export function AdminEditorWorkspace({
   }
 
   async function saveChanges() {
+    if (isSaving) return;
+    setIsSaving(true);
     setSaveStatus("Guardando...");
-
-    const response = await fetch("/api/admin/content", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pageKey: contentKey, content }),
-    });
-
-    if (response.ok) {
-      setSaveStatus("Cambios guardados en Supabase");
-      return;
+    try {
+      const response = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pageKey: contentKey, content }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        setSaveStatus(
+          response.status === 413
+            ? "No se pudo guardar: una imagen o archivo es demasiado pesado"
+            : result?.error || "No se pudieron guardar los cambios",
+        );
+        return;
+      }
+      setSaveStatus("Cambios guardados correctamente");
+    } catch {
+      setSaveStatus("No se pudo conectar con el servidor para guardar");
+    } finally {
+      setIsSaving(false);
     }
-
-    const result = await response.json().catch(() => null);
-    setSaveStatus(result?.error || "Supabase aún no está configurado");
   }
 
   return (
@@ -555,7 +565,7 @@ export function AdminEditorWorkspace({
                 </p>
                 <h2 className="mt-1 font-bold">{selected}</h2>
               </div>
-              <span className="text-right text-[11px] text-[#667085]">
+              <span className="text-right text-xs font-semibold text-[#34466f]" role="status">
                 {saveStatus}
               </span>
             </div>
@@ -569,6 +579,7 @@ export function AdminEditorWorkspace({
                   setSaveStatus("Cambios descartados");
                 }}
                 onSave={saveChanges}
+                isSaving={isSaving}
                 previewType={previewType}
               />
             </div>
@@ -609,6 +620,7 @@ function EditorFields({
   onUpdate,
   onDiscard,
   onSave,
+  isSaving,
 }: {
   content: SectionContent;
   previewType: "page" | "popup";
@@ -616,6 +628,7 @@ function EditorFields({
   onUpdate: (changes: Partial<SectionContent>) => void;
   onDiscard: () => void;
   onSave: () => void;
+  isSaving: boolean;
 }) {
   const isWorkflow =
     content.items.length > 0 && content.items.every((item) => Boolean(item.number));
@@ -692,11 +705,12 @@ function EditorFields({
           Descartar
         </button>
         <button
-          className="rounded-lg bg-[#213255] px-4 py-3 text-sm font-semibold text-white"
+          className="rounded-lg bg-[#213255] px-4 py-3 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60"
+          disabled={isSaving}
           onClick={onSave}
           type="button"
         >
-          Guardar cambios
+          {isSaving ? "Guardando..." : "Guardar cambios"}
         </button>
       </div>
     </div>

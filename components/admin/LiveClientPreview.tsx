@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 
 const pagePaths: Record<string, string> = {
@@ -85,24 +85,22 @@ export function LiveClientPreview({
   section: string;
   content: PreviewContent;
 }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const latestContentRef = useRef(content);
   const [status, setStatus] = useState("Cargando sección...");
+  const [template, setTemplate] = useState<{
+    assets: string;
+    sectionHtml: string;
+  } | null>(null);
   const path = pagePaths[contentKey] || "/";
   const selector = sectionSelectors[contentKey]?.[section];
 
   useEffect(() => {
-    latestContentRef.current = content;
-  }, [content]);
-
-  useEffect(() => {
     let cancelled = false;
 
-    async function renderIsolatedSection() {
-      const iframe = iframeRef.current;
-      if (!iframe || !selector) return;
+    async function loadIsolatedSection() {
+      if (!selector) return;
 
       setStatus("Cargando sección...");
+      setTemplate(null);
 
       try {
         const response = await fetch(`${path}${path.includes("?") ? "&" : "?"}admin-preview=1`);
@@ -113,11 +111,11 @@ export function LiveClientPreview({
         const sourceTarget = sourceDocument.querySelector(selector);
 
         if (!(sourceTarget instanceof HTMLElement)) {
-          writeIframeDocument(
-            iframe,
-            `<div class="admin-preview-empty">No se encontró esta sección en la página pública.</div>`,
-            "",
-          );
+          setTemplate({
+            assets: "",
+            sectionHtml:
+              '<div class="admin-preview-empty">No se encontró esta sección en la página pública.</div>',
+          });
           setStatus("Sección no encontrada");
           return;
         }
@@ -128,46 +126,34 @@ export function LiveClientPreview({
           .map((element) => element.outerHTML)
           .join("\n");
 
-        writeIframeDocument(iframe, sourceTarget.outerHTML, assets);
-
-        const previewDocument = iframe.contentDocument;
-        const target = previewDocument?.querySelector(selector);
-        if (target instanceof HTMLElement) {
-          target.dataset.adminPreviewActive = "true";
-          applyContentToTarget(target, latestContentRef.current);
-          setStatus("Mostrando solo esta sección");
-        }
+        setTemplate({ assets, sectionHtml: sourceTarget.outerHTML });
+        setStatus("Mostrando solo esta sección");
       } catch {
         if (!cancelled) {
-          const iframe = iframeRef.current;
-          if (iframe) {
-            writeIframeDocument(
-              iframe,
-              `<div class="admin-preview-empty">No se pudo cargar la vista previa.</div>`,
-              "",
-            );
-          }
+          setTemplate({
+            assets: "",
+            sectionHtml:
+              '<div class="admin-preview-empty">No se pudo cargar la vista previa.</div>',
+          });
           setStatus("Error al cargar");
         }
       }
     }
 
-    renderIsolatedSection();
+    loadIsolatedSection();
     return () => {
       cancelled = true;
     };
   }, [path, selector]);
 
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    const previewDocument = iframe?.contentDocument;
-    if (!previewDocument || !selector) return;
-
-    const target = previewDocument.querySelector(selector);
-    if (target instanceof HTMLElement) {
-      applyContentToTarget(target, content);
-    }
-  }, [content, selector]);
+  const srcDoc = template
+    ? buildPreviewDocument(template.sectionHtml, template.assets, selector, content)
+    : buildPreviewDocument(
+        '<div class="admin-preview-empty">Cargando vista previa...</div>',
+        "",
+        selector,
+        content,
+      );
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#d7e9ef] bg-white shadow-sm">
@@ -186,23 +172,36 @@ export function LiveClientPreview({
       </div>
       <iframe
         className="h-[650px] w-full bg-white"
-        ref={iframeRef}
+        srcDoc={srcDoc}
         title={`Vista pública real de ${section}`}
       />
     </div>
   );
 }
 
-function writeIframeDocument(
-  iframe: HTMLIFrameElement,
+function buildPreviewDocument(
   sectionHtml: string,
   assets: string,
+  selector: string | undefined,
+  content: PreviewContent,
 ) {
-  const document = iframe.contentDocument;
-  if (!document) return;
+  const parser = new DOMParser();
+  const sourceDocument = parser.parseFromString(
+    `<main class="admin-preview-shell">${sectionHtml}</main>`,
+    "text/html",
+  );
+  const target = selector ? sourceDocument.querySelector(selector) : null;
 
-  document.open();
-  document.write(`<!doctype html>
+  if (target instanceof HTMLElement) {
+    target.dataset.adminPreviewActive = "true";
+    applyContentToTarget(target, content);
+  }
+
+  const renderedSection =
+    sourceDocument.body.querySelector(".admin-preview-shell")?.innerHTML ||
+    sectionHtml;
+
+  return `<!doctype html>
     <html>
       <head>
         <base href="${window.location.origin}">
@@ -235,10 +234,9 @@ function writeIframeDocument(
         </style>
       </head>
       <body>
-        <main class="admin-preview-shell">${sectionHtml}</main>
+        <main class="admin-preview-shell">${renderedSection}</main>
       </body>
-    </html>`);
-  document.close();
+    </html>`;
 }
 
 function applyContentToTarget(target: HTMLElement, content: PreviewContent) {

@@ -38,7 +38,7 @@ export async function getManagedBlogPosts() {
   if (!config) return getFallbackPosts();
 
   const response = await fetch(
-    `${config.url}/rest/v1/created_content?content_type=eq.blog&select=id,slug,content,created_at&order=created_at.desc`,
+    `${config.url}/rest/v1/created_content?content_type=eq.blog&select=id,slug,title:content-%3E%3Etitle,date:content-%3E%3Edate,excerpt:content-%3E%3Eexcerpt,featured:content-%3Efeatured,created_at&order=created_at.desc`,
     {
       cache: "no-store",
       headers: {
@@ -53,19 +53,22 @@ export async function getManagedBlogPosts() {
   const rows = (await response.json()) as Array<{
     id: string;
     slug: string;
-    content: Partial<ManagedBlogPost>;
+    title: string | null;
+    date: string | null;
+    excerpt: string | null;
+    featured: boolean | null;
     created_at: string;
   }>;
 
   const stored = rows.map((row) => ({
     id: row.id,
     slug: row.slug,
-    title: row.content.title || "Publicación sin título",
-    date: row.content.date || "",
-    excerpt: row.content.excerpt || "",
-    body: row.content.body || "",
-    primaryImage: row.content.primaryImage || "/blog-article.svg",
-    featured: Boolean(row.content.featured),
+    title: row.title || "Publicación sin título",
+    date: row.date || "",
+    excerpt: row.excerpt || "",
+    body: "",
+    primaryImage: "",
+    featured: Boolean(row.featured),
     createdAt: row.created_at,
   }));
 
@@ -77,6 +80,41 @@ export async function getManagedBlogPosts() {
 }
 
 export async function getManagedBlogPost(slug: string) {
-  const posts = await getManagedBlogPosts();
-  return posts.find((post) => post.slug === slug) || null;
+  const config = getSupabaseConfig();
+  if (!config) {
+    return getFallbackPosts().find((post) => post.slug === slug) || null;
+  }
+
+  const response = await fetch(
+    `${config.url}/rest/v1/created_content?content_type=eq.blog&slug=eq.${encodeURIComponent(slug)}&select=id,slug,content,created_at&limit=1`,
+    {
+      cache: "no-store",
+      headers: {
+        apikey: config.serviceRoleKey,
+        Authorization: `Bearer ${config.serviceRoleKey}`,
+      },
+    },
+  );
+  if (!response.ok) return null;
+
+  const rows = (await response.json()) as Array<{
+    id: string;
+    slug: string;
+    content: Partial<ManagedBlogPost>;
+    created_at: string;
+  }>;
+  const row = rows[0];
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.content.title || "Publicación sin título",
+    date: row.content.date || "",
+    excerpt: row.content.excerpt || "",
+    body: row.content.body || "",
+    primaryImage: row.content.primaryImage || "/blog-article.svg",
+    featured: Boolean(row.content.featured),
+    createdAt: row.created_at,
+  };
 }

@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { blogPosts, getBlogPost } from "@/data/blog-posts";
+import { getBlogPost } from "@/data/blog-posts";
+
+export const dynamic = "force-dynamic";
 
 type ArticlePost = {
   slug: string;
@@ -11,10 +13,6 @@ type ArticlePost = {
   image: string;
   body: string[];
 };
-
-export function generateStaticParams() {
-  return blogPosts.map((post) => ({ slug: post.slug }));
-}
 
 async function getCreatedBlogPost(slug: string): Promise<ArticlePost | null> {
   const url = process.env.SUPABASE_URL;

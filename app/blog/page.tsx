@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LocalCreatedBlogPosts } from "@/components/LocalCreatedContent";
 import { blogPosts } from "@/data/blog-posts";
 
 export default function BlogPage() {
@@ -32,6 +33,7 @@ export default function BlogPage() {
             </p>
           </Link>
         ))}
+        <LocalCreatedBlogPosts />
       </section>
     </main>
   );

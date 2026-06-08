@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LocalCreatedCatalogSections } from "@/components/LocalCreatedContent";
 import { catalogLines } from "@/data/catalog-products";
 
 export default function CatalogoPage() {
@@ -109,6 +110,7 @@ export default function CatalogoPage() {
               </div>
             </section>
           ))}
+          <LocalCreatedCatalogSections />
         </div>
       </section>
     </main>

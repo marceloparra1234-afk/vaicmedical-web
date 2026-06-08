@@ -3,8 +3,58 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { blogPosts, getBlogPost } from "@/data/blog-posts";
 
+type ArticlePost = {
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  image: string;
+  body: string[];
+};
+
 export function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
+}
+
+async function getCreatedBlogPost(slug: string): Promise<ArticlePost | null> {
+  const url = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRoleKey) return null;
+
+  const response = await fetch(
+    `${url}/rest/v1/created_content?content_type=eq.blog&slug=eq.${encodeURIComponent(slug)}&select=slug,content&limit=1`,
+    {
+      cache: "no-store",
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+    },
+  );
+
+  if (!response.ok) return null;
+
+  const rows = (await response.json()) as Array<{
+    slug: string;
+    content: {
+      title?: string;
+      date?: string;
+      excerpt?: string;
+      body?: string;
+      primaryImage?: string;
+    };
+  }>;
+  const row = rows[0];
+  if (!row?.content.title) return null;
+
+  return {
+    slug: row.slug,
+    title: row.content.title,
+    date: row.content.date || "",
+    excerpt: row.content.excerpt || "",
+    image: row.content.primaryImage || "/blog-article.svg",
+    body: (row.content.body || "").split("\n").filter(Boolean),
+  };
 }
 
 export default async function BlogArticlePage({
@@ -13,7 +63,7 @@ export default async function BlogArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = getBlogPost(slug);
+  const post = getBlogPost(slug) || (await getCreatedBlogPost(slug));
 
   if (!post) notFound();
 
@@ -47,6 +97,7 @@ export default async function BlogArticlePage({
               width={1200}
               height={720}
               priority
+              unoptimized={post.image.startsWith("data:")}
               className="h-auto w-full"
             />
           </div>

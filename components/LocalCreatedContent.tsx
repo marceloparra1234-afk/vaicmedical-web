@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type CreatedItem = {
@@ -75,8 +76,9 @@ export function LocalCreatedBlogPosts() {
   return (
     <>
       {posts.map((post) => (
-        <article
+        <Link
           className="group rounded-3xl border border-[#d7e9ef] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#213255]/10"
+          href={`/blog/${post.slug}`}
           key={post.id}
         >
           <div
@@ -91,9 +93,9 @@ export function LocalCreatedBlogPosts() {
           </h2>
           <p className="mt-4 leading-7 text-[#34466f]">{post.excerpt}</p>
           <p className="mt-6 text-sm font-semibold text-[#213255]">
-            Vista creada en editor local
+            Leer artículo
           </p>
-        </article>
+        </Link>
       ))}
     </>
   );

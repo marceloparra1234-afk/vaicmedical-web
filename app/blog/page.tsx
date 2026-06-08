@@ -1,8 +1,11 @@
 import Link from "next/link";
-import { LocalCreatedBlogPosts } from "@/components/LocalCreatedContent";
-import { blogPosts } from "@/data/blog-posts";
+import { getManagedBlogPosts } from "@/data/supabase-blog";
 
-export default function BlogPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BlogPage() {
+  const posts = await getManagedBlogPosts();
+
   return (
     <main>
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8" data-editor-section="hero">
@@ -15,14 +18,14 @@ export default function BlogPage() {
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-5 px-5 pb-20 sm:px-8 md:grid-cols-3" data-editor-section="publicaciones">
-        {blogPosts.map((post) => (
+        {posts.map((post) => (
           <Link
             key={post.slug}
             href={`/blog/${post.slug}`}
             className="group rounded-3xl border border-[#d7e9ef] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#213255]/10"
           >
             <p className="font-mono text-xs font-semibold text-[#58c3de]">
-              VAIC INSIGHTS
+              {post.featured ? "DESTACADO" : "VAIC INSIGHTS"}
             </p>
             <h2 className="mt-5 text-xl font-semibold leading-7">
               {post.title}
@@ -33,7 +36,6 @@ export default function BlogPage() {
             </p>
           </Link>
         ))}
-        <LocalCreatedBlogPosts />
       </section>
     </main>
   );

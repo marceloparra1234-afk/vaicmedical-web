@@ -106,3 +106,36 @@ export async function POST(request: NextRequest) {
   const rows = (await response.json()) as Array<{ id: string }>;
   return NextResponse.json({ ok: true, id: rows[0]?.id || null });
 }
+
+export async function DELETE(request: NextRequest) {
+  const config = getSupabaseConfig();
+  if (!config) {
+    return NextResponse.json(
+      { error: "Supabase aún no está configurado" },
+      { status: 503 },
+    );
+  }
+
+  const type = request.nextUrl.searchParams.get("type");
+  const slug = request.nextUrl.searchParams.get("slug");
+  if (!type || !slug || !["blog", "line", "product"].includes(type)) {
+    return NextResponse.json({ error: "Contenido inválido" }, { status: 400 });
+  }
+
+  const response = await fetch(
+    `${config.url}/rest/v1/created_content?content_type=eq.${encodeURIComponent(type)}&slug=eq.${encodeURIComponent(slug)}`,
+    {
+      method: "DELETE",
+      headers: {
+        ...getSupabaseHeaders(config.serviceRoleKey),
+        Prefer: "return=minimal",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    return NextResponse.json({ error: "No se pudo eliminar" }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

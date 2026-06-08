@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeading } from "@/components/admin/AdminDashboard";
 
 type CreateContentProps = {
@@ -75,9 +75,54 @@ const initialState: FormState = {
 export function AdminCreateContent({ type }: CreateContentProps) {
   const content = config[type];
   const [form, setForm] = useState<FormState>(initialState);
+  const [activeTab, setActiveTab] = useState<"create" | "manage">("create");
+  const [blogPosts, setBlogPosts] = useState<Array<FormState & { id: string; slug: string }>>([]);
+  const [editingSlug, setEditingSlug] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [status, setStatus] = useState("");
   const slug = useMemo(() => slugify(form.title || content.title), [content.title, form.title]);
+
+  async function loadBlogPosts() {
+    if (type !== "blog") return;
+    const response = await fetch("/api/admin/created-content?type=blog");
+    if (!response.ok) return;
+    const result = (await response.json()) as {
+      items?: Array<Partial<FormState> & { id: string; slug: string }>;
+    };
+    setBlogPosts(
+      (result.items || []).map((item) => ({
+        ...initialState,
+        ...item,
+        secondaryImages: item.secondaryImages || [],
+        videos: item.videos || [],
+        documents: item.documents || [],
+      })),
+    );
+  }
+
+  useEffect(() => {
+    if (type !== "blog") return;
+    let cancelled = false;
+
+    fetch("/api/admin/created-content?type=blog")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((result: { items?: Array<Partial<FormState> & { id: string; slug: string }> } | null) => {
+        if (cancelled || !result) return;
+        setBlogPosts(
+          (result.items || []).map((item) => ({
+            ...initialState,
+            ...item,
+            secondaryImages: item.secondaryImages || [],
+            videos: item.videos || [],
+            documents: item.documents || [],
+          })),
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [type]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setStatus("");
@@ -94,10 +139,11 @@ export function AdminCreateContent({ type }: CreateContentProps) {
     setIsPublishing(true);
     setStatus("Publicando...");
 
+    const effectiveSlug = editingSlug || slug;
     const payload = {
       ...form,
       id: `${type}-${Date.now()}`,
-      slug,
+      slug: effectiveSlug,
       createdAt: new Date().toISOString(),
       type,
     };
@@ -110,11 +156,14 @@ export function AdminCreateContent({ type }: CreateContentProps) {
       const response = await fetch("/api/admin/created-content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, slug, content: payload }),
+        body: JSON.stringify({ type, slug: effectiveSlug, content: payload }),
       });
 
       if (response.ok) {
         setStatus("Publicado en Supabase y disponible para el sitio.");
+        setEditingSlug("");
+        await loadBlogPosts();
+        if (type === "blog") setActiveTab("manage");
         return;
       }
 
@@ -127,9 +176,98 @@ export function AdminCreateContent({ type }: CreateContentProps) {
     }
   }
 
+  function editBlogPost(post: FormState & { slug: string }) {
+    setForm({
+      ...initialState,
+      ...post,
+      secondaryImages: post.secondaryImages || [],
+      videos: post.videos || [],
+      documents: post.documents || [],
+    });
+    setEditingSlug(post.slug);
+    setStatus(`Editando: ${post.title}`);
+    setActiveTab("create");
+  }
+
+  async function deleteBlogPost(slugToDelete: string) {
+    if (!window.confirm("¿Eliminar esta publicación? Esta acción no se puede deshacer.")) return;
+    const response = await fetch(
+      `/api/admin/created-content?type=blog&slug=${encodeURIComponent(slugToDelete)}`,
+      { method: "DELETE" },
+    );
+    setStatus(response.ok ? "Publicación eliminada." : "No se pudo eliminar la publicación.");
+    if (response.ok) await loadBlogPosts();
+  }
+
+  async function toggleFeatured(post: FormState & { slug: string }) {
+    const contentToSave = { ...post, featured: !post.featured };
+    const response = await fetch("/api/admin/created-content", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "blog", slug: post.slug, content: contentToSave }),
+    });
+    setStatus(response.ok ? "Estado destacado actualizado." : "No se pudo actualizar.");
+    if (response.ok) await loadBlogPosts();
+  }
+
+  if (type === "blog" && activeTab === "manage") {
+    return (
+      <div className="mx-auto max-w-[1600px]">
+        <PageHeading eyebrow={content.eyebrow} title={content.title} text={content.text} />
+        <BlogTabs active={activeTab} onChange={setActiveTab} />
+        <section className="mt-6 overflow-hidden rounded-xl border border-[#d7e9ef] bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d7e9ef] px-6 py-5">
+            <div>
+              <h2 className="text-lg font-bold text-[#213255]">Publicaciones</h2>
+              <p className="mt-1 text-sm text-[#34466f]">
+                Edita, elimina o destaca las publicaciones guardadas en Supabase.
+              </p>
+            </div>
+            <p className="text-sm font-semibold text-[#34466f]">{status}</p>
+          </div>
+          <div className="grid gap-4 p-6 lg:grid-cols-2">
+            {blogPosts.map((post) => (
+              <article className="grid gap-4 rounded-lg border border-[#d7e9ef] bg-[#f6fbfd] p-4 sm:grid-cols-[140px_1fr]" key={post.slug}>
+                <div
+                  className="aspect-[16/10] rounded-lg border border-[#d7e9ef] bg-[#eaf8fc] bg-cover bg-center"
+                  style={{ backgroundImage: post.primaryImage ? `url("${post.primaryImage}")` : undefined }}
+                />
+                <div className="min-w-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#58c3de]">
+                      {post.featured ? "Destacada" : "Publicación"}
+                    </p>
+                    <span className="text-xs text-[#34466f]">{post.date}</span>
+                  </div>
+                  <h3 className="mt-2 truncate text-lg font-bold text-[#213255]">{post.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#34466f]">{post.excerpt}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button className="rounded-md bg-[#213255] px-3 py-2 text-xs font-bold text-white" onClick={() => editBlogPost(post)} type="button">
+                      Editar
+                    </button>
+                    <button className="rounded-md border border-[#58c3de] bg-white px-3 py-2 text-xs font-bold text-[#213255]" onClick={() => toggleFeatured(post)} type="button">
+                      {post.featured ? "Quitar destacado" : "Destacar"}
+                    </button>
+                    <button className="rounded-md border border-[#d7e9ef] bg-white px-3 py-2 text-xs font-bold text-[#213255]" onClick={() => deleteBlogPost(post.slug)} type="button">
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+            {!blogPosts.length && (
+              <p className="p-6 text-sm text-[#34466f]">Aún no hay publicaciones guardadas en Supabase.</p>
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-[1600px]">
       <PageHeading eyebrow={content.eyebrow} title={content.title} text={content.text} />
+      {type === "blog" && <BlogTabs active={activeTab} onChange={setActiveTab} />}
 
       <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_520px]">
         <section className="grid gap-6 rounded-xl border border-[#d7e9ef] bg-white p-6 shadow-sm">
@@ -225,10 +363,14 @@ export function AdminCreateContent({ type }: CreateContentProps) {
             <div className="flex gap-3">
               <button
                 className="rounded-lg border border-[#d7e9ef] px-5 py-3 text-sm font-semibold text-[#34466f]"
-                onClick={() => setForm(initialState)}
+                onClick={() => {
+                  setForm(initialState);
+                  setEditingSlug("");
+                  setStatus("");
+                }}
                 type="button"
               >
-                Limpiar
+                {editingSlug ? "Cancelar edición" : "Limpiar"}
               </button>
               <button
                 className="rounded-lg bg-[#213255] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#17243f]"
@@ -236,7 +378,7 @@ export function AdminCreateContent({ type }: CreateContentProps) {
                 onClick={publish}
                 type="button"
               >
-                {isPublishing ? "Publicando..." : "Publicar"}
+                {isPublishing ? "Guardando..." : editingSlug ? "Guardar cambios" : "Publicar"}
               </button>
             </div>
           </div>
@@ -247,6 +389,33 @@ export function AdminCreateContent({ type }: CreateContentProps) {
           <CreatePreview form={form} slug={slug} type={type} />
         </aside>
       </div>
+    </div>
+  );
+}
+
+function BlogTabs({
+  active,
+  onChange,
+}: {
+  active: "create" | "manage";
+  onChange: (tab: "create" | "manage") => void;
+}) {
+  return (
+    <div className="mt-6 flex w-fit overflow-hidden rounded-lg border border-[#d7e9ef] bg-white">
+      <button
+        className={`px-5 py-3 text-sm font-bold ${active === "create" ? "bg-[#213255] text-white" : "text-[#34466f]"}`}
+        onClick={() => onChange("create")}
+        type="button"
+      >
+        Crear publicación
+      </button>
+      <button
+        className={`px-5 py-3 text-sm font-bold ${active === "manage" ? "bg-[#213255] text-white" : "text-[#34466f]"}`}
+        onClick={() => onChange("manage")}
+        type="button"
+      >
+        Publicaciones
+      </button>
     </div>
   );
 }

@@ -38,7 +38,7 @@ export async function getManagedBlogPosts() {
   if (!config) return getFallbackPosts();
 
   const response = await fetch(
-    `${config.url}/rest/v1/created_content?content_type=eq.blog&select=id,slug,title:content-%3E%3Etitle,date:content-%3E%3Edate,excerpt:content-%3E%3Eexcerpt,featured:content-%3Efeatured,created_at&order=created_at.desc`,
+    `${config.url}/rest/v1/created_content?content_type=eq.blog&select=id,slug,title:content-%3E%3Etitle,date:content-%3E%3Edate,excerpt:content-%3E%3Eexcerpt,primary_image:content-%3E%3EprimaryImage,featured:content-%3Efeatured,created_at&order=created_at.desc`,
     {
       cache: "no-store",
       headers: {
@@ -56,6 +56,7 @@ export async function getManagedBlogPosts() {
     title: string | null;
     date: string | null;
     excerpt: string | null;
+    primary_image: string | null;
     featured: boolean | null;
     created_at: string;
   }>;
@@ -67,7 +68,7 @@ export async function getManagedBlogPosts() {
     date: row.date || "",
     excerpt: row.excerpt || "",
     body: "",
-    primaryImage: "",
+    primaryImage: row.primary_image || "/blog-article.svg",
     featured: Boolean(row.featured),
     createdAt: row.created_at,
   }));

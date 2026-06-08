@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getManagedBlogPosts } from "@/data/supabase-blog";
 
@@ -24,6 +25,16 @@ export default async function BlogPage() {
             href={`/blog/${post.slug}`}
             className="group rounded-3xl border border-[#d7e9ef] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#213255]/10"
           >
+            <div className="relative mb-6 aspect-[16/9] overflow-hidden rounded-2xl border border-[#d7e9ef] bg-[#eaf8fc]">
+              <Image
+                alt={post.title}
+                className="object-cover transition duration-300 group-hover:scale-105"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                src={post.primaryImage}
+                unoptimized={post.primaryImage.startsWith("data:")}
+              />
+            </div>
             <p className="font-mono text-xs font-semibold text-[#58c3de]">
               {post.featured ? "DESTACADO" : "VAIC INSIGHTS"}
             </p>

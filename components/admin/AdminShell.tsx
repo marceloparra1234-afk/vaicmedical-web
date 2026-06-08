@@ -38,6 +38,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
+  if (pathname === "/admin/login") return children;
+
+  async function logout() {
+    await fetch("/api/admin/logout", { method: "POST" });
+    window.location.href = "/admin/login";
+  }
+
   return (
     <div className="min-h-screen bg-[#eef5f7] text-[#213255]">
       <aside
@@ -135,6 +142,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             >
               Ver sitio
             </Link>
+            <button
+              className="rounded-lg border border-[#d7e9ef] px-4 py-2 text-sm font-semibold transition hover:border-[#58c3de]"
+              onClick={logout}
+              type="button"
+            >
+              Cerrar sesión
+            </button>
             <div className="grid h-10 w-10 place-items-center rounded-full bg-[#213255] text-xs font-bold text-white">
               MP
             </div>

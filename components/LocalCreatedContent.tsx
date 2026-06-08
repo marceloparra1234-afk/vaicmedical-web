@@ -43,7 +43,7 @@ function useCreatedItems(type: "blog" | "line" | "product", key: string) {
       const localItems = readItems(key);
 
       try {
-        const response = await fetch(`/api/admin/created-content?type=${type}`);
+        const response = await fetch(`/api/created-content?type=${type}`);
         if (!response.ok) {
           setItems(localItems);
           return;

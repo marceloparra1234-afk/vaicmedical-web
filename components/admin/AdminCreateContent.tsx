@@ -453,6 +453,21 @@ function PrimaryImageInput({
   onChange: (image: string) => void;
   type: CreateContentProps["type"];
 }) {
+  const [status, setStatus] = useState("");
+
+  async function selectImage(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    setStatus("Subiendo...");
+    try {
+      const uploaded = await uploadFile(file, "image");
+      onChange(uploaded.url);
+      setStatus("Imagen cargada");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "No se pudo subir");
+    }
+  }
+
   return (
     <div className="rounded-lg border border-dashed border-[#9eddea] bg-[#f4fbfd] p-4">
       <p className="text-sm font-bold text-[#213255]">Imagen principal</p>
@@ -469,10 +484,11 @@ function PrimaryImageInput({
         <input
           accept="image/*"
           className="hidden"
-          onChange={(event) => readSingleFile(event.target.files, onChange)}
+          onChange={(event) => selectImage(event.target.files)}
           type="file"
         />
       </label>
+      <p className="mt-2 text-xs font-semibold text-[#34466f]">{status}</p>
       {image && (
         <div className="mt-4 overflow-hidden rounded-lg border border-[#d7e9ef] bg-white">
           <div className="h-28 bg-cover bg-center" style={{ backgroundImage: `url("${image}")` }} />
@@ -510,22 +526,9 @@ function MediaInput({
     const selected = Array.from(fileList).slice(0, availableSlots);
     if (!selected.length) return;
 
-    const next: MediaFile[] = [];
-    selected.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        next.push({
-          id: `${file.name}-${Date.now()}-${next.length}`,
-          name: file.name,
-          type,
-          url: String(reader.result || ""),
-        });
-        if (next.length === selected.length) {
-          onChange([...files, ...next]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    Promise.all(selected.map((file) => uploadFile(file, type)))
+      .then((uploaded) => onChange([...files, ...uploaded]))
+      .catch(() => undefined);
   }
 
   return (
@@ -639,12 +642,39 @@ function PreviewRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function readSingleFile(files: FileList | null, onChange: (value: string) => void) {
-  const file = files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => onChange(String(reader.result || ""));
-  reader.readAsDataURL(file);
+async function uploadFile(file: File, kind: MediaFile["type"]): Promise<MediaFile> {
+  const response = await fetch("/api/admin/uploads", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: file.name,
+      size: file.size,
+      mimeType: file.type,
+      kind,
+    }),
+  });
+  const result = (await response.json()) as {
+    error?: string;
+    name?: string;
+    type?: MediaFile["type"];
+    uploadUrl?: string;
+    url?: string;
+  };
+  if (!response.ok || !result.url || !result.uploadUrl) {
+    throw new Error(result.error || "No se pudo subir el archivo");
+  }
+  const uploadResponse = await fetch(result.uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type || "application/octet-stream" },
+    body: file,
+  });
+  if (!uploadResponse.ok) throw new Error("No se pudo subir el archivo");
+  return {
+    id: crypto.randomUUID(),
+    name: result.name || file.name,
+    type: result.type || kind,
+    url: result.url,
+  };
 }
 
 function readStoredItems(key: string) {

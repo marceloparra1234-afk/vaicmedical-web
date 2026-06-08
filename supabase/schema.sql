@@ -7,5 +7,20 @@ create table if not exists public.site_content (
 
 alter table public.site_content enable row level security;
 
+create table if not exists public.created_content (
+  id uuid primary key default gen_random_uuid(),
+  content_type text not null check (content_type in ('blog', 'line', 'product')),
+  slug text not null,
+  content jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (content_type, slug)
+);
+
+create index if not exists created_content_type_created_at_idx
+  on public.created_content (content_type, created_at desc);
+
+alter table public.created_content enable row level security;
+
 -- El acceso de escritura se realiza desde la API del servidor usando
 -- SUPABASE_SERVICE_ROLE_KEY. No expongas esa llave en el navegador.

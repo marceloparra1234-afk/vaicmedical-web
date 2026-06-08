@@ -75,6 +75,7 @@ const initialState: FormState = {
 export function AdminCreateContent({ type }: CreateContentProps) {
   const content = config[type];
   const [form, setForm] = useState<FormState>(initialState);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [status, setStatus] = useState("");
   const slug = useMemo(() => slugify(form.title || content.title), [content.title, form.title]);
 
@@ -83,12 +84,15 @@ export function AdminCreateContent({ type }: CreateContentProps) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  function publish() {
+  async function publish() {
     const title = form.title.trim();
     if (!title) {
       setStatus("Agrega un título antes de publicar.");
       return;
     }
+
+    setIsPublishing(true);
+    setStatus("Publicando...");
 
     const payload = {
       ...form,
@@ -101,7 +105,26 @@ export function AdminCreateContent({ type }: CreateContentProps) {
     const existing = readStoredItems(storageKeys[type]);
     window.localStorage.setItem(storageKeys[type], JSON.stringify([payload, ...existing]));
     window.dispatchEvent(new CustomEvent("vaicmedical-content-created", { detail: payload }));
-    setStatus("Publicado en el editor local. Al conectar Supabase quedará disponible para todos los visitantes.");
+
+    try {
+      const response = await fetch("/api/admin/created-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, slug, content: payload }),
+      });
+
+      if (response.ok) {
+        setStatus("Publicado en Supabase y disponible para el sitio.");
+        return;
+      }
+
+      const result = await response.json().catch(() => null);
+      setStatus(result?.error || "Guardado localmente. Supabase aún no está disponible.");
+    } catch {
+      setStatus("Guardado localmente. No se pudo conectar con Supabase.");
+    } finally {
+      setIsPublishing(false);
+    }
   }
 
   return (
@@ -209,10 +232,11 @@ export function AdminCreateContent({ type }: CreateContentProps) {
               </button>
               <button
                 className="rounded-lg bg-[#213255] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#17243f]"
+                disabled={isPublishing}
                 onClick={publish}
                 type="button"
               >
-                Publicar
+                {isPublishing ? "Publicando..." : "Publicar"}
               </button>
             </div>
           </div>

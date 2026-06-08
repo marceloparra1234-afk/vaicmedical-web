@@ -26,12 +26,33 @@ function readItems(key: string) {
   }
 }
 
-function useCreatedItems(key: string) {
+function mergeItems(primary: CreatedItem[], fallback: CreatedItem[]) {
+  const seen = new Set(primary.map((item) => item.slug || item.id));
+  return [
+    ...primary,
+    ...fallback.filter((item) => !seen.has(item.slug || item.id)),
+  ];
+}
+
+function useCreatedItems(type: "blog" | "line" | "product", key: string) {
   const [items, setItems] = useState<CreatedItem[]>([]);
 
   useEffect(() => {
-    function load() {
-      setItems(readItems(key));
+    async function load() {
+      const localItems = readItems(key);
+
+      try {
+        const response = await fetch(`/api/admin/created-content?type=${type}`);
+        if (!response.ok) {
+          setItems(localItems);
+          return;
+        }
+
+        const result = (await response.json()) as { items?: CreatedItem[] };
+        setItems(mergeItems(result.items || [], localItems));
+      } catch {
+        setItems(localItems);
+      }
     }
 
     load();
@@ -41,13 +62,13 @@ function useCreatedItems(key: string) {
       window.removeEventListener("storage", load);
       window.removeEventListener("vaicmedical-content-created", load);
     };
-  }, [key]);
+  }, [key, type]);
 
   return items;
 }
 
 export function LocalCreatedBlogPosts() {
-  const posts = useCreatedItems("vaicmedical-created-blog");
+  const posts = useCreatedItems("blog", "vaicmedical-created-blog");
 
   if (!posts.length) return null;
 
@@ -79,8 +100,8 @@ export function LocalCreatedBlogPosts() {
 }
 
 export function LocalCreatedCatalogSections() {
-  const lines = useCreatedItems("vaicmedical-created-lines");
-  const products = useCreatedItems("vaicmedical-created-products");
+  const lines = useCreatedItems("line", "vaicmedical-created-lines");
+  const products = useCreatedItems("product", "vaicmedical-created-products");
 
   if (!lines.length && !products.length) return null;
 

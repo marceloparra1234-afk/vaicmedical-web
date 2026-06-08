@@ -15,6 +15,7 @@ export type PreviewContent = {
   accentColor: string;
   textColor: string;
   sectionImage: string;
+  sectionImages: string[];
   columns: number;
   buttons: Array<{
     id: string;
@@ -31,6 +32,7 @@ export type PreviewContent = {
     backgroundColor: string;
     borderColor: string;
     textColor: string;
+    numberColor: string;
     image: string;
   }>;
 };
@@ -600,6 +602,7 @@ function createPreviewItem(title: string): PreviewContent["items"][number] {
     backgroundColor: "#f6fbfd",
     borderColor: "#d7e9ef",
     textColor: "#213255",
+    numberColor: "#58c3de",
     image: "",
   };
 }

@@ -55,18 +55,23 @@ const homeDefaults: Record<string, Partial<SectionContent>> = {
     subtitle: "Productos y líneas destacadas",
     content:
       "Revisa una selección de equipos, componentes y servicios técnicos. Cada producto cuenta con información, galería y acceso directo para realizar consultas.",
+    allowItems: false,
+    items: [],
   },
   "Noticias destacadas": {
     title: "Criterios técnicos para cuidar equipos médicos.",
     subtitle: "Noticias y artículos técnicos",
     content:
       "Publicaciones sobre mantención, reparación y continuidad técnica de equipos médicos.",
+    allowItems: false,
+    items: [],
   },
   Contacto: {
     title: "Coordinemos una evaluación técnica para tus equipos.",
     subtitle: "Contacto",
     content:
       "Puedes solicitar una visita, coordinar una reparación o consultar por mantenciones programadas.",
+    buttons: [{ id: "support", label: "Solicitar soporte", href: "/contacto", visible: true }],
   },
 };
 
@@ -183,8 +188,8 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
         createCard("linea-4", "Componentes y accesorios", "Repuestos y componentes para continuidad técnica."),
       ],
     },
-    "Línea 01": {
-      eyebrow: "Línea 01",
+    "Vista de línea": {
+      eyebrow: "Línea",
       title: "Camas clínicas y camillas",
       content: "Equipos de traslado y hospitalización.",
       editableFields: ["eyebrow", "title", "content"],
@@ -193,39 +198,6 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
         createCard("producto-1", "Camas clínicas eléctricas", "Revisión de actuadores, controles y estructura."),
         createCard("producto-2", "Camillas de traslado", "Mantención de ruedas, frenos y barandas."),
         createCard("producto-3", "Barandas y accesorios", "Componentes asociados a seguridad y operación."),
-      ],
-    },
-    "Línea 02": {
-      eyebrow: "Línea 02",
-      title: "Pabellón y procedimientos",
-      content: "Equipos utilizados en pabellón y espacios de procedimiento.",
-      editableFields: ["eyebrow", "title", "content"],
-      buttons: [],
-      items: [
-        createCard("producto-1", "Mesas quirúrgicas", "Diagnóstico de movimientos, bases y módulos."),
-        createCard("producto-2", "Lámparas clínicas", "Revisión de iluminación, brazos y fijaciones."),
-      ],
-    },
-    "Línea 03": {
-      eyebrow: "Línea 03",
-      title: "Monitoreo y equipos clínicos",
-      content: "Equipos de monitoreo y apoyo clínico.",
-      editableFields: ["eyebrow", "title", "content"],
-      buttons: [],
-      items: [
-        createCard("producto-1", "Monitores multiparámetros", "Evaluación de funcionamiento y accesorios."),
-        createCard("producto-2", "Módulos y cables", "Revisión de conectividad y componentes asociados."),
-      ],
-    },
-    "Línea 04": {
-      eyebrow: "Línea 04",
-      title: "Componentes y accesorios",
-      content: "Repuestos y componentes para continuidad técnica.",
-      editableFields: ["eyebrow", "title", "content"],
-      buttons: [],
-      items: [
-        createCard("producto-1", "Actuadores y motores", "Componentes para movimientos eléctricos."),
-        createCard("producto-2", "Controles y fuentes", "Elementos de control y alimentación."),
       ],
     },
   },
@@ -268,6 +240,7 @@ const defaultSteps = [
     backgroundColor: "#213255",
     borderColor: "#213255",
     textColor: "#ffffff",
+    numberColor: "#58c3de",
     image: "",
   },
   {
@@ -279,6 +252,7 @@ const defaultSteps = [
     backgroundColor: "#213255",
     borderColor: "#213255",
     textColor: "#ffffff",
+    numberColor: "#58c3de",
     image: "",
   },
   {
@@ -290,6 +264,7 @@ const defaultSteps = [
     backgroundColor: "#213255",
     borderColor: "#213255",
     textColor: "#ffffff",
+    numberColor: "#58c3de",
     image: "",
   },
   {
@@ -301,6 +276,7 @@ const defaultSteps = [
     backgroundColor: "#213255",
     borderColor: "#213255",
     textColor: "#ffffff",
+    numberColor: "#58c3de",
     image: "",
   },
 ];
@@ -372,6 +348,7 @@ function createCard(id: string, title: string, text: string, image = "") {
     backgroundColor: "#ffffff",
     borderColor: "#d7e9ef",
     textColor: "#213255",
+    numberColor: "#58c3de",
     image,
   };
 }
@@ -392,6 +369,7 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
     accentColor: value.accentColor || "#58c3de",
     textColor: value.textColor || "#ffffff",
     sectionImage: value.sectionImage || "",
+    sectionImages: value.sectionImages || (value.sectionImage ? [value.sectionImage] : []),
     columns: value.columns || 4,
     buttons:
       value.buttons ??
@@ -417,6 +395,7 @@ function normalizeItems(items: SectionContent["items"]) {
     backgroundColor: item.backgroundColor || "#ffffff",
     borderColor: item.borderColor || "#d7e9ef",
     textColor: item.textColor || "#213255",
+    numberColor: item.numberColor || "#58c3de",
     image: item.image || "",
   }));
 }
@@ -689,10 +668,13 @@ function EditorFields({
         <ButtonsEditor content={content} onUpdate={onUpdate} />
       )}
       {content.allowUpload !== false && !isWorkflow && (
-        <UploadGuide
+        <ImageGalleryEditor
+          images={content.sectionImages}
+          onChange={(sectionImages) =>
+            onUpdate({ sectionImages, sectionImage: sectionImages[0] || "" })
+          }
           formats="JPG, PNG, WEBP"
           maxSize="Máximo 5 MB"
-          onChange={(sectionImage) => onUpdate({ sectionImage })}
           recommended={
             previewType === "popup"
               ? "Recomendado: 1200 × 1200 px"
@@ -862,6 +844,7 @@ function RepeatableItemsEditor({
                   backgroundColor: content.itemColor,
                   borderColor: content.accentColor,
                   textColor: content.textColor,
+                  numberColor: content.accentColor,
                   image: "",
                 },
               ],
@@ -900,6 +883,7 @@ function RepeatableItemsEditor({
               <ColorInput label="Fondo caja" value={item.backgroundColor} onChange={(backgroundColor) => updateItem(index, { backgroundColor })} />
               <ColorInput label="Borde caja" value={item.borderColor} onChange={(borderColor) => updateItem(index, { borderColor })} />
               <ColorInput label="Texto caja" value={item.textColor} onChange={(textColor) => updateItem(index, { textColor })} />
+              <ColorInput label="NÃºmero/icono" value={item.numberColor} onChange={(numberColor) => updateItem(index, { numberColor })} />
             </div>
             <label className="text-xs font-semibold text-[#34466f]">
               Imagen de la caja
@@ -1056,6 +1040,89 @@ export function UploadGuide({
   );
 }
 
+function ImageGalleryEditor({
+  title,
+  recommended,
+  maxSize,
+  formats,
+  images,
+  onChange,
+}: {
+  title: string;
+  recommended: string;
+  maxSize: string;
+  formats: string;
+  images: string[];
+  onChange: (images: string[]) => void;
+}) {
+  function addFiles(files: FileList | null) {
+    if (!files?.length) return;
+    const availableSlots = Math.max(0, 3 - images.length);
+    if (!availableSlots) return;
+    const selectedFiles = Array.from(files).slice(0, availableSlots);
+    const pending: string[] = [];
+    selectedFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        pending.push(String(reader.result || ""));
+        if (pending.length === selectedFiles.length) {
+          onChange([...images, ...pending].slice(0, 3));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  return (
+    <div className="rounded-lg border border-dashed border-[#9eddea] bg-[#f4fbfd] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <span className="text-sm font-bold text-[#213255]">{title}</span>
+          <span className="mt-2 block text-xs text-[#34466f]">{recommended}</span>
+          <span className="mt-1 block text-xs text-[#667085]">
+            {formats} · {maxSize} · hasta 3 imágenes para carrusel
+          </span>
+        </div>
+        <label className="inline-flex cursor-pointer rounded-md bg-[#58c3de] px-3 py-2 text-xs font-bold text-[#213255]">
+          Agregar
+          <input
+            accept="image/*"
+            className="hidden"
+            multiple
+            onChange={(event) => addFiles(event.target.files)}
+            type="file"
+          />
+        </label>
+      </div>
+
+      {images.length > 0 && (
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {images.slice(0, 3).map((image, index) => (
+            <div className="overflow-hidden rounded-lg border border-[#d7e9ef] bg-white" key={`${image}-${index}`}>
+              <div
+                className="h-24 bg-cover bg-center"
+                style={{ backgroundImage: `url("${image}")` }}
+              />
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-xs font-semibold text-[#34466f]">
+                  Imagen {index + 1}
+                </span>
+                <button
+                  className="text-xs font-bold text-[#213255]"
+                  onClick={() => onChange(images.filter((_, imageIndex) => imageIndex !== index))}
+                  type="button"
+                >
+                  Quitar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RichPreview({ html, className }: { html: string; className: string }) {
   return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;
 }
@@ -1067,18 +1134,20 @@ function PopupPreview({
   section: string;
   content: SectionContent;
 }) {
+  const popupImage = content.sectionImages[0] || content.sectionImage;
+
   return (
     <div className="grid min-h-[610px] place-items-center rounded-lg bg-[#213255]/65 p-7">
       <div className="grid w-full max-w-3xl overflow-hidden rounded-[24px] bg-white shadow-2xl md:grid-cols-2">
         <div
           className="grid min-h-72 place-items-center bg-[#eaf8fc] bg-cover bg-center p-8 text-center text-sm text-[#667085]"
           style={{
-            backgroundImage: content.sectionImage
-              ? `url("${content.sectionImage}")`
+            backgroundImage: popupImage
+              ? `url("${popupImage}")`
               : undefined,
           }}
         >
-          {!content.sectionImage && "Imagen 1200 × 1200 px"}
+          {!popupImage && "Imagen 1200 × 1200 px"}
         </div>
         <div
           className="flex flex-col justify-center p-8"

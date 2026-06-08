@@ -16,7 +16,6 @@ const navigation = [
     icon: "05",
     children: [
       { label: "Crear publicación", href: "/admin/blog/crear" },
-      { label: "Editar vista blog", href: "/admin/blog/vista" },
     ],
   },
   {

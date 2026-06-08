@@ -8,7 +8,6 @@ const pagePaths: Record<string, string> = {
   nosotros: "/nosotros",
   servicios: "/servicios",
   blog: "/blog",
-  "blog-vista": "/blog/senales-desgaste-camas-clinicas",
   catalogo: "/catalogo",
   "catalogo-lineas-vista": "/catalogo",
   "catalogo-productos-vista": "/catalogo/camas-clinicas-electricas",
@@ -51,10 +50,7 @@ const sectionSelectors: Record<string, Record<string, string>> = {
   catalogo: {
     "Hero principal": "[data-editor-section='hero']",
     "Navegación de líneas": "[data-editor-section='catalogo']",
-    "Línea 01": "[data-editor-section='linea-01']",
-    "Línea 02": "[data-editor-section='linea-02']",
-    "Línea 03": "[data-editor-section='linea-03']",
-    "Línea 04": "[data-editor-section='linea-04']",
+    "Vista de línea": "[data-editor-section='linea-01']",
   },
   "catalogo-lineas-vista": {
     "Título de línea": "[data-editor-section='catalogo']",
@@ -291,7 +287,7 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
       !item.closest("nav"),
   );
   if (!sectionIntro) {
-    if (paragraphs[0]) paragraphs[0].innerHTML = content.subtitle || content.content;
+    if (paragraphs[0]) paragraphs[0].innerHTML = content.content;
     if (paragraphs[1]) paragraphs[1].innerHTML = content.content;
   }
 
@@ -313,7 +309,7 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
   });
 
   if (content.items.length) {
-    const cards = findCards(target);
+    const cards = ensurePreviewCards(target, content.items.length);
     content.items.forEach((item, index) => {
       const card = cards[index];
       if (!card) return;
@@ -332,7 +328,10 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
       }
 
       const cardNumber = first(card, ["span"]);
-      if (cardNumber && item.number) cardNumber.innerHTML = item.number;
+      if (cardNumber) {
+        if (item.number) cardNumber.innerHTML = item.number;
+        cardNumber.style.color = item.numberColor || content.accentColor || "";
+      }
 
       const cardTitle = first(card, ["h2", "h3", "p.uppercase", ".font-semibold"]);
       if (cardTitle) cardTitle.innerHTML = item.title;
@@ -349,12 +348,19 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
 }
 
 function applySectionImage(target: HTMLElement, content: PreviewContent) {
-  if (!content.sectionImage) return;
+  const images = content.sectionImages?.length
+    ? content.sectionImages
+    : content.sectionImage
+      ? [content.sectionImage]
+      : [];
+  if (!images.length) return;
+  const imageSource = images[0];
 
   const image = target.querySelector("img");
   if (image instanceof HTMLImageElement) {
-    image.src = content.sectionImage;
+    image.src = imageSource;
     image.srcset = "";
+    renderCarouselDots(target, images);
     return;
   }
 
@@ -368,10 +374,34 @@ function applySectionImage(target: HTMLElement, content: PreviewContent) {
   );
 
   if (visual instanceof HTMLElement) {
-    visual.style.backgroundImage = `url("${content.sectionImage}")`;
+    visual.style.backgroundImage = `url("${imageSource}")`;
     visual.style.backgroundPosition = "center";
     visual.style.backgroundSize = "cover";
+    renderCarouselDots(visual, images);
   }
+}
+
+function renderCarouselDots(container: HTMLElement, images: string[]) {
+  container.querySelector("[data-admin-carousel-dots]")?.remove();
+  if (images.length < 2) return;
+
+  const dots = container.ownerDocument.createElement("div");
+  dots.dataset.adminCarouselDots = "true";
+  dots.style.display = "flex";
+  dots.style.gap = "6px";
+  dots.style.justifyContent = "center";
+  dots.style.marginTop = "12px";
+
+  images.slice(0, 3).forEach((_, index) => {
+    const dot = container.ownerDocument.createElement("span");
+    dot.style.width = "8px";
+    dot.style.height = "8px";
+    dot.style.borderRadius = "9999px";
+    dot.style.background = index === 0 ? "#58c3de" : "#d7e9ef";
+    dots.appendChild(dot);
+  });
+
+  container.appendChild(dots);
 }
 
 function applyGridColumns(target: HTMLElement, content: PreviewContent) {
@@ -395,6 +425,12 @@ function applyCardAppearance(
 
   card.style.clipPath = "";
   card.style.aspectRatio = "";
+
+  if (content.shape === "arrow") {
+    card.style.borderRadius = "0";
+    card.style.clipPath =
+      "polygon(0 0, calc(100% - 28px) 0, 100% 50%, calc(100% - 28px) 100%, 0 100%, 18px 50%)";
+  }
 
   if (content.shape === "rectangle") {
     card.style.borderRadius = "0";
@@ -423,6 +459,24 @@ function applyCardAppearance(
   } else {
     card.style.backgroundImage = "";
   }
+}
+
+function ensurePreviewCards(target: HTMLElement, count: number) {
+  const cards = findCards(target);
+  if (!cards.length) return cards;
+
+  const container = cards[0].parentElement;
+  const template = cards[cards.length - 1];
+  if (!container || !template) return cards;
+
+  while (cards.length < count) {
+    const clone = template.cloneNode(true);
+    if (!(clone instanceof HTMLElement)) break;
+    container.appendChild(clone);
+    cards.push(clone);
+  }
+
+  return cards;
 }
 
 function applyItemImage(

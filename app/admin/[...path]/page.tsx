@@ -62,19 +62,12 @@ const editors: Record<
       "Gestiona el encabezado, presentación y distribución general del blog.",
     sections: ["Hero principal", "Listado de publicaciones"],
   },
-  "blog/vista": {
-    contentKey: "blog-vista",
-    title: "Editar vista de publicación",
-    description:
-      "Define cómo se presenta cada noticia, blog o artículo al cliente.",
-    sections: ["Título y fecha", "Breve reseña", "Imagen principal", "Artículo", "Contenido relacionado"],
-  },
   catalogo: {
     contentKey: "catalogo",
     title: "Editar página Catálogo",
     description:
       "Administra el encabezado, navegación de líneas y presentación de productos.",
-    sections: ["Hero principal", "Navegación de líneas", "Línea 01", "Línea 02", "Línea 03", "Línea 04"],
+    sections: ["Hero principal", "Navegación de líneas", "Vista de línea"],
   },
   "catalogo/lineas/vista": {
     contentKey: "catalogo-lineas-vista",
@@ -102,7 +95,7 @@ const editors: Record<
     title: "Editar ventana emergente",
     description:
       "Configura el contenido y apariencia de la ventana emergente del sitio.",
-    sections: ["Configuración", "Imagen", "Etiqueta", "Título", "Texto", "Botón principal", "Botón cerrar", "Frecuencia"],
+    sections: ["Configuración"],
     previewType: "popup",
   },
 };

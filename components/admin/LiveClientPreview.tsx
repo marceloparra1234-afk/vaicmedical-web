@@ -185,6 +185,10 @@ function buildPreviewDocument(
   selector: string | undefined,
   content: PreviewContent,
 ) {
+  if (typeof DOMParser === "undefined") {
+    return createPreviewDocument(sectionHtml, assets);
+  }
+
   const parser = new DOMParser();
   const sourceDocument = parser.parseFromString(
     `<main class="admin-preview-shell">${sectionHtml}</main>`,
@@ -201,10 +205,17 @@ function buildPreviewDocument(
     sourceDocument.body.querySelector(".admin-preview-shell")?.innerHTML ||
     sectionHtml;
 
+  return createPreviewDocument(renderedSection, assets);
+}
+
+function createPreviewDocument(sectionHtml: string, assets: string) {
+  const baseHref =
+    typeof window === "undefined" ? "https://vaicmedical-web.vercel.app" : window.location.origin;
+
   return `<!doctype html>
     <html>
       <head>
-        <base href="${window.location.origin}">
+        <base href="${baseHref}">
         ${assets}
         <style>
           html { scroll-behavior: auto !important; }
@@ -234,7 +245,7 @@ function buildPreviewDocument(
         </style>
       </head>
       <body>
-        <main class="admin-preview-shell">${renderedSection}</main>
+        <main class="admin-preview-shell">${sectionHtml}</main>
       </body>
     </html>`;
 }

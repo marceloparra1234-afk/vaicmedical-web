@@ -484,6 +484,10 @@ function ensurePreviewCards(target: HTMLElement, count: number) {
     cards.push(clone);
   }
 
+  cards.slice(count).forEach((card) => {
+    card.style.display = "none";
+  });
+
   return cards;
 }
 

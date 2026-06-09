@@ -44,8 +44,35 @@ export function PublicContentHydrator() {
               });
             },
           );
+          if (pageKey === "inicio") void loadHomeLinkedSections();
         })
         .catch(() => undefined);
+    }
+
+    async function loadHomeLinkedSections() {
+      const links = [
+        ["nosotros", "Hero principal", "[data-editor-section='nosotros']"],
+        ["servicios", "Hero principal", "[data-editor-section='servicios']"],
+        ["blog", "Hero principal", "[data-editor-section='blog']"],
+        ["catalogo", "Hero principal", "[data-editor-section='catalogo']"],
+      ] as const;
+      const results = await Promise.all(
+        links.map(async ([linkedPage]) => {
+          const response = await fetch(
+            `/api/site-content?pageKey=${encodeURIComponent(linkedPage)}`,
+            { cache: "no-store" },
+          );
+          return response.ok ? response.json() : null;
+        }),
+      );
+      results.forEach((result, index) => {
+        const [, section, selector] = links[index];
+        const linkedContent = result?.content?.[section] as PreviewContent | undefined;
+        if (!linkedContent) return;
+        document.querySelectorAll<HTMLElement>(selector).forEach((target) => {
+          applyContentToTarget(target, linkedContent);
+        });
+      });
     }
 
     function handleContentUpdated(event: StorageEvent | Event) {

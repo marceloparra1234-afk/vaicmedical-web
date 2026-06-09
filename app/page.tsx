@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { blogPosts } from "@/data/blog-posts";
 import { getFeaturedCatalogProducts } from "@/data/catalog-products";
+import { getManagedBlogPosts } from "@/data/supabase-blog";
+import { getManagedCreatedContent } from "@/data/supabase-created-content";
+import { getSiteContent } from "@/lib/supabase-admin";
+
+type LinkedSection = { title?: string; content?: string };
 
 const workflow = [
   ["Solicitud", "Recibimos el requerimiento y clasificamos la criticidad."],
@@ -18,9 +22,34 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function Home() {
-  const featuredProducts = getFeaturedCatalogProducts().slice(0, 4);
-  const latestPosts = blogPosts.slice(0, 3);
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [managedPosts, createdProducts, nosotros, servicios, blog, catalogo] =
+    await Promise.all([
+      getManagedBlogPosts(),
+      getManagedCreatedContent("product"),
+      getSiteContent<Record<string, LinkedSection>>("nosotros"),
+      getSiteContent<Record<string, LinkedSection>>("servicios"),
+      getSiteContent<Record<string, LinkedSection>>("blog"),
+      getSiteContent<Record<string, LinkedSection>>("catalogo"),
+    ]);
+  const featuredProducts = [
+    ...createdProducts.map((product) => ({
+      slug: product.slug,
+      name: product.title || "Producto",
+      lineName: product.line || "Catálogo",
+      description: product.excerpt || "",
+      image: product.primaryImage || "/service-maintenance.svg",
+      created: true,
+    })),
+    ...getFeaturedCatalogProducts().map((product) => ({ ...product, created: false })),
+  ].slice(0, 4);
+  const latestPosts = managedPosts.slice(0, 3);
+  const aboutSummary = nosotros?.["Hero principal"];
+  const servicesSummary = servicios?.["Hero principal"];
+  const blogSummary = blog?.["Hero principal"];
+  const catalogSummary = catalogo?.["Hero principal"];
 
   return (
     <main>
@@ -92,18 +121,16 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[0.95fr_1.05fr]">
           <div>
             <SectionLabel>Nosotros</SectionLabel>
-            <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">
-              Trabajo técnico para equipos que no pueden quedar fuera de
-              servicio.
-            </h2>
+            <h2
+              className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl"
+              dangerouslySetInnerHTML={{ __html: aboutSummary?.title || "Trabajo técnico para equipos que no pueden quedar fuera de servicio." }}
+            />
           </div>
           <div className="grid gap-8">
-            <p className="text-lg leading-8 text-[#34466f]">
-              VaicMedical se enfoca en diagnosticar, reparar y mantener equipos
-              médicos de uso intensivo. Nuestro trabajo combina coordinación,
-              criterio técnico y documentación para que cada requerimiento tenga
-              seguimiento.
-            </p>
+            <p
+              className="text-lg leading-8 text-[#34466f]"
+              dangerouslySetInnerHTML={{ __html: aboutSummary?.content || "VaicMedical se enfoca en diagnosticar, reparar y mantener equipos médicos de uso intensivo. Nuestro trabajo combina coordinación, criterio técnico y documentación para que cada requerimiento tenga seguimiento." }}
+            />
             <Link
               className="w-fit rounded-full bg-[#213255] px-7 py-4 font-semibold text-white transition hover:bg-[#34466f]"
               href="/nosotros"
@@ -134,13 +161,8 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
           <div className="text-center">
             <SectionLabel>Servicios</SectionLabel>
-            <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">
-              Mantención preventiva, reparación correctiva y soporte en terreno.
-            </h2>
-            <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/70">
-              Atendemos equipos esenciales para la operación diaria, con foco en
-              recuperar disponibilidad y reducir tiempos fuera de servicio.
-            </p>
+            <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl" dangerouslySetInnerHTML={{ __html: servicesSummary?.title || "Mantención preventiva, reparación correctiva y soporte en terreno." }} />
+            <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/70" dangerouslySetInnerHTML={{ __html: servicesSummary?.content || "Atendemos equipos esenciales para la operación diaria, con foco en recuperar disponibilidad y reducir tiempos fuera de servicio." }} />
             <Link
               className="mt-8 inline-flex rounded-full bg-[#58c3de] px-7 py-4 font-semibold text-[#213255] transition hover:bg-white"
               href="/servicios"
@@ -165,14 +187,8 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[0.95fr_1.05fr]">
           <div>
             <SectionLabel>Catálogo</SectionLabel>
-            <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">
-              Categorías para ordenar equipos, repuestos y solicitudes técnicas.
-            </h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-[#34466f]">
-              Revisa una selección de equipos, componentes y servicios
-              técnicos. Cada producto cuenta con información, galería y acceso
-              directo para realizar consultas.
-            </p>
+            <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl" dangerouslySetInnerHTML={{ __html: catalogSummary?.title || "Categorías para ordenar equipos, repuestos y solicitudes técnicas." }} />
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-[#34466f]" dangerouslySetInnerHTML={{ __html: catalogSummary?.content || "Revisa una selección de equipos, componentes y servicios técnicos. Cada producto cuenta con información, galería y acceso directo para realizar consultas." }} />
             <Link
               className="mt-8 inline-flex rounded-full bg-[#213255] px-7 py-4 font-semibold text-white transition hover:bg-[#34466f]"
               href="/catalogo"
@@ -184,7 +200,7 @@ export default function Home() {
             {featuredProducts.map((product) => (
               <Link
                 className="group overflow-hidden rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] transition hover:-translate-y-1 hover:border-[#58c3de] hover:bg-white hover:shadow-lg"
-                href={`/catalogo/${product.slug}`}
+                href={product.created ? "/catalogo" : `/catalogo/${product.slug}`}
                 key={product.slug}
               >
                 <div className="relative aspect-square border-b border-[#d7e9ef] bg-[#eaf8fc]">
@@ -194,6 +210,7 @@ export default function Home() {
                     fill
                     sizes="(max-width: 640px) 100vw, 320px"
                     src={product.image}
+                    unoptimized={product.image.startsWith("http")}
                   />
                 </div>
                 <div className="p-6">
@@ -221,9 +238,7 @@ export default function Home() {
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <SectionLabel>Blog</SectionLabel>
-              <h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
-                Criterios técnicos para cuidar equipos médicos.
-              </h2>
+              <h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl" dangerouslySetInnerHTML={{ __html: blogSummary?.title || "Criterios técnicos para cuidar equipos médicos." }} />
             </div>
             <Link
               className="w-fit rounded-full border border-[#9eddea] bg-white px-7 py-4 font-semibold text-[#213255] transition hover:border-[#58c3de]"
@@ -245,7 +260,8 @@ export default function Home() {
                     className="object-cover transition duration-300 group-hover:scale-105"
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
-                    src={post.image}
+                    src={post.primaryImage}
+                    unoptimized={post.primaryImage.startsWith("http")}
                   />
                 </div>
                 <article className="p-7">

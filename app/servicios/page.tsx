@@ -62,8 +62,8 @@ export default function ServiciosPage() {
       </section>
 
       <section className="bg-[#213255] px-5 py-20 text-white sm:px-8" data-editor-section="metodo">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-          <div>
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
               Método de trabajo
             </p>
@@ -71,21 +71,22 @@ export default function ServiciosPage() {
               Diagnóstico, ejecución y trazabilidad técnica.
             </h2>
           </div>
-          <div className="grid gap-4">
+          <div className="grid gap-0 lg:grid-cols-3">
             {[
-              "Recibimos el requerimiento y clasificamos la criticidad.",
-              "Evaluamos el equipo, la falla y las condiciones de operación.",
-              "Ejecutamos la reparación o mantención con informe de respaldo.",
-            ].map((item, index) => (
-              <div
-                key={item}
-                className="grid grid-cols-[3rem_1fr] gap-4 border-b border-white/15 pb-5"
+              ["Recibimos el requerimiento", "Clasificamos la criticidad."],
+              ["Evaluamos el equipo", "Revisamos la falla y condiciones de operación."],
+              ["Ejecutamos el trabajo", "Reparamos o mantenemos con informe de respaldo."],
+            ].map(([title, text], index) => (
+              <article
+                key={title}
+                className="relative flex min-h-40 flex-col items-center justify-center bg-[#213255] px-9 py-6 text-center text-white shadow-sm lg:mr-5 lg:[clip-path:polygon(0_0,calc(100%-22px)_0,100%_50%,calc(100%-22px)_100%,0_100%,22px_50%)] lg:first:[clip-path:polygon(0_0,calc(100%-22px)_0,100%_50%,calc(100%-22px)_100%,0_100%)]"
               >
-                <span className="font-mono text-sm text-[#58c3de]">
+                <span className="font-mono text-xs font-semibold text-[#58c3de]">
                   0{index + 1}
                 </span>
-                <p className="text-xl leading-8 text-white/85">{item}</p>
-              </div>
+                <h3 className="mt-3 text-xl font-semibold">{title}</h3>
+                <p className="mt-2 max-w-52 text-sm leading-6 text-white/70">{text}</p>
+              </article>
             ))}
           </div>
         </div>

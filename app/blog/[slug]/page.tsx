@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BlogGallery } from "@/components/BlogGallery";
 import { getManagedBlogPost } from "@/data/supabase-blog";
 
 export const dynamic = "force-dynamic";
@@ -38,17 +38,11 @@ export default async function BlogArticlePage({
         </header>
 
         <section className="mx-auto max-w-6xl px-5 sm:px-8" data-editor-section="article-image">
-          <div className="overflow-hidden rounded-[2rem] border border-[#d7e9ef] bg-[#eaf8fc] shadow-xl shadow-[#213255]/10">
-            <Image
-              src={post.primaryImage}
-              alt={post.title}
-              width={1200}
-              height={720}
-              priority
-              unoptimized={post.primaryImage.startsWith("data:")}
-              className="h-auto w-full"
-            />
-          </div>
+          <BlogGallery
+            primaryImage={post.primaryImage}
+            secondaryImages={post.secondaryImages}
+            title={post.title}
+          />
         </section>
 
         <section className="mx-auto max-w-3xl px-5 py-16 sm:px-8" data-editor-section="article-body">

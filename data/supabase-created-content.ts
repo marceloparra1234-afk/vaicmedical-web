@@ -1,0 +1,44 @@
+import "server-only";
+
+import { getSupabaseAdminConfig, getSupabaseAdminHeaders } from "@/lib/supabase-admin";
+
+export type ManagedCreatedContent = {
+  id: string;
+  slug: string;
+  title?: string;
+  excerpt?: string;
+  body?: string;
+  line?: string;
+  primaryImage?: string;
+  featured?: boolean;
+  createdAt: string;
+};
+
+export async function getManagedCreatedContent(
+  type: "line" | "product",
+): Promise<ManagedCreatedContent[]> {
+  const config = getSupabaseAdminConfig();
+  if (!config) return [];
+
+  const response = await fetch(
+    `${config.url}/rest/v1/created_content?content_type=eq.${type}&select=id,slug,content,created_at&order=created_at.desc`,
+    {
+      cache: "no-store",
+      headers: getSupabaseAdminHeaders(config.serviceRoleKey),
+    },
+  );
+  if (!response.ok) return [];
+
+  const rows = (await response.json()) as Array<{
+    id: string;
+    slug: string;
+    content: Omit<ManagedCreatedContent, "id" | "slug" | "createdAt">;
+    created_at: string;
+  }>;
+  return rows.map((row) => ({
+    ...row.content,
+    id: row.id,
+    slug: row.slug,
+    createdAt: row.created_at,
+  }));
+}

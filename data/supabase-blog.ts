@@ -10,6 +10,7 @@ export type ManagedBlogPost = {
   excerpt: string;
   body: string;
   primaryImage: string;
+  secondaryImages: Array<{ id?: string; url: string; name?: string; type?: string }>;
   featured: boolean;
   createdAt?: string;
 };
@@ -29,6 +30,7 @@ function getFallbackPosts(): ManagedBlogPost[] {
     excerpt: post.excerpt,
     body: post.body.join("\n"),
     primaryImage: post.image,
+    secondaryImages: [],
     featured: false,
   }));
 }
@@ -38,7 +40,7 @@ export async function getManagedBlogPosts() {
   if (!config) return getFallbackPosts();
 
   const response = await fetch(
-    `${config.url}/rest/v1/created_content?content_type=eq.blog&select=id,slug,title:content-%3E%3Etitle,date:content-%3E%3Edate,excerpt:content-%3E%3Eexcerpt,primary_image:content-%3E%3EprimaryImage,featured:content-%3Efeatured,created_at&order=created_at.desc`,
+    `${config.url}/rest/v1/created_content?content_type=eq.blog&select=id,slug,title:content-%3E%3Etitle,date:content-%3E%3Edate,excerpt:content-%3E%3Eexcerpt,primary_image:content-%3E%3EprimaryImage,secondary_images:content-%3EsecondaryImages,featured:content-%3Efeatured,created_at&order=created_at.desc`,
     {
       cache: "no-store",
       headers: {
@@ -57,6 +59,7 @@ export async function getManagedBlogPosts() {
     date: string | null;
     excerpt: string | null;
     primary_image: string | null;
+    secondary_images: ManagedBlogPost["secondaryImages"] | null;
     featured: boolean | null;
     created_at: string;
   }>;
@@ -69,6 +72,7 @@ export async function getManagedBlogPosts() {
     excerpt: row.excerpt || "",
     body: "",
     primaryImage: row.primary_image || "/blog-article.svg",
+    secondaryImages: row.secondary_images || [],
     featured: Boolean(row.featured),
     createdAt: row.created_at,
   }));
@@ -115,6 +119,7 @@ export async function getManagedBlogPost(slug: string) {
     excerpt: row.content.excerpt || "",
     body: row.content.body || "",
     primaryImage: row.content.primaryImage || "/blog-article.svg",
+    secondaryImages: row.content.secondaryImages || [],
     featured: Boolean(row.content.featured),
     createdAt: row.created_at,
   };

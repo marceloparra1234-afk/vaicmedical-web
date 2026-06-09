@@ -517,6 +517,11 @@ export function AdminEditorWorkspace({
         return;
       }
       setSaveStatus("Cambios guardados correctamente");
+      localStorage.setItem(
+        "vaicmedical:content-updated",
+        `${contentKey}:${Date.now()}`,
+      );
+      window.dispatchEvent(new Event("vaicmedical:content-updated"));
     } catch {
       setSaveStatus("No se pudo conectar con el servidor para guardar");
     } finally {

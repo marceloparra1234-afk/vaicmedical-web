@@ -6,17 +6,23 @@ import { useEffect, useState } from "react";
 
 const POPUP_SESSION_KEY = "vaicmedical:site-popup-session";
 
-const popup = {
+const defaultPopup = {
   eyebrow: "Soporte técnico VaicMedical",
   title: "¿Necesitas evaluar o reparar un equipo médico?",
   text: "Coordinamos diagnóstico, mantención y reparación de equipos clínicos, con seguimiento técnico y documentación de cada intervención.",
   image: "/service-maintenance.svg",
   buttonLabel: "Solicitar evaluación",
   buttonHref: "/contacto",
+  visible: true,
+  backgroundColor: "#ffffff",
+  accentColor: "#58c3de",
+  buttonColor: "#213255",
+  textColor: "#213255",
 };
 
 export function SitePopup() {
   const [visible, setVisible] = useState(false);
+  const [popup, setPopup] = useState(defaultPopup);
 
   useEffect(() => {
     if (
@@ -26,10 +32,45 @@ export function SitePopup() {
       return;
     }
 
-    if (sessionStorage.getItem(POPUP_SESSION_KEY) === "true") return;
-
-    const timer = window.setTimeout(() => setVisible(true), 900);
-    return () => window.clearTimeout(timer);
+    let cancelled = false;
+    let timer: number | undefined;
+    fetch("/api/site-content?pageKey=ventana-emergente", { cache: "no-store" })
+      .then(async (response) => (response.ok ? response.json() : null))
+      .then((result) => {
+        if (cancelled) return;
+        const content = result?.content?.Configuración;
+        const nextPopup = content
+          ? {
+              eyebrow: stripHtml(content.eyebrow || content.subtitle || defaultPopup.eyebrow),
+              title: stripHtml(content.title || defaultPopup.title),
+              text: stripHtml(content.content || defaultPopup.text),
+              image: content.sectionImages?.[0] || content.sectionImage || defaultPopup.image,
+              buttonLabel: content.buttons?.[0]?.label || defaultPopup.buttonLabel,
+              buttonHref: content.buttons?.[0]?.href || defaultPopup.buttonHref,
+              visible: content.visible !== false,
+              backgroundColor: content.backgroundColor || defaultPopup.backgroundColor,
+              accentColor: content.accentColor || defaultPopup.accentColor,
+              buttonColor: content.itemColor || defaultPopup.buttonColor,
+              textColor: content.textColor || defaultPopup.textColor,
+            }
+          : defaultPopup;
+        setPopup(nextPopup);
+        if (
+          nextPopup.visible &&
+          sessionStorage.getItem(POPUP_SESSION_KEY) !== "true"
+        ) {
+          timer = window.setTimeout(() => setVisible(true), 900);
+        }
+      })
+      .catch(() => {
+        if (sessionStorage.getItem(POPUP_SESSION_KEY) !== "true") {
+          timer = window.setTimeout(() => setVisible(true), 900);
+        }
+      });
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -66,8 +107,9 @@ export function SitePopup() {
       role="dialog"
     >
       <div
-        className="relative grid max-h-[calc(100vh-4rem)] w-full max-w-5xl overflow-auto rounded-[28px] bg-white shadow-2xl shadow-[#213255]/35 md:grid-cols-[0.95fr_1.05fr]"
+        className="relative grid max-h-[calc(100vh-4rem)] w-full max-w-5xl overflow-auto rounded-[28px] shadow-2xl shadow-[#213255]/35 md:grid-cols-[0.95fr_1.05fr]"
         onClick={(event) => event.stopPropagation()}
+        style={{ backgroundColor: popup.backgroundColor, color: popup.textColor }}
       >
         <button
           aria-label="Cerrar ventana emergente"
@@ -90,10 +132,10 @@ export function SitePopup() {
         </div>
 
         <div className="flex flex-col justify-center px-6 py-10 sm:px-10 md:px-12">
-          <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#58c3de]">
+          <p className="text-xs font-extrabold uppercase tracking-[0.22em]" style={{ color: popup.accentColor }}>
             {popup.eyebrow}
           </p>
-          <h2 className="mt-4 text-3xl font-semibold leading-tight text-[#213255] sm:text-4xl">
+          <h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">
             {popup.title}
           </h2>
           <p className="mt-5 text-base leading-8 text-[#34466f]">
@@ -102,9 +144,10 @@ export function SitePopup() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              className="inline-flex rounded-xl bg-[#213255] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#34466f]"
+              className="inline-flex rounded-xl px-6 py-3 text-sm font-bold text-white transition"
               href={popup.buttonHref}
               onClick={closePopup}
+              style={{ backgroundColor: popup.buttonColor }}
             >
               {popup.buttonLabel}
             </Link>
@@ -120,4 +163,8 @@ export function SitePopup() {
       </div>
     </div>
   );
+}
+
+function stripHtml(value: string) {
+  return value.replace(/<[^>]*>/g, "");
 }

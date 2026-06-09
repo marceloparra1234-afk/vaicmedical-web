@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SitePopup } from "@/components/SitePopup";
+import { PublicContentHydrator } from "@/components/PublicContentHydrator";
 
 const navItems = [
   { label: "Inicio", href: "/" },
@@ -48,6 +49,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f6fbfd] text-[#213255]">
+      <PublicContentHydrator />
       <header className="sticky top-0 z-20 border-b border-[#d7e9ef] bg-[#f6fbfd]/92 backdrop-blur">
         <nav className="flex items-center justify-between px-6 py-4 sm:px-10 lg:px-14">
           <Link className="block" href="/" aria-label="VaicMedical inicio">

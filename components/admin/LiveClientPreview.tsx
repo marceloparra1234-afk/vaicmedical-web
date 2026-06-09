@@ -14,7 +14,7 @@ const pagePaths: Record<string, string> = {
   contacto: "/contacto",
 };
 
-const sectionSelectors: Record<string, Record<string, string>> = {
+export const sectionSelectors: Record<string, Record<string, string>> = {
   inicio: {
     "Hero principal": "[data-editor-section='hero']",
     "Método de trabajo": "[data-editor-section='metodo']",
@@ -246,7 +246,7 @@ function createPreviewDocument(sectionHtml: string, assets: string) {
     </html>`;
 }
 
-function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
+export function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
   target.style.display = content.visible ? "" : "none";
   target.style.backgroundColor = content.backgroundColor || "";
   target.style.color = content.textColor || "";
@@ -286,9 +286,17 @@ function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
       !item.className.includes("font-mono") &&
       !item.closest("nav"),
   );
+  if (content.subtitle) {
+    const subtitle = paragraphs.find(
+      (item) =>
+        heading &&
+        Boolean(item.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING),
+    );
+    if (subtitle) subtitle.innerHTML = content.subtitle;
+  }
   if (!sectionIntro) {
-    if (paragraphs[0]) paragraphs[0].innerHTML = content.content;
-    if (paragraphs[1]) paragraphs[1].innerHTML = content.content;
+    const intro = paragraphs.find((item) => item.innerHTML !== content.subtitle);
+    if (intro) intro.innerHTML = content.content;
   }
 
   const buttons = Array.from(target.querySelectorAll("a, button")).filter(

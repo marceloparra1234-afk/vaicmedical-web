@@ -64,6 +64,7 @@ const homeDefaults: Record<string, Partial<SectionContent>> = {
     subtitle: "Noticias y artículos técnicos",
     content:
       "Publicaciones sobre mantención, reparación y continuidad técnica de equipos médicos.",
+    editableFields: ["title"],
     allowItems: false,
     items: [],
   },
@@ -373,13 +374,13 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
     sectionImages: value.sectionImages || (value.sectionImage ? [value.sectionImage] : []),
     columns: value.columns || 4,
     buttons:
-      value.buttons ??
+      normalizeButtons(value.buttons ??
       (isMethod
         ? []
         : [
             { id: "primary", label: "Botón principal", href: "/", visible: true },
             { id: "secondary", label: "Botón secundario", href: "/", visible: true },
-          ]),
+          ])),
     items: normalizeItems(
       value.items || (isMethod ? defaultSteps : repeatableDefaults[section] || []),
     ),
@@ -388,6 +389,15 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
     allowButtons: value.allowButtons ?? true,
     allowUpload: value.allowUpload ?? true,
   };
+}
+
+function normalizeButtons(buttons: SectionContent["buttons"]) {
+  return buttons.map((button, index) => ({
+    ...button,
+    backgroundColor: button.backgroundColor || (index === 0 ? "#213255" : "#ffffff"),
+    borderColor: button.borderColor || (index === 0 ? "#213255" : "#58c3de"),
+    textColor: button.textColor || (index === 0 ? "#ffffff" : "#213255"),
+  }));
 }
 
 function normalizeItems(items: SectionContent["items"]) {
@@ -990,6 +1000,11 @@ function ButtonsEditor({ content, onUpdate }: { content: SectionContent; onUpdat
             />
           </label>
           <TextInput label="Nombre del botón" value={button.label} onChange={(label) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, label } : item) })} />
+          <div className="grid grid-cols-3 gap-2">
+            <ColorInput label="Fondo" value={button.backgroundColor || "#213255"} onChange={(backgroundColor) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, backgroundColor } : item) })} />
+            <ColorInput label="Borde" value={button.borderColor || "#213255"} onChange={(borderColor) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, borderColor } : item) })} />
+            <ColorInput label="Texto" value={button.textColor || "#ffffff"} onChange={(textColor) => onUpdate({ buttons: content.buttons.map((item, itemIndex) => itemIndex === index ? { ...item, textColor } : item) })} />
+          </div>
           <label className="text-xs font-semibold text-[#34466f]">
             Enlace del botón
             <select
@@ -1055,6 +1070,7 @@ function ColorInput({ label, value, onChange }: { label: string; value: string; 
 }
 
 const vaicColorOptions = [
+  { label: "Quitar", value: "transparent" },
   { label: "Azul VaicMedical", value: "#213255" },
   { label: "Azul medio", value: "#34466f" },
   { label: "Azul profundo", value: "#17243f" },
@@ -1243,14 +1259,14 @@ function PopupPreview({
             html={content.content}
           />
           <div className="mt-6 flex flex-wrap gap-3">
-            {content.buttons.filter((button) => button.visible).map((button, index) => (
+            {content.buttons.filter((button) => button.visible).map((button) => (
               <button
                 className="w-fit rounded-lg px-5 py-3 text-sm font-bold"
                 key={button.id}
                 style={{
-                  backgroundColor: index === 0 ? content.itemColor : "#ffffff",
-                  border: `1px solid ${content.accentColor}`,
-                  color: index === 0 ? content.textColor : "#213255",
+                  backgroundColor: button.backgroundColor || "#213255",
+                  border: `1px solid ${button.borderColor || "#213255"}`,
+                  color: button.textColor || "#ffffff",
                 }}
                 type="button"
               >

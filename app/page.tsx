@@ -160,9 +160,9 @@ export default async function Home() {
       <section className="bg-[#213255] px-5 py-20 text-center text-white sm:px-8" data-editor-section="servicios">
         <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]">
           <div className="text-center">
-            <SectionLabel>Servicios</SectionLabel>
-            <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl" dangerouslySetInnerHTML={{ __html: servicesSummary?.title || "Mantención preventiva, reparación correctiva y soporte en terreno." }} />
-            <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/70" dangerouslySetInnerHTML={{ __html: servicesSummary?.content || "Atendemos equipos esenciales para la operación diaria, con foco en recuperar disponibilidad y reducir tiempos fuera de servicio." }} />
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]" data-editor-field="section-eyebrow">Servicios</p>
+            <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl" data-editor-field="section-title" dangerouslySetInnerHTML={{ __html: servicesSummary?.title || "Mantención preventiva, reparación correctiva y soporte en terreno." }} />
+            <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/70" data-editor-field="section-intro" dangerouslySetInnerHTML={{ __html: servicesSummary?.content || "Atendemos equipos esenciales para la operación diaria, con foco en recuperar disponibilidad y reducir tiempos fuera de servicio." }} />
             <Link
               className="mt-8 inline-flex rounded-full bg-[#58c3de] px-7 py-4 font-semibold text-[#213255] transition hover:bg-white"
               href="/servicios"

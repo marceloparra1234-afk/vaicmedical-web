@@ -89,11 +89,13 @@ export function RichTextEditor({
           <ColorControl
             label="Color del texto"
             onChange={(color) => runCommand("foreColor", color)}
+            onRemove={() => runCommand("removeFormat")}
           />
           <ColorControl
             label="Color de resaltado"
             onChange={(color) => runCommand("hiliteColor", color)}
-            value="#fff176"
+            onRemove={() => runCommand("hiliteColor", "transparent")}
+            value="#eaf8fc"
           />
 
           <ToolbarButton
@@ -183,10 +185,12 @@ function ToolbarButton({
 function ColorControl({
   label,
   onChange,
+  onRemove,
   value = "#213255",
 }: {
   label: string;
   onChange: (color: string) => void;
+  onRemove: () => void;
   value?: string;
 }) {
   return (
@@ -198,8 +202,11 @@ function ColorControl({
         aria-label={label}
         className="h-8 w-28 bg-transparent px-2 text-xs"
         defaultValue={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) =>
+          event.target.value === "remove" ? onRemove() : onChange(event.target.value)
+        }
       >
+        <option value="remove">Quitar</option>
         {vaicRichColors.map((color) => (
           <option key={color.value} value={color.value}>
             {color.label}

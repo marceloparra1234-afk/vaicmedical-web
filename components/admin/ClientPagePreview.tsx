@@ -22,6 +22,9 @@ export type PreviewContent = {
     label: string;
     href: string;
     visible: boolean;
+    backgroundColor?: string;
+    borderColor?: string;
+    textColor?: string;
   }>;
   items: Array<{
     id: string;
@@ -127,19 +130,11 @@ function HomeSectionPreview({
             html={content.content}
           />
           <div className="mt-6 flex justify-center gap-3">
-            {content.buttons.filter((button) => button.visible).map((button, index) => (
+            {content.buttons.filter((button) => button.visible).map((button) => (
               <span
-                className={
-                  index === 0
-                    ? "rounded-full px-5 py-3 text-xs font-semibold text-white"
-                    : "rounded-full border px-5 py-3 text-xs font-semibold"
-                }
+                className="rounded-full border px-5 py-3 text-xs font-semibold"
                 key={button.id}
-                style={
-                  index === 0
-                    ? { backgroundColor: content.accentColor }
-                    : { borderColor: content.accentColor }
-                }
+                style={buttonStyle(button)}
               >
                 {button.label}
               </span>
@@ -230,7 +225,7 @@ function HomeSectionPreview({
               html={content.content}
             />
             {content.buttons.filter((button) => button.visible).slice(0, 1).map((button) => (
-              <span className="mt-5 inline-flex rounded-full bg-[#213255] px-5 py-3 text-xs font-semibold text-white" key={button.id}>
+              <span className="mt-5 inline-flex rounded-full border px-5 py-3 text-xs font-semibold" key={button.id} style={buttonStyle(button)}>
                 {button.label}
               </span>
             ))}
@@ -242,7 +237,7 @@ function HomeSectionPreview({
               className={cardShapeClass(content.shape)}
               key={item.id}
               style={{
-                backgroundColor: item.backgroundColor,
+                backgroundColor: content.itemColor || item.backgroundColor,
                 borderColor: item.borderColor,
                 color: item.textColor,
               }}
@@ -279,7 +274,7 @@ function HomeSectionPreview({
             html={content.content}
           />
           {content.buttons.filter((button) => button.visible).slice(0, 1).map((button) => (
-            <span className="mt-6 inline-flex rounded-full bg-[#58c3de] px-5 py-3 text-xs font-semibold text-[#213255]" key={button.id}>
+            <span className="mt-6 inline-flex rounded-full border px-5 py-3 text-xs font-semibold" key={button.id} style={buttonStyle(button)}>
               {button.label}
             </span>
           ))}
@@ -314,7 +309,7 @@ function HomeSectionPreview({
                 className={`overflow-hidden ${cardShapeClass(content.shape)}`}
                 key={item.id}
                 style={{
-                  backgroundColor: item.backgroundColor,
+                  backgroundColor: content.itemColor || item.backgroundColor,
                   borderColor: item.borderColor,
                   color: item.textColor,
                 }}
@@ -347,7 +342,7 @@ function HomeSectionPreview({
               className={cardShapeClass(content.shape)}
               key={item.id}
               style={{
-                backgroundColor: item.backgroundColor,
+                backgroundColor: content.itemColor || item.backgroundColor,
                 borderColor: item.borderColor,
                 color: item.textColor,
               }}
@@ -391,7 +386,7 @@ function HomeSectionPreview({
         </p>
         <p className="mt-4 text-xl font-semibold">contacto@vaicmedical.cl</p>
         {content.buttons.filter((button) => button.visible).slice(0, 1).map((button) => (
-          <span className="mt-5 inline-flex rounded-full bg-[#58c3de] px-5 py-3 text-xs font-semibold text-[#213255]" key={button.id}>
+          <span className="mt-5 inline-flex rounded-full border px-5 py-3 text-xs font-semibold" key={button.id} style={buttonStyle(button)}>
             {button.label}
           </span>
         ))}
@@ -463,7 +458,7 @@ function ServicesPageSection({ content, section }: SectionPreviewProps) {
       <section className="bg-[#213255] p-10 text-white">
         <Rich className="rich-preview max-w-3xl text-4xl font-semibold" html={content.title} />
         <Rich className="rich-preview mt-4 max-w-2xl text-sm leading-7 text-white/70" html={content.content} />
-        <span className="mt-6 inline-flex rounded-full bg-[#58c3de] px-5 py-3 text-xs font-semibold text-[#213255]">
+        <span className="mt-6 inline-flex rounded-full border px-5 py-3 text-xs font-semibold" style={buttonStyle(content.buttons[0])}>
           {content.buttons[0]?.label || "Solicitar soporte"}
         </span>
       </section>
@@ -554,7 +549,7 @@ function EditableCards({ content, imageMode = false }: { content: PreviewContent
           className={`overflow-hidden ${cardShapeClass(content.shape)}`}
           key={item.id}
           style={{
-            backgroundColor: item.backgroundColor,
+            backgroundColor: content.itemColor || item.backgroundColor,
             borderColor: item.borderColor,
             color: item.textColor,
           }}
@@ -568,6 +563,14 @@ function EditableCards({ content, imageMode = false }: { content: PreviewContent
       ))}
     </div>
   );
+}
+
+function buttonStyle(button?: PreviewContent["buttons"][number]) {
+  return {
+    backgroundColor: button?.backgroundColor || "#213255",
+    borderColor: button?.borderColor || "#213255",
+    color: button?.textColor || "#ffffff",
+  };
 }
 
 function StandardSection({ content, section }: SectionPreviewProps) {

@@ -308,8 +308,9 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
     if (element instanceof HTMLElement) {
       element.style.display = button.visible ? "" : "none";
       element.innerHTML = button.label;
-      element.style.backgroundColor = index === 0 ? content.itemColor || content.accentColor : "";
-      element.style.borderColor = content.accentColor || "";
+      element.style.backgroundColor = button.backgroundColor || "";
+      element.style.borderColor = button.borderColor || "";
+      element.style.color = button.textColor || "";
     }
     if (element instanceof HTMLAnchorElement) {
       element.href = button.href;
@@ -427,7 +428,7 @@ function applyCardAppearance(
   item: PreviewContent["items"][number],
   content: PreviewContent,
 ) {
-  card.style.backgroundColor = item.backgroundColor || content.itemColor || "";
+  card.style.backgroundColor = content.itemColor || item.backgroundColor || "";
   card.style.borderColor = item.borderColor || content.accentColor || "";
   card.style.color = item.textColor || content.textColor || "";
 

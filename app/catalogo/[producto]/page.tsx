@@ -8,6 +8,7 @@ import {
   findCatalogProduct,
   type CatalogDocument,
 } from "@/data/catalog-products";
+import { getManagedCreatedContent, type ManagedCreatedContent } from "@/data/supabase-created-content";
 
 type ProductPageProps = {
   params: Promise<{ producto: string }>;
@@ -23,7 +24,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { producto } = await params;
-  const detail = findCatalogProduct(producto);
+  const detail = await findProductDetail(producto);
 
   if (!detail) return {};
 
@@ -35,7 +36,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { producto: slug } = await params;
-  const detail = findCatalogProduct(slug);
+  const detail = await findProductDetail(slug);
 
   if (!detail) notFound();
 
@@ -54,7 +55,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
     { label: "Manual", item: product.documents.manual },
     { label: "Certificados", item: product.documents.certificates },
     { label: "Brochure", item: product.documents.brochure },
-  ];
+    ...(product.additionalDocuments || []).map((item, index) => ({
+      label: item.name || `Documento ${index + 1}`,
+      item,
+    })),
+  ].filter(({ item }) => Boolean(item?.url));
 
   return (
     <main className="min-h-screen bg-[#f4f9fb] text-[#213255]">
@@ -132,35 +137,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </p>
         </section>
 
-        <section className="mt-12 max-w-[980px] rounded-[28px] border border-[#d7e9ef] bg-white p-7 sm:p-8" data-editor-section="product-docs">
-          <h2 className="text-[26px] font-bold">Documentación</h2>
-          <div className="mt-5 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
-            {documents.map(({ label, item }) =>
-              item?.url ? (
+        {documents.length > 0 && (
+          <section className="mt-12 max-w-[980px] rounded-[28px] border border-[#d7e9ef] bg-white p-7 sm:p-8" data-editor-section="product-docs">
+            <h2 className="text-[26px] font-bold">Documentación</h2>
+            <div className="mt-5 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+              {documents.map(({ label, item }) => (
                 <a
                   className="flex flex-col gap-1.5 rounded-[18px] border border-[#58c3de]/40 bg-[#58c3de]/10 p-4.5 font-bold text-[#213255]"
-                  href={item.url}
+                  href={item?.url || "#"}
                   key={label}
                   rel="noreferrer"
                   target="_blank"
                 >
                   <span>{label}</span>
                   <small className="font-normal text-[#667085]">
-                    {item.name}
+                    {item?.name}
                   </small>
                 </a>
-              ) : (
-                <div
-                  className="flex flex-col gap-1.5 rounded-[18px] border border-[#d7e9ef] bg-[#f8fafc] p-4.5 text-[#667085]"
-                  key={label}
-                >
-                  <span className="font-bold">{label}</span>
-                  <small>No disponible</small>
-                </div>
-              ),
-            )}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         {related.length > 0 && (
           <section className="mt-14" data-editor-section="product-related">
@@ -195,6 +192,64 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </section>
     </main>
   );
+}
+
+async function findProductDetail(slug: string) {
+  const staticDetail = findCatalogProduct(slug);
+  if (staticDetail) return staticDetail;
+
+  const [products, lines] = await Promise.all([
+    getManagedCreatedContent("product"),
+    getManagedCreatedContent("line"),
+  ]);
+  const product = products.find((item) => item.slug === slug && item.active !== false);
+  if (!product) return null;
+  const line = lines.find((item) => item.title === product.line);
+  const relatedProducts = products.filter(
+    (item) => item.slug !== slug && item.line === product.line && item.active !== false,
+  );
+  return {
+    line: {
+      id: line?.slug || "catalogo",
+      name: product.line || "Catálogo",
+      description: line?.excerpt || "",
+      summary: line?.body || "",
+      products: relatedProducts.map(toPublicProduct),
+    },
+    product: toPublicProduct(product),
+  };
+}
+
+function toPublicProduct(product: ManagedCreatedContent) {
+  const uploadedDocuments = product.documents || [];
+  const documentAt = (index: number): CatalogDocument | null => {
+    const item = uploadedDocuments[index];
+    return item?.url ? { name: item.name, url: item.url } : null;
+  };
+  return {
+    slug: product.slug,
+    name: product.title || "Producto",
+    featured: product.featured,
+    type: product.line || "Producto",
+    description: product.excerpt || "",
+    longDescription: product.body || "",
+    brand: product.brand || "Multimarca",
+    model: product.model || "Según producto",
+    internalCode: product.internalCode || "",
+    tags: product.tags || "",
+    image: product.primaryImage || "/service-maintenance.svg",
+    gallery: (product.secondaryImages || []).map((image) => image.url),
+    documents: {
+      technicalSheet: documentAt(0),
+      manual: documentAt(1),
+      certificates: documentAt(2),
+      brochure: documentAt(3),
+    },
+    additionalDocuments: uploadedDocuments.slice(4).map((item) => ({
+      name: item.name,
+      url: item.url,
+    })),
+  };
 }
 
 function Info({ label, value }: { label: string; value: string }) {

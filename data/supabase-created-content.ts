@@ -11,6 +11,14 @@ export type ManagedCreatedContent = {
   line?: string;
   primaryImage?: string;
   featured?: boolean;
+  active?: boolean;
+  brand?: string;
+  model?: string;
+  internalCode?: string;
+  tags?: string;
+  secondaryImages?: Array<{ id: string; name: string; url: string; type: string }>;
+  videos?: Array<{ id: string; name: string; url: string; type: string }>;
+  documents?: Array<{ id: string; name: string; url: string; type: string }>;
   createdAt: string;
 };
 

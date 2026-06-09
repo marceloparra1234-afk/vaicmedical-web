@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   ADMIN_SESSION_COOKIE,
+  createAdminSessionToken,
   verifyAdminSessionToken,
 } from "@/lib/admin-session";
 
@@ -20,7 +21,18 @@ export async function proxy(request: NextRequest) {
     Boolean(secret && token) &&
     (await verifyAdminSessionToken(token || "", secret || ""));
 
-  if (authenticated) return NextResponse.next();
+  if (authenticated) {
+    const response = NextResponse.next();
+    const refreshedToken = await createAdminSessionToken(secret || "");
+    response.cookies.set(ADMIN_SESSION_COOKIE, refreshedToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 12,
+      path: "/",
+    });
+    return response;
+  }
 
   if (pathname.startsWith("/api/admin/")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });

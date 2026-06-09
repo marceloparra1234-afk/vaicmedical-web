@@ -22,6 +22,7 @@ export type CatalogProduct = {
     certificates: CatalogDocument | null;
     brochure: CatalogDocument | null;
   };
+  additionalDocuments?: CatalogDocument[];
 };
 
 export type CatalogLine = {

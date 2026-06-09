@@ -25,6 +25,7 @@ type FormState = {
   internalCode: string;
   tags: string;
   featured: boolean;
+  active: boolean;
   primaryImage: string;
   secondaryImages: MediaFile[];
   videos: MediaFile[];
@@ -66,6 +67,7 @@ const initialState: FormState = {
   internalCode: "",
   tags: "",
   featured: false,
+  active: true,
   primaryImage: "",
   secondaryImages: [],
   videos: [],
@@ -80,6 +82,7 @@ export function AdminCreateContent({ type }: CreateContentProps) {
   const [editingSlug, setEditingSlug] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [status, setStatus] = useState("");
+  const [catalogLines, setCatalogLines] = useState<Array<FormState & { id: string; slug: string }>>([]);
   const slug = useMemo(() => slugify(form.title || content.title), [content.title, form.title]);
 
   async function loadBlogPosts() {
@@ -118,6 +121,38 @@ export function AdminCreateContent({ type }: CreateContentProps) {
           })),
         );
       });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [type]);
+
+  useEffect(() => {
+    if (type === "blog") return;
+    let cancelled = false;
+    const editSlug = new URLSearchParams(window.location.search).get("edit");
+
+    Promise.all([
+      fetch(`/api/admin/created-content?type=${type}`).then((response) => response.json()),
+      type === "product"
+        ? fetch("/api/admin/created-content?type=line").then((response) => response.json())
+        : Promise.resolve({ items: [] }),
+    ]).then(([itemsResult, linesResult]) => {
+      if (cancelled) return;
+      setCatalogLines(linesResult.items || []);
+      if (!editSlug) return;
+      const item = (itemsResult.items || []).find((entry: { slug: string }) => entry.slug === editSlug);
+      if (!item) return;
+      setForm({
+        ...initialState,
+        ...item,
+        secondaryImages: item.secondaryImages || [],
+        videos: item.videos || [],
+        documents: item.documents || [],
+      });
+      setEditingSlug(item.slug);
+      setStatus(`Editando: ${item.title}`);
+    });
 
     return () => {
       cancelled = true;
@@ -274,7 +309,13 @@ export function AdminCreateContent({ type }: CreateContentProps) {
           <div className="grid gap-4 lg:grid-cols-2">
             <Field label="Título" value={form.title} onChange={(value) => update("title", value)} />
             {type === "product" && (
-              <Field label="Línea de producto" value={form.line} onChange={(value) => update("line", value)} />
+              <label className="text-xs font-semibold text-[#34466f]">
+                Línea de producto
+                <select className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3 text-sm" onChange={(event) => update("line", event.target.value)} value={form.line}>
+                  <option value="">Seleccionar línea</option>
+                  {catalogLines.map((line) => <option key={line.slug} value={line.title}>{line.title}</option>)}
+                </select>
+              </label>
             )}
             {type === "line" && (
               <Field label="Identificador de línea" value={form.line} onChange={(value) => update("line", value)} />
@@ -314,7 +355,23 @@ export function AdminCreateContent({ type }: CreateContentProps) {
                 />
                 Producto destacado
               </label>
+              <label className="flex items-center gap-3 rounded-lg border border-[#d7e9ef] bg-white px-3 py-3 text-xs font-semibold text-[#34466f]">
+                <input
+                  checked={form.active}
+                  className="h-4 w-4 accent-[#58c3de]"
+                  onChange={(event) => update("active", event.target.checked)}
+                  type="checkbox"
+                />
+                Producto visible para clientes
+              </label>
             </div>
+          )}
+
+          {type === "line" && (
+            <label className="flex items-center gap-3 rounded-lg border border-[#d7e9ef] bg-[#f6fbfd] px-4 py-4 text-xs font-semibold text-[#34466f]">
+              <input checked={form.active} className="h-4 w-4 accent-[#58c3de]" onChange={(event) => update("active", event.target.checked)} type="checkbox" />
+              Línea visible para clientes
+            </label>
           )}
 
           <div className="grid gap-4 border-t border-[#d7e9ef] pt-5">

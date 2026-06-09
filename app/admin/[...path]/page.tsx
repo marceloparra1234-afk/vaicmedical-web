@@ -1,4 +1,5 @@
 import { AdminCreateContent } from "@/components/admin/AdminCreateContent";
+import { AdminCatalogManager } from "@/components/admin/AdminCatalogManager";
 import { AdminEditorWorkspace } from "@/components/admin/AdminEditorWorkspace";
 import { AdminUsers } from "@/components/admin/AdminUsers";
 
@@ -62,7 +63,7 @@ const editors: Record<
       "Gestiona el encabezado, presentación y distribución general del blog.",
     sections: ["Hero principal", "Listado de publicaciones"],
   },
-  catalogo: {
+  "catalogo/vista": {
     contentKey: "catalogo",
     title: "Editar página Catálogo",
     description:
@@ -114,6 +115,10 @@ export default async function AdminModulePage({ params }: AdminRouteProps) {
 
   if (route === "catalogo/productos/crear") {
     return <AdminCreateContent type="product" />;
+  }
+
+  if (route === "catalogo") {
+    return <AdminCatalogManager />;
   }
 
   if (route === "usuarios") {

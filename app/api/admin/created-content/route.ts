@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { catalogLines } from "@/data/catalog-products";
 
 type CreatedContentBody = {
   type?: "blog" | "line" | "product";
@@ -58,13 +59,63 @@ export async function GET(request: NextRequest) {
     created_at: string;
   }>;
 
-  return NextResponse.json({
-    items: rows.map((row) => ({
+  const storedItems = rows.map((row) => ({
       ...row.content,
       id: row.id,
       slug: row.slug,
       createdAt: row.created_at,
-    })),
+    }));
+  const storedSlugs = new Set(storedItems.map((item) => item.slug));
+  const builtInItems =
+    type === "line"
+      ? catalogLines.map((line) => ({
+          id: `builtin-line-${line.id}`,
+          slug: line.id,
+          title: line.name,
+          line: line.id,
+          excerpt: line.description,
+          body: line.summary,
+          active: true,
+          builtIn: true,
+        }))
+      : catalogLines.flatMap((line) =>
+          line.products.map((product) => ({
+            id: `builtin-product-${product.slug}`,
+            slug: product.slug,
+            title: product.name,
+            line: line.name,
+            excerpt: product.description,
+            body: product.longDescription,
+            brand: product.brand,
+            model: product.model,
+            internalCode: product.internalCode,
+            tags: product.tags,
+            featured: product.featured || false,
+            active: true,
+            primaryImage: product.image,
+            secondaryImages: product.gallery.map((url, index) => ({
+              id: `${product.slug}-gallery-${index}`,
+              name: `Imagen ${index + 1}`,
+              url,
+              type: "image",
+            })),
+            documents: Object.values(product.documents)
+              .filter((document) => Boolean(document?.url))
+              .map((document, index) => ({
+                id: `${product.slug}-document-${index}`,
+                name: document?.name || `Documento ${index + 1}`,
+                url: document?.url || "",
+                type: "document",
+              })),
+            builtIn: true,
+          })),
+        );
+
+  return NextResponse.json({
+    items: [
+      ...storedItems,
+      ...builtInItems.filter((item) => !storedSlugs.has(item.slug)),
+    ],
   });
 }
 

@@ -5,6 +5,7 @@ import { PageHeading } from "@/components/admin/AdminDashboard";
 import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 import { LiveClientPreview } from "@/components/admin/LiveClientPreview";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { uploadAdminImage } from "@/components/admin/upload-image";
 
 type EditorWorkspaceProps = {
   contentKey: string;
@@ -502,10 +503,12 @@ export function AdminEditorWorkspace({
     setIsSaving(true);
     setSaveStatus("Guardando...");
     try {
+      const contentToSave = await uploadEmbeddedImages(content);
+      setContent(contentToSave);
       const response = await fetch("/api/admin/content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pageKey: contentKey, content }),
+        body: JSON.stringify({ pageKey: contentKey, content: contentToSave }),
       });
       const result = await response.json().catch(() => null);
       if (!response.ok) {
@@ -615,6 +618,49 @@ export function AdminEditorWorkspace({
         </div>
       </div>
     </div>
+  );
+}
+
+async function uploadEmbeddedImages(content: Record<string, SectionContent>) {
+  const entries = await Promise.all(
+    Object.entries(content).map(async ([section, value]) => {
+      const sectionImages = await Promise.all(
+        value.sectionImages.map((image, index) =>
+          uploadDataUrl(image, `${section}-imagen-${index + 1}`),
+        ),
+      );
+      const customShapeImage = await uploadDataUrl(
+        value.customShapeImage,
+        `${section}-figura`,
+      );
+      const items = await Promise.all(
+        value.items.map(async (item, index) => ({
+          ...item,
+          image: await uploadDataUrl(item.image, `${section}-elemento-${index + 1}`),
+        })),
+      );
+      return [
+        section,
+        {
+          ...value,
+          sectionImages,
+          sectionImage: sectionImages[0] || "",
+          customShapeImage,
+          items,
+        },
+      ] as const;
+    }),
+  );
+  return Object.fromEntries(entries) as Record<string, SectionContent>;
+}
+
+async function uploadDataUrl(value: string, name: string) {
+  if (!value.startsWith("data:")) return value;
+  const response = await fetch(value);
+  const blob = await response.blob();
+  const extension = blob.type.split("/")[1]?.replace("svg+xml", "svg") || "png";
+  return uploadAdminImage(
+    new File([blob], `${name}.${extension}`, { type: blob.type }),
   );
 }
 
@@ -786,13 +832,14 @@ function AppearanceControls({
               <input
                 accept="image/png,image/webp,image/svg+xml"
                 className="mt-3 block w-full text-xs"
-                onChange={(event) => {
+                onChange={async (event) => {
                   const file = event.target.files?.[0];
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = () =>
-                    onUpdate({ customShapeImage: String(reader.result || "") });
-                  reader.readAsDataURL(file);
+                  try {
+                    onUpdate({ customShapeImage: await uploadAdminImage(file) });
+                  } catch (error) {
+                    window.alert(error instanceof Error ? error.message : "No se pudo subir la imagen");
+                  }
                 }}
                 type="file"
               />
@@ -909,12 +956,14 @@ function RepeatableItemsEditor({
               <input
                 accept="image/*"
                 className="mt-2 block w-full text-xs"
-                onChange={(event) => {
+                onChange={async (event) => {
                   const file = event.target.files?.[0];
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = () => updateItem(index, { image: String(reader.result || "") });
-                  reader.readAsDataURL(file);
+                  try {
+                    updateItem(index, { image: await uploadAdminImage(file) });
+                  } catch (error) {
+                    window.alert(error instanceof Error ? error.message : "No se pudo subir la imagen");
+                  }
                 }}
                 type="file"
               />
@@ -1046,12 +1095,14 @@ export function UploadGuide({
       <input
         accept="image/*"
         className="hidden"
-        onChange={(event) => {
+        onChange={async (event) => {
           const file = event.target.files?.[0];
           if (!file || !onChange) return;
-          const reader = new FileReader();
-          reader.onload = () => onChange(String(reader.result || ""));
-          reader.readAsDataURL(file);
+          try {
+            onChange(await uploadAdminImage(file));
+          } catch (error) {
+            window.alert(error instanceof Error ? error.message : "No se pudo subir la imagen");
+          }
         }}
         type="file"
       />
@@ -1074,22 +1125,21 @@ function ImageGalleryEditor({
   images: string[];
   onChange: (images: string[]) => void;
 }) {
-  function addFiles(files: FileList | null) {
+  const [uploadStatus, setUploadStatus] = useState("");
+
+  async function addFiles(files: FileList | null) {
     if (!files?.length) return;
     const availableSlots = Math.max(0, 3 - images.length);
     if (!availableSlots) return;
     const selectedFiles = Array.from(files).slice(0, availableSlots);
-    const pending: string[] = [];
-    selectedFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        pending.push(String(reader.result || ""));
-        if (pending.length === selectedFiles.length) {
-          onChange([...images, ...pending].slice(0, 3));
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    setUploadStatus(`Subiendo ${selectedFiles.length} imagen${selectedFiles.length > 1 ? "es" : ""}...`);
+    try {
+      const uploaded = await Promise.all(selectedFiles.map(uploadAdminImage));
+      onChange([...images, ...uploaded].slice(0, 3));
+      setUploadStatus("Imágenes subidas. Presiona Guardar cambios.");
+    } catch (error) {
+      setUploadStatus(error instanceof Error ? error.message : "No se pudieron subir las imágenes");
+    }
   }
 
   return (
@@ -1101,6 +1151,11 @@ function ImageGalleryEditor({
           <span className="mt-1 block text-xs text-[#667085]">
             {formats} · {maxSize} · hasta 3 imágenes para carrusel
           </span>
+          {uploadStatus && (
+            <span className="mt-2 block text-xs font-semibold text-[#34466f]" role="status">
+              {uploadStatus}
+            </span>
+          )}
         </div>
         <label className="inline-flex cursor-pointer rounded-md bg-[#58c3de] px-3 py-2 text-xs font-bold text-[#213255]">
           Agregar
@@ -1108,7 +1163,7 @@ function ImageGalleryEditor({
             accept="image/*"
             className="hidden"
             multiple
-            onChange={(event) => addFiles(event.target.files)}
+            onChange={(event) => void addFiles(event.target.files)}
             type="file"
           />
         </label>

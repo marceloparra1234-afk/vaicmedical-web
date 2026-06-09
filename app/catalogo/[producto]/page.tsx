@@ -3,12 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/ProductGallery";
-import {
-  catalogLines,
-  findCatalogProduct,
-  type CatalogDocument,
-} from "@/data/catalog-products";
-import { getManagedCreatedContent, type ManagedCreatedContent } from "@/data/supabase-created-content";
+import { catalogLines, type CatalogDocument } from "@/data/catalog-products";
+import { getPublicProduct } from "@/data/catalog-service";
 
 type ProductPageProps = {
   params: Promise<{ producto: string }>;
@@ -24,7 +20,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { producto } = await params;
-  const detail = await findProductDetail(producto);
+  const detail = await getPublicProduct(producto);
 
   if (!detail) return {};
 
@@ -36,7 +32,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { producto: slug } = await params;
-  const detail = await findProductDetail(slug);
+  const detail = await getPublicProduct(slug);
 
   if (!detail) notFound();
 
@@ -192,64 +188,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </section>
     </main>
   );
-}
-
-async function findProductDetail(slug: string) {
-  const staticDetail = findCatalogProduct(slug);
-  if (staticDetail) return staticDetail;
-
-  const [products, lines] = await Promise.all([
-    getManagedCreatedContent("product"),
-    getManagedCreatedContent("line"),
-  ]);
-  const product = products.find((item) => item.slug === slug && item.active !== false);
-  if (!product) return null;
-  const line = lines.find((item) => item.title === product.line);
-  const relatedProducts = products.filter(
-    (item) => item.slug !== slug && item.line === product.line && item.active !== false,
-  );
-  return {
-    line: {
-      id: line?.slug || "catalogo",
-      name: product.line || "Catálogo",
-      description: line?.excerpt || "",
-      summary: line?.body || "",
-      products: relatedProducts.map(toPublicProduct),
-    },
-    product: toPublicProduct(product),
-  };
-}
-
-function toPublicProduct(product: ManagedCreatedContent) {
-  const uploadedDocuments = product.documents || [];
-  const documentAt = (index: number): CatalogDocument | null => {
-    const item = uploadedDocuments[index];
-    return item?.url ? { name: item.name, url: item.url } : null;
-  };
-  return {
-    slug: product.slug,
-    name: product.title || "Producto",
-    featured: product.featured,
-    type: product.line || "Producto",
-    description: product.excerpt || "",
-    longDescription: product.body || "",
-    brand: product.brand || "Multimarca",
-    model: product.model || "Según producto",
-    internalCode: product.internalCode || "",
-    tags: product.tags || "",
-    image: product.primaryImage || "/service-maintenance.svg",
-    gallery: (product.secondaryImages || []).map((image) => image.url),
-    documents: {
-      technicalSheet: documentAt(0),
-      manual: documentAt(1),
-      certificates: documentAt(2),
-      brochure: documentAt(3),
-    },
-    additionalDocuments: uploadedDocuments.slice(4).map((item) => ({
-      name: item.name,
-      url: item.url,
-    })),
-  };
 }
 
 function Info({ label, value }: { label: string; value: string }) {

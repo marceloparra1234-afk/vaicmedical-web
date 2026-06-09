@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getFeaturedCatalogProducts } from "@/data/catalog-products";
+import { getFeaturedPublicProducts } from "@/data/catalog-service";
 import { getManagedBlogPosts } from "@/data/supabase-blog";
-import { getManagedCreatedContent } from "@/data/supabase-created-content";
 import { getSiteContent } from "@/lib/supabase-admin";
 
 type LinkedSection = { title?: string; content?: string };
@@ -28,23 +27,13 @@ export default async function Home() {
   const [managedPosts, createdProducts, nosotros, servicios, blog, catalogo] =
     await Promise.all([
       getManagedBlogPosts(),
-      getManagedCreatedContent("product"),
+      getFeaturedPublicProducts(),
       getSiteContent<Record<string, LinkedSection>>("nosotros"),
       getSiteContent<Record<string, LinkedSection>>("servicios"),
       getSiteContent<Record<string, LinkedSection>>("blog"),
       getSiteContent<Record<string, LinkedSection>>("catalogo"),
     ]);
-  const featuredProducts = [
-    ...createdProducts.map((product) => ({
-      slug: product.slug,
-      name: product.title || "Producto",
-      lineName: product.line || "Catálogo",
-      description: product.excerpt || "",
-      image: product.primaryImage || "/service-maintenance.svg",
-      created: true,
-    })),
-    ...getFeaturedCatalogProducts().map((product) => ({ ...product, created: false })),
-  ].slice(0, 4);
+  const featuredProducts = createdProducts.slice(0, 4);
   const latestPosts = managedPosts.slice(0, 3);
   const aboutSummary = nosotros?.["Hero principal"];
   const servicesSummary = servicios?.["Hero principal"];
@@ -200,7 +189,7 @@ export default async function Home() {
             {featuredProducts.map((product) => (
               <Link
                 className="group overflow-hidden rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] transition hover:-translate-y-1 hover:border-[#58c3de] hover:bg-white hover:shadow-lg"
-                href={product.created ? "/catalogo" : `/catalogo/${product.slug}`}
+                href={`/catalogo/${product.slug}`}
                 key={product.slug}
               >
                 <div className="relative aspect-square border-b border-[#d7e9ef] bg-[#eaf8fc]">

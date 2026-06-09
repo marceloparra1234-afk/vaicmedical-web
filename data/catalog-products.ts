@@ -281,20 +281,3 @@ export const catalogLines: CatalogLine[] = [
     ],
   },
 ];
-
-export function findCatalogProduct(slug: string) {
-  for (const line of catalogLines) {
-    const product = line.products.find((item) => item.slug === slug);
-    if (product) return { line, product };
-  }
-
-  return null;
-}
-
-export function getFeaturedCatalogProducts() {
-  return catalogLines.flatMap((line) =>
-    line.products
-      .filter((product) => product.featured)
-      .map((product) => ({ ...product, lineName: line.name })),
-  );
-}

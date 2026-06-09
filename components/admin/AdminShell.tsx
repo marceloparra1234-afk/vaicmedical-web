@@ -23,11 +23,10 @@ const navigation = [
     href: "/admin/catalogo",
     icon: "06",
     children: [
+      { label: "Gestión del catálogo", href: "/admin/catalogo" },
       { label: "Crear línea", href: "/admin/catalogo/lineas/crear" },
       { label: "Crear producto", href: "/admin/catalogo/productos/crear" },
-      { label: "Gestión general", href: "/admin/catalogo" },
       { label: "Editar vista catálogo", href: "/admin/catalogo/vista" },
-      { label: "Editar vista líneas", href: "/admin/catalogo/lineas/vista" },
       { label: "Editar vista producto", href: "/admin/catalogo/productos/vista" },
     ],
   },

@@ -30,12 +30,11 @@ type FormState = {
   secondaryImages: MediaFile[];
   videos: MediaFile[];
   documents: MediaFile[];
-};
-
-const storageKeys = {
-  blog: "vaicmedical-created-blog",
-  line: "vaicmedical-created-lines",
-  product: "vaicmedical-created-products",
+  sublines: string[];
+  subline: string;
+  order: number;
+  technicalSheet: MediaFile | null;
+  certifications: MediaFile[];
 };
 
 const config = {
@@ -72,6 +71,11 @@ const initialState: FormState = {
   secondaryImages: [],
   videos: [],
   documents: [],
+  sublines: [],
+  subline: "",
+  order: 0,
+  technicalSheet: null,
+  certifications: [],
 };
 
 export function AdminCreateContent({ type }: CreateContentProps) {
@@ -99,6 +103,8 @@ export function AdminCreateContent({ type }: CreateContentProps) {
         secondaryImages: item.secondaryImages || [],
         videos: item.videos || [],
         documents: item.documents || [],
+        sublines: item.sublines || [],
+        certifications: item.certifications || [],
       })),
     );
   }
@@ -170,6 +176,10 @@ export function AdminCreateContent({ type }: CreateContentProps) {
       setStatus("Agrega un título antes de publicar.");
       return;
     }
+    if (type === "product" && !form.line) {
+      setStatus("Selecciona la línea principal del producto.");
+      return;
+    }
 
     setIsPublishing(true);
     setStatus("Publicando...");
@@ -182,10 +192,6 @@ export function AdminCreateContent({ type }: CreateContentProps) {
       createdAt: new Date().toISOString(),
       type,
     };
-
-    const existing = readStoredItems(storageKeys[type]);
-    window.localStorage.setItem(storageKeys[type], JSON.stringify([payload, ...existing]));
-    window.dispatchEvent(new CustomEvent("vaicmedical-content-created", { detail: payload }));
 
     try {
       const response = await fetch("/api/admin/created-content", {
@@ -203,9 +209,9 @@ export function AdminCreateContent({ type }: CreateContentProps) {
       }
 
       const result = await response.json().catch(() => null);
-      setStatus(result?.error || "Guardado localmente. Supabase aún no está disponible.");
+      setStatus(result?.error || "No se pudo guardar en Supabase.");
     } catch {
-      setStatus("Guardado localmente. No se pudo conectar con Supabase.");
+      setStatus("No se pudo conectar con Supabase.");
     } finally {
       setIsPublishing(false);
     }
@@ -318,7 +324,7 @@ export function AdminCreateContent({ type }: CreateContentProps) {
               </label>
             )}
             {type === "line" && (
-              <Field label="Identificador de línea" value={form.line} onChange={(value) => update("line", value)} />
+              <Field label="Orden visual" type="number" value={String(form.order)} onChange={(value) => update("order", Number(value))} />
             )}
             {type === "blog" && (
               <Field label="Fecha de publicación" type="date" value={form.date} onChange={(value) => update("date", value)} />
@@ -346,6 +352,13 @@ export function AdminCreateContent({ type }: CreateContentProps) {
               <Field label="Modelo" value={form.model} onChange={(value) => update("model", value)} />
               <Field label="Código interno" value={form.internalCode} onChange={(value) => update("internalCode", value)} />
               <Field label="Etiquetas" value={form.tags} onChange={(value) => update("tags", value)} />
+              <label className="text-xs font-semibold text-[#34466f]">
+                Sublínea opcional
+                <select className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3 text-sm" onChange={(event) => update("subline", event.target.value)} value={form.subline}>
+                  <option value="">Sin sublínea</option>
+                  {(catalogLines.find((line) => line.title === form.line)?.sublines || []).map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
               <label className="flex items-center gap-3 rounded-lg border border-[#d7e9ef] bg-white px-3 py-3 text-xs font-semibold text-[#34466f]">
                 <input
                   checked={form.featured}
@@ -368,10 +381,17 @@ export function AdminCreateContent({ type }: CreateContentProps) {
           )}
 
           {type === "line" && (
-            <label className="flex items-center gap-3 rounded-lg border border-[#d7e9ef] bg-[#f6fbfd] px-4 py-4 text-xs font-semibold text-[#34466f]">
+            <div className="grid gap-4 rounded-lg border border-[#d7e9ef] bg-[#f6fbfd] p-4">
+              <Field label="Sublíneas separadas por coma" value={form.sublines.join(", ")} onChange={(value) => update("sublines", value.split(",").map((item) => item.trim()).filter(Boolean))} />
+              <label className="flex items-center gap-3 rounded-lg border border-[#d7e9ef] bg-white px-4 py-4 text-xs font-semibold text-[#34466f]">
               <input checked={form.active} className="h-4 w-4 accent-[#58c3de]" onChange={(event) => update("active", event.target.checked)} type="checkbox" />
               Línea visible para clientes
-            </label>
+              </label>
+              <label className="flex items-center gap-3 rounded-lg border border-[#d7e9ef] bg-white px-4 py-4 text-xs font-semibold text-[#34466f]">
+                <input checked={form.featured} className="h-4 w-4 accent-[#58c3de]" onChange={(event) => update("featured", event.target.checked)} type="checkbox" />
+                Línea destacada en Inicio
+              </label>
+            </div>
           )}
 
           <div className="grid gap-4 border-t border-[#d7e9ef] pt-5">
@@ -402,17 +422,14 @@ export function AdminCreateContent({ type }: CreateContentProps) {
                 onChange={(videos) => update("videos", videos)}
                 type="video"
               />
-              <MediaInput
-                accept="application/pdf"
-                files={form.documents}
-                formats="PDF"
-                label="Documentos"
-                maxFiles={8}
-                maxSize="Máximo 15 MB por documento"
-                onChange={(documents) => update("documents", documents)}
-                type="document"
-              />
+              {type !== "product" && <MediaInput accept="application/pdf" files={form.documents} formats="PDF" label="Documentos" maxFiles={8} maxSize="Máximo 15 MB por documento" onChange={(documents) => update("documents", documents)} type="document" />}
             </div>
+            {type === "product" && (
+              <div className="grid gap-4 lg:grid-cols-2">
+                <SingleDocumentInput file={form.technicalSheet} label="Ficha técnica" onChange={(technicalSheet) => update("technicalSheet", technicalSheet)} />
+                <MediaInput accept="application/pdf,image/*" files={form.certifications} formats="PDF, JPG, PNG, WEBP" label="Certificaciones" maxFiles={12} maxSize="Máximo 15 MB por archivo" onChange={(certifications) => update("certifications", certifications)} type="document" />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#d7e9ef] pt-5">
@@ -446,6 +463,20 @@ export function AdminCreateContent({ type }: CreateContentProps) {
           <CreatePreview form={form} slug={slug} type={type} />
         </aside>
       </div>
+    </div>
+  );
+}
+
+function SingleDocumentInput({ file, label, onChange }: { file: MediaFile | null; label: string; onChange: (file: MediaFile | null) => void }) {
+  return (
+    <div className="rounded-lg border border-dashed border-[#9eddea] bg-[#f4fbfd] p-4">
+      <p className="text-sm font-bold text-[#213255]">{label}</p>
+      <p className="mt-2 text-xs text-[#667085]">PDF · máximo 15 MB</p>
+      <label className="mt-4 inline-flex cursor-pointer rounded-md bg-[#58c3de] px-3 py-2 text-xs font-bold text-[#213255]">
+        {file ? "Reemplazar" : "Agregar"}
+        <input accept="application/pdf" className="hidden" onChange={(event) => { const selected = event.target.files?.[0]; if (selected) void uploadFile(selected, "document").then(onChange); }} type="file" />
+      </label>
+      {file && <button className="ml-3 text-xs font-bold text-[#213255]" onClick={() => onChange(null)} type="button">Quitar</button>}
     </div>
   );
 }
@@ -732,14 +763,6 @@ async function uploadFile(file: File, kind: MediaFile["type"]): Promise<MediaFil
     type: result.type || kind,
     url: result.url,
   };
-}
-
-function readStoredItems(key: string) {
-  try {
-    return JSON.parse(window.localStorage.getItem(key) || "[]") as unknown[];
-  } catch {
-    return [];
-  }
 }
 
 function slugify(value: string) {

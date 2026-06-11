@@ -1,15 +1,15 @@
 import { CatalogExperience } from "@/components/CatalogExperience";
-import { getPublicCatalog } from "@/data/catalog-service";
+import { getCatalogSettings, getPublicCatalog } from "@/data/catalog-service";
 
 export const dynamic = "force-dynamic";
 
 export default async function CatalogoPage() {
-  const lines = await getPublicCatalog();
+  const [lines, settings] = await Promise.all([getPublicCatalog(), getCatalogSettings()]);
 
   return (
     <main className="min-h-screen bg-[#f6fbfd]">
       <section className="border-b border-[#d7e9ef] bg-white" data-editor-section="hero">
-        <div className="mx-auto max-w-[1500px] px-5 py-16 sm:px-8 lg:py-20">
+        <div className="mx-auto px-5 py-16 sm:px-8 lg:py-20" style={{ maxWidth: settings.maxWidth }}>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]" data-editor-field="section-eyebrow">
             Catálogo
           </p>
@@ -22,7 +22,7 @@ export default async function CatalogoPage() {
         </div>
       </section>
 
-      <CatalogExperience lines={lines} />
+      <CatalogExperience lines={lines} maxWidth={settings.maxWidth} />
     </main>
   );
 }

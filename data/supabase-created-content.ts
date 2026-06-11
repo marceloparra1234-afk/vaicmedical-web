@@ -16,6 +16,12 @@ export type ManagedCreatedContent = {
   model?: string;
   internalCode?: string;
   tags?: string;
+  sublines?: string[];
+  subline?: string;
+  order?: number;
+  certifications?: Array<{ id: string; name: string; url: string; type: string }>;
+  technicalSheet?: { id: string; name: string; url: string; type: string } | null;
+  deletedAt?: string;
   secondaryImages?: Array<{ id: string; name: string; url: string; type: string }>;
   videos?: Array<{ id: string; name: string; url: string; type: string }>;
   documents?: Array<{ id: string; name: string; url: string; type: string }>;

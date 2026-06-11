@@ -14,24 +14,24 @@ export function ProductGallery({
   primaryImage,
   gallery,
 }: ProductGalleryProps) {
-  const images = [primaryImage, ...gallery];
-  const [activeImage, setActiveImage] = useState(primaryImage);
+  const media = [primaryImage, ...gallery].filter(Boolean);
+  const [activeImage, setActiveImage] = useState(media[0] || "");
+  const activeIsVideo = isVideo(activeImage);
+
+  if (!activeImage) return null;
 
   return (
     <div>
       <div className="relative min-h-[420px] overflow-hidden rounded-[28px] border border-[#d7e9ef] bg-white sm:min-h-[560px]">
-        <Image
-          alt={name}
-          className="object-contain p-8 sm:p-14"
-          fill
-          priority
-          sizes="(max-width: 1280px) 100vw, 65vw"
-          src={activeImage}
-        />
+        {activeIsVideo ? (
+          <video className="h-full min-h-[420px] w-full object-contain sm:min-h-[560px]" controls src={activeImage} />
+        ) : (
+          <Image alt={name} className="object-contain p-8 sm:p-14" fill priority sizes="(max-width: 1280px) 100vw, 65vw" src={activeImage} unoptimized={activeImage.startsWith("http")} />
+        )}
       </div>
 
       <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3.5">
-        {images.map((image, index) => {
+        {media.map((image, index) => {
           const isActive = activeImage === image;
 
           return (
@@ -47,17 +47,15 @@ export function ProductGallery({
               onClick={() => setActiveImage(image)}
               type="button"
             >
-              <Image
-                alt={`${name}, vista ${index + 1}`}
-                className="object-contain p-2"
-                fill
-                sizes="150px"
-                src={image}
-              />
+              {isVideo(image) ? <span className="grid h-full place-items-center text-xs font-bold text-[#213255]">Video {index + 1}</span> : <Image alt={`${name}, vista ${index + 1}`} className="object-contain p-2" fill sizes="150px" src={image} unoptimized={image.startsWith("http")} />}
             </button>
           );
         })}
       </div>
     </div>
   );
+}
+
+function isVideo(url: string) {
+  return /\.(mp4|webm|mov)(\?|$)/i.test(url);
 }

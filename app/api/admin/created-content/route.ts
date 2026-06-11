@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { catalogLines } from "@/data/catalog-products";
 
 type CreatedContentBody = {
   type?: "blog" | "line" | "product";
@@ -59,63 +58,31 @@ export async function GET(request: NextRequest) {
     created_at: string;
   }>;
 
-  const storedItems = rows.map((row) => ({
+  const storedItems: Array<Record<string, unknown> & {
+    id: string;
+    slug: string;
+    createdAt: string;
+  }> = rows.map((row) => ({
       ...row.content,
       id: row.id,
       slug: row.slug,
       createdAt: row.created_at,
     }));
-  const storedSlugs = new Set(storedItems.map((item) => item.slug));
-  const builtInItems =
-    type === "line"
-      ? catalogLines.map((line) => ({
-          id: `builtin-line-${line.id}`,
-          slug: line.id,
-          title: line.name,
-          line: line.id,
-          excerpt: line.description,
-          body: line.summary,
-          active: true,
-          builtIn: true,
-        }))
-      : catalogLines.flatMap((line) =>
-          line.products.map((product) => ({
-            id: `builtin-product-${product.slug}`,
-            slug: product.slug,
-            title: product.name,
-            line: line.name,
-            excerpt: product.description,
-            body: product.longDescription,
-            brand: product.brand,
-            model: product.model,
-            internalCode: product.internalCode,
-            tags: product.tags,
-            featured: product.featured || false,
-            active: true,
-            primaryImage: product.image,
-            secondaryImages: product.gallery.map((url, index) => ({
-              id: `${product.slug}-gallery-${index}`,
-              name: `Imagen ${index + 1}`,
-              url,
-              type: "image",
-            })),
-            documents: Object.values(product.documents)
-              .filter((document) => Boolean(document?.url))
-              .map((document, index) => ({
-                id: `${product.slug}-document-${index}`,
-                name: document?.name || `Documento ${index + 1}`,
-                url: document?.url || "",
-                type: "document",
-              })),
-            builtIn: true,
-          })),
-        );
-
+  const expiry = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const expired = storedItems.filter((item) => {
+    const deletedAt = typeof item.deletedAt === "string" ? Date.parse(item.deletedAt) : NaN;
+    return Number.isFinite(deletedAt) && deletedAt < expiry;
+  });
+  await Promise.all(
+    expired.map((item) =>
+      fetch(
+        `${config.url}/rest/v1/created_content?content_type=eq.${encodeURIComponent(type)}&slug=eq.${encodeURIComponent(item.slug)}`,
+        { method: "DELETE", headers: getSupabaseHeaders(config.serviceRoleKey) },
+      ),
+    ),
+  );
   return NextResponse.json({
-    items: [
-      ...storedItems,
-      ...builtInItems.filter((item) => !storedSlugs.has(item.slug)),
-    ],
+    items: storedItems.filter((item) => !expired.includes(item)),
   });
 }
 

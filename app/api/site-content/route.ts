@@ -9,6 +9,7 @@ const publicKeys = new Set([
   "catalogo",
   "catalogo-lineas-vista",
   "catalogo-productos-vista",
+  "catalog-settings",
   "contacto",
   "ventana-emergente",
 ]);

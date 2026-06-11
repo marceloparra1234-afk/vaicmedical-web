@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getFeaturedPublicProducts } from "@/data/catalog-service";
+import { getHomeCatalogHighlights } from "@/data/catalog-service";
 import { getManagedBlogPosts } from "@/data/supabase-blog";
 import { getSiteContent } from "@/lib/supabase-admin";
 
@@ -27,13 +27,13 @@ export default async function Home() {
   const [managedPosts, createdProducts, nosotros, servicios, blog, catalogo] =
     await Promise.all([
       getManagedBlogPosts(),
-      getFeaturedPublicProducts(),
+      getHomeCatalogHighlights(),
       getSiteContent<Record<string, LinkedSection>>("nosotros"),
       getSiteContent<Record<string, LinkedSection>>("servicios"),
       getSiteContent<Record<string, LinkedSection>>("blog"),
       getSiteContent<Record<string, LinkedSection>>("catalogo"),
     ]);
-  const featuredProducts = createdProducts.slice(0, 4);
+  const featuredProducts = createdProducts.slice(0, 3);
   const latestPosts = managedPosts.slice(0, 3);
   const aboutSummary = nosotros?.["Hero principal"];
   const servicesSummary = servicios?.["Hero principal"];
@@ -189,7 +189,7 @@ export default async function Home() {
             {featuredProducts.map((product) => (
               <Link
                 className="group overflow-hidden rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] transition hover:-translate-y-1 hover:border-[#58c3de] hover:bg-white hover:shadow-lg"
-                href={`/catalogo/${product.slug}`}
+                href={product.href}
                 key={product.slug}
               >
                 <div className="relative aspect-square border-b border-[#d7e9ef] bg-[#eaf8fc]">
@@ -218,6 +218,11 @@ export default async function Home() {
                 </div>
               </Link>
             ))}
+            {!featuredProducts.length && (
+              <p className="border border-[#d7e9ef] bg-[#f6fbfd] p-7 text-[#34466f] sm:col-span-2">
+                Próximamente encontrarás nuestros productos.
+              </p>
+            )}
           </div>
         </div>
       </section>

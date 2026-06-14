@@ -311,14 +311,11 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
       if (!field) return;
       field.style.display = item.visible ? "" : "none";
       const label = field.querySelector<HTMLElement>("[data-form-label]");
-      const control = field.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>("input, textarea, select");
+      const control = syncFormControl(field, item);
       if (label) label.innerHTML = item.title;
       if (control && !(control instanceof HTMLSelectElement)) {
         control.placeholder = stripHtml(item.text);
         control.required = item.required ?? false;
-        if (control instanceof HTMLInputElement && item.fieldType && !["textarea", "select"].includes(item.fieldType)) {
-          control.type = item.fieldType;
-        }
       }
     });
   }
@@ -402,6 +399,39 @@ function ensureFormFields(target: HTMLElement, count: number) {
     field.style.display = "none";
   });
   return fields;
+}
+
+function syncFormControl(
+  field: HTMLElement,
+  item: PreviewContent["items"][number],
+) {
+  let control = field.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>("input, textarea, select");
+  if (!control || !item.fieldType) return control;
+
+  const needsTextarea = item.fieldType === "textarea" && !(control instanceof HTMLTextAreaElement);
+  const needsSelect = item.fieldType === "select" && !(control instanceof HTMLSelectElement);
+  const needsInput = !["textarea", "select"].includes(item.fieldType) && !(control instanceof HTMLInputElement);
+  if (needsTextarea || needsSelect || needsInput) {
+    const replacement =
+      item.fieldType === "textarea"
+        ? field.ownerDocument.createElement("textarea")
+        : item.fieldType === "select"
+          ? field.ownerDocument.createElement("select")
+          : field.ownerDocument.createElement("input");
+    replacement.className = control.className;
+    replacement.setAttribute("name", control.getAttribute("name") || item.id);
+    control.replaceWith(replacement);
+    control = replacement;
+  }
+
+  control.required = item.required ?? false;
+  if (control instanceof HTMLInputElement && !["textarea", "select"].includes(item.fieldType)) {
+    control.type = item.fieldType;
+  }
+  if (control instanceof HTMLSelectElement && !control.options.length) {
+    control.add(new Option(stripHtml(item.text), ""));
+  }
+  return control;
 }
 
 function applySectionImage(target: HTMLElement, content: PreviewContent) {

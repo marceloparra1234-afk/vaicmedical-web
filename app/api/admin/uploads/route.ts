@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const limits = {
-  image: 5 * 1024 * 1024,
-  document: 15 * 1024 * 1024,
+  image: 20 * 1024 * 1024,
+  document: 30 * 1024 * 1024,
   video: 50 * 1024 * 1024,
+  font: 10 * 1024 * 1024,
 };
+
+const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const allowedVideoTypes = new Set(["video/mp4", "video/webm"]);
+const allowedFontExtensions = /\.(woff2?|ttf|otf)$/i;
 
 function sanitizeFilename(name: string) {
   const parts = name.split(".");
@@ -40,9 +45,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "El archivo supera el tamaño permitido" }, { status: 413 });
   }
   if (
-    (kind === "image" && !body.mimeType.startsWith("image/")) ||
-    (kind === "video" && !body.mimeType.startsWith("video/")) ||
-    (kind === "document" && body.mimeType !== "application/pdf")
+    (kind === "image" && !allowedImageTypes.has(body.mimeType)) ||
+    (kind === "video" && !allowedVideoTypes.has(body.mimeType)) ||
+    (kind === "document" && body.mimeType !== "application/pdf" && !allowedImageTypes.has(body.mimeType)) ||
+    (kind === "font" && !allowedFontExtensions.test(body.name))
   ) {
     return NextResponse.json({ error: "Formato de archivo no permitido" }, { status: 415 });
   }

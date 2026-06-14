@@ -2,6 +2,7 @@ import { AdminCreateContent } from "@/components/admin/AdminCreateContent";
 import { AdminCatalogManager } from "@/components/admin/AdminCatalogManager";
 import { AdminEditorWorkspace } from "@/components/admin/AdminEditorWorkspace";
 import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminVisualIdentity } from "@/components/admin/AdminVisualIdentity";
 
 type AdminRouteProps = {
   params: Promise<{ path: string[] }>;
@@ -123,6 +124,10 @@ export default async function AdminModulePage({ params }: AdminRouteProps) {
 
   if (route === "usuarios") {
     return <AdminUsers />;
+  }
+
+  if (route === "identidad-visual") {
+    return <AdminVisualIdentity />;
   }
 
   const editor = editors[route];

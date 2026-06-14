@@ -5,6 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SitePopup } from "@/components/SitePopup";
 import { PublicContentHydrator } from "@/components/PublicContentHydrator";
+import type { PreviewContent } from "@/components/admin/ClientPagePreview";
+import {
+  DEFAULT_VISUAL_IDENTITY,
+  type VisualIdentity,
+} from "@/data/visual-identity";
 
 const navItems = [
   { label: "Inicio", href: "/" },
@@ -39,17 +44,39 @@ function FooterColumn({
   );
 }
 
-export function SiteShell({ children }: { children: React.ReactNode }) {
+export function SiteShell({
+  children,
+  visualIdentity = DEFAULT_VISUAL_IDENTITY,
+  popupContent,
+  siteContent,
+}: {
+  children: React.ReactNode;
+  visualIdentity?: VisualIdentity;
+  popupContent?: Record<string, unknown> | null;
+  siteContent: Record<string, Record<string, PreviewContent> | null>;
+}) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
+  const socialLinks = Object.entries(visualIdentity.social).filter(([, href]) => href.trim());
+  const selectedFont = visualIdentity.fonts.find((font) => font.name === visualIdentity.primaryFont);
 
   if (isAdminRoute) {
     return <>{children}</>;
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f6fbfd] text-[#213255]">
-      <PublicContentHydrator />
+    <div
+      className="flex min-h-screen flex-col bg-[#f6fbfd] text-[#213255]"
+      style={{
+        ["--site-content-width" as string]: `${visualIdentity.contentWidth}px`,
+        ["--site-radius" as string]: `${visualIdentity.cornerRadius}px`,
+        fontFamily: selectedFont ? `"VaicCustom", Arial, sans-serif` : undefined,
+      }}
+    >
+      {selectedFont && (
+        <style>{`@font-face{font-family:"VaicCustom";src:url("${selectedFont.url}");font-display:swap;}`}</style>
+      )}
+      <PublicContentHydrator contentByPage={siteContent} />
       <header className="sticky top-0 z-20 border-b border-[#d7e9ef] bg-[#f6fbfd]/92 backdrop-blur">
         <nav className="flex items-center justify-between px-6 py-4 sm:px-10 lg:px-14">
           <Link className="block" href="/" aria-label="VaicMedical inicio">
@@ -89,7 +116,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1">{children}</div>
 
       <footer className="bg-[#213255] text-white">
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.3fr_0.8fr_0.8fr_1fr] lg:py-14">
+        <div className="mx-auto grid w-full max-w-[var(--site-content-width)] gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.3fr_0.8fr_0.8fr_1fr] lg:py-14">
           <div>
             <Link className="inline-block" href="/" aria-label="VaicMedical inicio">
               <Image
@@ -104,14 +131,22 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               Mantención, reparación y soporte técnico para equipos médicos que
               deben mantenerse operativos.
             </p>
-            <div className="mt-6 flex gap-3 text-white/80">
-              <span className="grid h-9 w-9 place-items-center rounded-full border border-white/15 text-xs font-bold">
-                in
-              </span>
-              <span className="grid h-9 w-9 place-items-center rounded-full border border-white/15 text-xs font-bold">
-                IG
-              </span>
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="mt-6 flex flex-wrap gap-3 text-white/80">
+                {socialLinks.map(([network, href]) => (
+                  <a
+                    aria-label={network}
+                    className="grid h-9 min-w-9 place-items-center rounded-full border border-white/15 px-2 text-[10px] font-bold uppercase transition hover:border-[#58C3DE] hover:text-[#58C3DE]"
+                    href={href}
+                    key={network}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {network.slice(0, 2)}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           <FooterColumn
@@ -151,7 +186,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="border-t border-white/10 px-5 py-5 text-xs text-white/45 sm:px-8">
-          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="mx-auto flex w-full max-w-[var(--site-content-width)] flex-col items-center justify-between gap-4 sm:flex-row">
             <span>2026 VaicMedical. Todos los derechos reservados.</span>
             <Link
               className="rounded-lg border border-white/15 px-4 py-2 font-semibold text-white/65 transition hover:border-[#58c3de] hover:text-[#58c3de]"
@@ -163,7 +198,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
 
-      <SitePopup />
+      <SitePopup content={popupContent} />
     </div>
   );
 }

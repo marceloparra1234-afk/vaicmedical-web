@@ -12,6 +12,7 @@ const publicKeys = new Set([
   "catalog-settings",
   "contacto",
   "ventana-emergente",
+  "visual-identity",
 ]);
 
 export async function GET(request: NextRequest) {

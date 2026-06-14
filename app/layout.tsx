@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteShell } from "@/components/SiteShell";
+import {
+  DEFAULT_VISUAL_IDENTITY,
+  type VisualIdentity,
+} from "@/data/visual-identity";
+import { getSiteContentBundle } from "@/lib/supabase-admin";
+import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,18 +25,38 @@ export const metadata: Metadata = {
     "VaicMedical realiza mantención, reparación y soporte técnico para equipos médicos en instituciones de salud.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pageKeys = ["inicio", "nosotros", "servicios", "blog", "catalogo", "contacto", "catalogo-productos-vista"];
+  const stored = await getSiteContentBundle<
+    Partial<VisualIdentity> | Record<string, unknown> | Record<string, PreviewContent>
+  >(["visual-identity", "ventana-emergente", ...pageKeys]);
+  const storedIdentity = stored["visual-identity"] as Partial<VisualIdentity> | null;
+  const popupContent = stored["ventana-emergente"] as Record<string, unknown> | null;
+  const siteContent = Object.fromEntries(
+    pageKeys.map((pageKey) => [
+      pageKey,
+      stored[pageKey] as Record<string, PreviewContent> | null,
+    ]),
+  ) as Record<string, Record<string, PreviewContent> | null>;
+  const visualIdentity: VisualIdentity = storedIdentity
+    ? {
+        ...DEFAULT_VISUAL_IDENTITY,
+        ...storedIdentity,
+        social: { ...DEFAULT_VISUAL_IDENTITY.social, ...storedIdentity.social },
+      }
+    : DEFAULT_VISUAL_IDENTITY;
+
   return (
     <html
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <SiteShell>{children}</SiteShell>
+        <SiteShell popupContent={popupContent} siteContent={siteContent} visualIdentity={visualIdentity}>{children}</SiteShell>
       </body>
     </html>
   );

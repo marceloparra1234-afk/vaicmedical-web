@@ -12,6 +12,7 @@ const publicPaths: Record<string, string[]> = {
   "catalog-settings": ["/catalogo", "/catalogo/[producto]"],
   contacto: ["/contacto"],
   "ventana-emergente": ["/"],
+  "visual-identity": ["/"],
 };
 
 function refreshPublicContent(pageKey: string) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useVisualPalette } from "@/components/admin/use-visual-palette";
 
 type RichTextEditorProps = {
   label: string;
@@ -9,13 +10,10 @@ type RichTextEditorProps = {
   minHeight?: string;
 };
 
-const fontSizes = [
-  { label: "12", value: "2" },
-  { label: "14", value: "3" },
-  { label: "18", value: "4" },
-  { label: "24", value: "5" },
-  { label: "32", value: "6" },
-  { label: "40", value: "7" },
+const textStyles = [
+  { label: "Párrafo", value: "p" },
+  { label: "Subtítulo", value: "h3" },
+  { label: "Título", value: "h2" },
 ];
 
 export function RichTextEditor({
@@ -49,30 +47,21 @@ export function RichTextEditor({
       <div className="mt-2 overflow-hidden rounded-lg border border-[#d7e9ef] bg-white focus-within:border-[#58c3de]">
         <div className="flex flex-wrap gap-1 border-b border-[#d7e9ef] bg-[#f7fafb] p-2">
           <select
-            aria-label="Tipo de fuente"
-            className="h-8 rounded border border-[#d7e9ef] bg-white px-2 text-xs"
-            defaultValue="Arial"
-            onChange={(event) => runCommand("fontName", event.target.value)}
+            aria-label="Estilo del texto"
+            className="h-9 rounded border border-[#d7e9ef] bg-white px-2 text-xs font-semibold"
+            defaultValue="p"
+            onChange={(event) => runCommand("formatBlock", event.target.value)}
+            title="Estilo del texto"
           >
-            <option value="Arial">Arial</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Verdana">Verdana</option>
-            <option value="Courier New">Courier New</option>
-          </select>
-          <select
-            aria-label="Tamaño de fuente"
-            className="h-8 rounded border border-[#d7e9ef] bg-white px-2 text-xs"
-            defaultValue="3"
-            onChange={(event) => runCommand("fontSize", event.target.value)}
-          >
-            {fontSizes.map((size) => (
-              <option key={size.value} value={size.value}>
-                {size.label}
+            {textStyles.map((style) => (
+              <option key={style.value} value={style.value}>
+                {style.label}
               </option>
             ))}
           </select>
 
+          <ToolbarButton command="undo" label="Deshacer" onRun={runCommand}>↶</ToolbarButton>
+          <ToolbarButton command="redo" label="Rehacer" onRun={runCommand}>↷</ToolbarButton>
           <ToolbarButton command="bold" label="Negrita" onRun={runCommand}>
             <strong>B</strong>
           </ToolbarButton>
@@ -82,10 +71,6 @@ export function RichTextEditor({
           <ToolbarButton command="underline" label="Subrayado" onRun={runCommand}>
             <u>U</u>
           </ToolbarButton>
-          <ToolbarButton command="strikeThrough" label="Tachado" onRun={runCommand}>
-            <s>S</s>
-          </ToolbarButton>
-
           <ColorControl
             label="Color del texto"
             onChange={(color) => runCommand("foreColor", color)}
@@ -103,32 +88,23 @@ export function RichTextEditor({
             label="Lista con viñetas"
             onRun={runCommand}
           >
-            • Lista
+            •
           </ToolbarButton>
           <ToolbarButton
             command="insertOrderedList"
             label="Lista numerada"
             onRun={runCommand}
           >
-            1. Lista
+            1.
           </ToolbarButton>
           <ToolbarButton command="justifyLeft" label="Alinear izquierda" onRun={runCommand}>
-            ≡←
-          </ToolbarButton>
-          <ToolbarButton command="justifyCenter" label="Centrar" onRun={runCommand}>
             ≡
           </ToolbarButton>
+          <ToolbarButton command="justifyCenter" label="Centrar" onRun={runCommand}>
+            ≣
+          </ToolbarButton>
           <ToolbarButton command="justifyRight" label="Alinear derecha" onRun={runCommand}>
-            →≡
-          </ToolbarButton>
-          <ToolbarButton command="justifyFull" label="Justificar" onRun={runCommand}>
-            ☰
-          </ToolbarButton>
-          <ToolbarButton command="outdent" label="Reducir sangría" onRun={runCommand}>
-            ←
-          </ToolbarButton>
-          <ToolbarButton command="indent" label="Aumentar sangría" onRun={runCommand}>
-            →
+            ≡
           </ToolbarButton>
           <button
             className="h-8 rounded border border-[#d7e9ef] bg-white px-2 text-xs font-semibold hover:border-[#58c3de]"
@@ -139,10 +115,10 @@ export function RichTextEditor({
             Enlace
           </button>
           <ToolbarButton command="unlink" label="Quitar enlace" onRun={runCommand}>
-            Sin enlace
+            ⛓
           </ToolbarButton>
           <ToolbarButton command="removeFormat" label="Limpiar formato" onRun={runCommand}>
-            Limpiar
+            Quitar formato
           </ToolbarButton>
         </div>
 
@@ -172,7 +148,8 @@ function ToolbarButton({
 }) {
   return (
     <button
-      className="h-8 rounded border border-[#d7e9ef] bg-white px-2 text-xs font-semibold hover:border-[#58c3de]"
+      aria-label={label}
+      className="h-9 min-w-9 rounded border border-[#d7e9ef] bg-white px-2 text-xs font-semibold hover:border-[#58c3de]"
       onClick={() => onRun(command)}
       title={label}
       type="button"
@@ -193,6 +170,7 @@ function ColorControl({
   onRemove: () => void;
   value?: string;
 }) {
+  const palette = useVisualPalette();
   return (
     <label
       className="grid cursor-pointer place-items-center rounded border border-[#d7e9ef] bg-white"
@@ -207,23 +185,12 @@ function ColorControl({
         }
       >
         <option value="remove">Quitar</option>
-        {vaicRichColors.map((color) => (
-          <option key={color.value} value={color.value}>
-            {color.label}
+        {palette.filter((color) => color.hex !== "transparent").map((color) => (
+          <option key={color.hex} value={color.hex}>
+            {color.name} · {color.hex}
           </option>
         ))}
       </select>
     </label>
   );
 }
-
-const vaicRichColors = [
-  { label: "Azul", value: "#213255" },
-  { label: "Azul medio", value: "#34466f" },
-  { label: "Azul profundo", value: "#17243f" },
-  { label: "Celeste", value: "#58c3de" },
-  { label: "Celeste suave", value: "#eaf8fc" },
-  { label: "Celeste base", value: "#f6fbfd" },
-  { label: "Borde", value: "#d7e9ef" },
-  { label: "Blanco", value: "#ffffff" },
-];

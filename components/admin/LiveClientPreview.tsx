@@ -248,16 +248,17 @@ function createPreviewDocument(sectionHtml: string, assets: string) {
 
 export function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
   target.style.display = content.visible ? "" : "none";
-  target.style.backgroundColor = content.backgroundColor || "";
-  target.style.color = content.textColor || "";
+  target.style.backgroundColor = content.backgroundColor ?? "";
+  target.style.color = content.textColor ?? "";
 
   applySectionImage(target, content);
   applyGridColumns(target, content);
 
   const sectionEyebrow = target.querySelector("[data-editor-field='section-eyebrow']");
-  if (sectionEyebrow instanceof HTMLElement && content.eyebrow) {
+  if (sectionEyebrow instanceof HTMLElement) {
     sectionEyebrow.innerHTML = content.eyebrow;
-    sectionEyebrow.style.color = content.accentColor || "";
+    sectionEyebrow.style.display = content.eyebrow ? "" : "none";
+    sectionEyebrow.style.color = content.accentColor ?? "";
   }
 
   const sectionTitle = target.querySelector("[data-editor-field='section-title']");
@@ -275,7 +276,10 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
     "p.text-xs.font-semibold.uppercase",
     "p.font-mono",
   ]);
-  if (eyebrow && !sectionEyebrow && content.eyebrow) eyebrow.innerHTML = content.eyebrow;
+  if (eyebrow && !sectionEyebrow) {
+    eyebrow.innerHTML = content.eyebrow;
+    eyebrow.style.display = content.eyebrow ? "" : "none";
+  }
 
   const heading = first(target, ["h1", "h2"]);
   if (heading && !sectionTitle) heading.innerHTML = content.title;
@@ -286,13 +290,14 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
       !item.className.includes("font-mono") &&
       !item.closest("nav"),
   );
-  if (content.subtitle) {
-    const subtitle = paragraphs.find(
-      (item) =>
-        heading &&
-        Boolean(item.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING),
-    );
-    if (subtitle) subtitle.innerHTML = content.subtitle;
+  const subtitle = paragraphs.find(
+    (item) =>
+      heading &&
+      Boolean(item.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING),
+  );
+  if (subtitle) {
+    subtitle.innerHTML = content.subtitle;
+    subtitle.style.display = content.subtitle ? "" : "none";
   }
   if (!sectionIntro) {
     const intro = paragraphs.find((item) => item.innerHTML !== content.subtitle);
@@ -308,9 +313,9 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
     if (element instanceof HTMLElement) {
       element.style.display = button.visible ? "" : "none";
       element.innerHTML = button.label;
-      element.style.backgroundColor = button.backgroundColor || "";
-      element.style.borderColor = button.borderColor || "";
-      element.style.color = button.textColor || "";
+      element.style.backgroundColor = button.backgroundColor ?? "";
+      element.style.borderColor = button.borderColor ?? "";
+      element.style.color = button.textColor ?? "";
     }
     if (element instanceof HTMLAnchorElement) {
       element.href = button.href;
@@ -333,13 +338,13 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
           child.className.includes("rounded-full"),
       );
       if (accent instanceof HTMLElement) {
-        accent.style.backgroundColor = item.borderColor || content.accentColor || "";
+        accent.style.backgroundColor = item.borderColor ?? content.accentColor ?? "";
       }
 
       const cardNumber = first(card, ["span"]);
       if (cardNumber) {
         if (item.number) cardNumber.innerHTML = item.number;
-        cardNumber.style.color = item.numberColor || content.accentColor || "";
+        cardNumber.style.color = item.numberColor ?? content.accentColor ?? "";
       }
 
       const cardTitle = first(card, ["h2", "h3", "p.uppercase", ".font-semibold"]);
@@ -362,11 +367,16 @@ function applySectionImage(target: HTMLElement, content: PreviewContent) {
     : content.sectionImage
       ? [content.sectionImage]
       : [];
-  if (!images.length) return;
+  const image = target.querySelector("img");
+  if (!images.length) {
+    if (image instanceof HTMLImageElement) image.style.display = "none";
+    target.querySelector("[data-admin-carousel-dots]")?.remove();
+    return;
+  }
   const imageSource = images[0];
 
-  const image = target.querySelector("img");
   if (image instanceof HTMLImageElement) {
+    image.style.display = "";
     image.src = imageSource;
     image.srcset = "";
     renderCarouselDots(target, images);
@@ -428,9 +438,9 @@ function applyCardAppearance(
   item: PreviewContent["items"][number],
   content: PreviewContent,
 ) {
-  card.style.backgroundColor = content.itemColor || item.backgroundColor || "";
-  card.style.borderColor = item.borderColor || content.accentColor || "";
-  card.style.color = item.textColor || content.textColor || "";
+  card.style.backgroundColor = item.backgroundColor ?? content.itemColor ?? "";
+  card.style.borderColor = item.borderColor ?? content.accentColor ?? "";
+  card.style.color = item.textColor ?? content.textColor ?? "";
 
   card.style.clipPath = "";
   card.style.aspectRatio = "";

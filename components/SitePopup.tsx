@@ -20,9 +20,40 @@ const defaultPopup = {
   textColor: "#213255",
 };
 
-export function SitePopup() {
+type PopupSection = {
+  eyebrow?: string;
+  subtitle?: string;
+  title?: string;
+  content?: string;
+  sectionImages?: string[];
+  sectionImage?: string;
+  buttons?: Array<{ label?: string; href?: string }>;
+  visible?: boolean;
+  backgroundColor?: string;
+  accentColor?: string;
+  itemColor?: string;
+  textColor?: string;
+};
+
+export function SitePopup({ content }: { content?: Record<string, unknown> | null }) {
+  const section = content?.["Configuración"] as PopupSection | undefined;
+  const configuredPopup = section
+    ? {
+        eyebrow: stripHtml(section.eyebrow ?? section.subtitle ?? ""),
+        title: stripHtml(section.title ?? ""),
+        text: stripHtml(section.content ?? ""),
+        image: section.sectionImages?.[0] ?? section.sectionImage ?? "",
+        buttonLabel: section.buttons?.[0]?.label ?? "",
+        buttonHref: section.buttons?.[0]?.href ?? "/contacto",
+        visible: section.visible !== false,
+        backgroundColor: section.backgroundColor ?? "#ffffff",
+        accentColor: section.accentColor ?? "#58c3de",
+        buttonColor: section.itemColor ?? "#213255",
+        textColor: section.textColor ?? "#213255",
+      }
+    : defaultPopup;
   const [visible, setVisible] = useState(false);
-  const [popup, setPopup] = useState(defaultPopup);
+  const [popup] = useState(configuredPopup);
 
   useEffect(() => {
     if (
@@ -32,46 +63,14 @@ export function SitePopup() {
       return;
     }
 
-    let cancelled = false;
     let timer: number | undefined;
-    fetch("/api/site-content?pageKey=ventana-emergente", { cache: "no-store" })
-      .then(async (response) => (response.ok ? response.json() : null))
-      .then((result) => {
-        if (cancelled) return;
-        const content = result?.content?.Configuración;
-        const nextPopup = content
-          ? {
-              eyebrow: stripHtml(content.eyebrow || content.subtitle || defaultPopup.eyebrow),
-              title: stripHtml(content.title || defaultPopup.title),
-              text: stripHtml(content.content || defaultPopup.text),
-              image: content.sectionImages?.[0] || content.sectionImage || defaultPopup.image,
-              buttonLabel: content.buttons?.[0]?.label || defaultPopup.buttonLabel,
-              buttonHref: content.buttons?.[0]?.href || defaultPopup.buttonHref,
-              visible: content.visible !== false,
-              backgroundColor: content.backgroundColor || defaultPopup.backgroundColor,
-              accentColor: content.accentColor || defaultPopup.accentColor,
-              buttonColor: content.itemColor || defaultPopup.buttonColor,
-              textColor: content.textColor || defaultPopup.textColor,
-            }
-          : defaultPopup;
-        setPopup(nextPopup);
-        if (
-          nextPopup.visible &&
-          sessionStorage.getItem(POPUP_SESSION_KEY) !== "true"
-        ) {
-          timer = window.setTimeout(() => setVisible(true), 900);
-        }
-      })
-      .catch(() => {
-        if (sessionStorage.getItem(POPUP_SESSION_KEY) !== "true") {
-          timer = window.setTimeout(() => setVisible(true), 900);
-        }
-      });
+    if (popup.visible && sessionStorage.getItem(POPUP_SESSION_KEY) !== "true") {
+      timer = window.setTimeout(() => setVisible(true), 900);
+    }
     return () => {
-      cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, []);
+  }, [popup.visible]);
 
   useEffect(() => {
     if (!visible) return;
@@ -107,7 +106,7 @@ export function SitePopup() {
       role="dialog"
     >
       <div
-        className="relative grid max-h-[calc(100vh-4rem)] w-full max-w-5xl overflow-auto rounded-[28px] shadow-2xl shadow-[#213255]/35 md:grid-cols-[0.95fr_1.05fr]"
+        className="relative grid max-h-[calc(100vh-2rem)] w-full max-w-6xl overflow-auto rounded-[28px] shadow-2xl shadow-[#213255]/35 md:grid-cols-[1.1fr_0.9fr]"
         onClick={(event) => event.stopPropagation()}
         style={{ backgroundColor: popup.backgroundColor, color: popup.textColor }}
       >
@@ -120,15 +119,17 @@ export function SitePopup() {
           ×
         </button>
 
-        <div className="relative min-h-64 bg-[#eaf8fc] md:min-h-[500px]">
-          <Image
-            alt="Mantención y reparación de equipos médicos VaicMedical"
-            className="object-contain p-7 sm:p-10"
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 480px"
-            src={popup.image}
-          />
+        <div className="relative aspect-square min-h-64 bg-white md:min-h-[600px]">
+          {popup.image && (
+            <Image
+              alt="Mantención y reparación de equipos médicos VaicMedical"
+              className="object-contain"
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 660px"
+              src={popup.image}
+            />
+          )}
         </div>
 
         <div className="flex flex-col justify-center px-6 py-10 sm:px-10 md:px-12">

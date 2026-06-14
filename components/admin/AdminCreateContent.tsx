@@ -403,12 +403,12 @@ export function AdminCreateContent({ type }: CreateContentProps) {
                 type={type}
               />
               <MediaInput
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 files={form.secondaryImages}
                 formats="JPG, PNG, WEBP"
                 label="Imágenes secundarias"
                 maxFiles={10}
-                maxSize="Máximo 5 MB por imagen"
+                maxSize="Máximo 20 MB por imagen"
                 onChange={(secondaryImages) => update("secondaryImages", secondaryImages)}
                 type="image"
               />
@@ -422,12 +422,12 @@ export function AdminCreateContent({ type }: CreateContentProps) {
                 onChange={(videos) => update("videos", videos)}
                 type="video"
               />
-              {type !== "product" && <MediaInput accept="application/pdf" files={form.documents} formats="PDF" label="Documentos" maxFiles={8} maxSize="Máximo 15 MB por documento" onChange={(documents) => update("documents", documents)} type="document" />}
+              {type !== "product" && <MediaInput accept="application/pdf" files={form.documents} formats="PDF" label="Documentos" maxFiles={8} maxSize="Máximo 30 MB por documento" onChange={(documents) => update("documents", documents)} type="document" />}
             </div>
             {type === "product" && (
               <div className="grid gap-4 lg:grid-cols-2">
                 <SingleDocumentInput file={form.technicalSheet} label="Ficha técnica" onChange={(technicalSheet) => update("technicalSheet", technicalSheet)} />
-                <MediaInput accept="application/pdf,image/*" files={form.certifications} formats="PDF, JPG, PNG, WEBP" label="Certificaciones" maxFiles={12} maxSize="Máximo 15 MB por archivo" onChange={(certifications) => update("certifications", certifications)} type="document" />
+                <MediaInput accept="application/pdf,image/jpeg,image/png,image/webp" files={form.certifications} formats="PDF, JPG, PNG, WEBP" label="Certificaciones" maxFiles={12} maxSize="Máximo 30 MB por archivo" onChange={(certifications) => update("certifications", certifications)} type="document" />
               </div>
             )}
           </div>
@@ -471,7 +471,7 @@ function SingleDocumentInput({ file, label, onChange }: { file: MediaFile | null
   return (
     <div className="rounded-lg border border-dashed border-[#9eddea] bg-[#f4fbfd] p-4">
       <p className="text-sm font-bold text-[#213255]">{label}</p>
-      <p className="mt-2 text-xs text-[#667085]">PDF · máximo 15 MB</p>
+      <p className="mt-2 text-xs text-[#667085]">PDF · máximo 30 MB</p>
       <label className="mt-4 inline-flex cursor-pointer rounded-md bg-[#58c3de] px-3 py-2 text-xs font-bold text-[#213255]">
         {file ? "Reemplazar" : "Agregar"}
         <input accept="application/pdf" className="hidden" onChange={(event) => { const selected = event.target.files?.[0]; if (selected) void uploadFile(selected, "document").then(onChange); }} type="file" />
@@ -566,11 +566,11 @@ function PrimaryImageInput({
             ? "Imagen recomendada: 1600 x 1000 px"
             : "Principal recomendada: 1600 x 1600 px"}
       </p>
-      <p className="mt-1 text-xs text-[#667085]">JPG, PNG, WEBP · máximo 5 MB</p>
+      <p className="mt-1 text-xs text-[#667085]">JPG, PNG, WEBP · máximo 20 MB</p>
       <label className="mt-4 inline-flex cursor-pointer rounded-md bg-[#58c3de] px-3 py-2 text-xs font-bold text-[#213255]">
         Cargar
         <input
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           className="hidden"
           onChange={(event) => selectImage(event.target.files)}
           type="file"

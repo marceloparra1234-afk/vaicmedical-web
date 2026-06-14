@@ -6,6 +6,7 @@ import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 import { LiveClientPreview } from "@/components/admin/LiveClientPreview";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { uploadAdminImage } from "@/components/admin/upload-image";
+import { useVisualPalette } from "@/components/admin/use-visual-palette";
 
 type EditorWorkspaceProps = {
   contentKey: string;
@@ -359,20 +360,20 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
   const isMethod = section === "Método de trabajo";
   const editableFields = value.editableFields ?? ["title", "subtitle", "content"];
   return {
-    title: value.title || `<strong>${section}</strong>`,
-    subtitle: value.subtitle || "Texto secundario de la sección",
-    content: value.content || "Contenido editable de esta sección.",
+    title: value.title ?? `<strong>${section}</strong>`,
+    subtitle: value.subtitle ?? "Texto secundario de la sección",
+    content: value.content ?? "Contenido editable de esta sección.",
     visible: value.visible ?? true,
     eyebrow: value.eyebrow ?? (isMethod ? "" : section),
-    shape: value.shape || (isMethod ? "arrow" : "rounded"),
-    customShapeImage: value.customShapeImage || "",
-    backgroundColor: value.backgroundColor || "#f6fbfd",
-    itemColor: value.itemColor || "#213255",
-    accentColor: value.accentColor || "#58c3de",
-    textColor: value.textColor || "#ffffff",
-    sectionImage: value.sectionImage || "",
-    sectionImages: value.sectionImages || (value.sectionImage ? [value.sectionImage] : []),
-    columns: value.columns || 4,
+    shape: value.shape ?? (isMethod ? "arrow" : "rounded"),
+    customShapeImage: value.customShapeImage ?? "",
+    backgroundColor: value.backgroundColor ?? "#f6fbfd",
+    itemColor: value.itemColor ?? "#213255",
+    accentColor: value.accentColor ?? "#58c3de",
+    textColor: value.textColor ?? "#ffffff",
+    sectionImage: value.sectionImage ?? "",
+    sectionImages: value.sectionImages ?? (value.sectionImage ? [value.sectionImage] : []),
+    columns: value.columns ?? 4,
     buttons:
       normalizeButtons(value.buttons ??
       (isMethod
@@ -382,7 +383,7 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
             { id: "secondary", label: "Botón secundario", href: "/", visible: true },
           ])),
     items: normalizeItems(
-      value.items || (isMethod ? defaultSteps : repeatableDefaults[section] || []),
+      value.items ?? (isMethod ? defaultSteps : repeatableDefaults[section] ?? []),
     ),
     editableFields,
     allowItems: value.allowItems ?? true,
@@ -394,20 +395,20 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
 function normalizeButtons(buttons: SectionContent["buttons"]) {
   return buttons.map((button, index) => ({
     ...button,
-    backgroundColor: button.backgroundColor || (index === 0 ? "#213255" : "#ffffff"),
-    borderColor: button.borderColor || (index === 0 ? "#213255" : "#58c3de"),
-    textColor: button.textColor || (index === 0 ? "#ffffff" : "#213255"),
+    backgroundColor: button.backgroundColor ?? (index === 0 ? "#213255" : "#ffffff"),
+    borderColor: button.borderColor ?? (index === 0 ? "#213255" : "#58c3de"),
+    textColor: button.textColor ?? (index === 0 ? "#ffffff" : "#213255"),
   }));
 }
 
 function normalizeItems(items: SectionContent["items"]) {
   return items.map((item) => ({
     ...item,
-    backgroundColor: item.backgroundColor || "#ffffff",
-    borderColor: item.borderColor || "#d7e9ef",
-    textColor: item.textColor || "#213255",
-    numberColor: item.numberColor || "#58c3de",
-    image: item.image || "",
+    backgroundColor: item.backgroundColor ?? "#ffffff",
+    borderColor: item.borderColor ?? "#d7e9ef",
+    textColor: item.textColor ?? "#213255",
+    numberColor: item.numberColor ?? "#58c3de",
+    image: item.image ?? "",
   }));
 }
 
@@ -465,6 +466,9 @@ export function AdminEditorWorkspace({
   const [content, setContent] = useState(() =>
     createInitialContent(contentKey, sections),
   );
+  const [lastSavedContent, setLastSavedContent] = useState(() =>
+    createInitialContent(contentKey, sections),
+  );
   const [saveStatus, setSaveStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -476,16 +480,25 @@ export function AdminEditorWorkspace({
       })
       .then((result) => {
         if (result?.content) {
-          setContent((current) => {
-            const stored = result.content as Record<string, Partial<SectionContent>>;
-            return Object.fromEntries(
-              sections.map((section) => [
-                section,
-                completeSection(section, { ...current[section], ...stored[section] }),
-              ]),
-            );
-          });
+          const stored = result.content as Record<string, Partial<SectionContent>>;
+          const storedContent = Object.fromEntries(
+            sections.map((section) => [
+              section,
+              completeSection(section, stored[section] ?? {}),
+            ]),
+          ) as Record<string, SectionContent>;
+          setContent(storedContent);
+          setLastSavedContent(storedContent);
+          return;
         }
+        const initialContent = createInitialContent(contentKey, sections);
+        setContent(initialContent);
+        setLastSavedContent(initialContent);
+        fetch("/api/admin/content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pageKey: contentKey, content: initialContent }),
+        }).catch(() => undefined);
       })
       .catch(() => undefined);
   }, [contentKey, sections]);
@@ -515,6 +528,7 @@ export function AdminEditorWorkspace({
     try {
       const contentToSave = await uploadEmbeddedImages(content);
       setContent(contentToSave);
+      setLastSavedContent(contentToSave);
       const response = await fetch("/api/admin/content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -593,7 +607,7 @@ export function AdminEditorWorkspace({
                 onChange={updateField}
                 onUpdate={updateSection}
                 onDiscard={() => {
-                  setContent(createInitialContent(contentKey, sections));
+                  setContent(structuredClone(lastSavedContent));
                   setSaveStatus("Cambios descartados");
                 }}
                 onSave={saveChanges}
@@ -748,7 +762,7 @@ function EditorFields({
             onUpdate({ sectionImages, sectionImage: sectionImages[0] || "" })
           }
           formats="JPG, PNG, WEBP"
-          maxSize="Máximo 5 MB"
+          maxSize="Máximo 20 MB"
           recommended={
             previewType === "popup"
               ? "Recomendado: 1200 × 1200 px"
@@ -837,10 +851,10 @@ function AppearanceControls({
             <label className="rounded-lg border border-dashed border-[#9eddea] bg-white p-3 text-xs font-semibold text-[#34466f]">
               Figura personalizada
               <span className="mt-1 block font-normal text-[#667085]">
-                PNG, WEBP o SVG transparente · 800 × 800 px · máximo 2 MB
+                PNG o WEBP transparente · 800 × 800 px · máximo 20 MB
               </span>
               <input
-                accept="image/png,image/webp,image/svg+xml"
+                accept="image/png,image/webp"
                 className="mt-3 block w-full text-xs"
                 onChange={async (event) => {
                   const file = event.target.files?.[0];
@@ -964,7 +978,7 @@ function RepeatableItemsEditor({
             <label className="text-xs font-semibold text-[#34466f]">
               Imagen de la caja
               <input
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 className="mt-2 block w-full text-xs"
                 onChange={async (event) => {
                   const file = event.target.files?.[0];
@@ -1051,35 +1065,38 @@ function TextInput({ label, value, onChange }: { label: string; value: string; o
 }
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const palette = useVisualPalette();
+  const selected = palette.find(
+    (option) => option.hex.toLowerCase() === value.toLowerCase(),
+  );
   return (
     <label className="text-xs font-semibold text-[#34466f]">
       {label}
-      <select
-        className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3"
-        onChange={(event) => onChange(event.target.value)}
-        value={vaicColorOptions.some((option) => option.value === value) ? value : "#213255"}
-      >
-        {vaicColorOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <span className="mt-2 flex h-11 items-center gap-2 rounded-lg border border-[#d7e9ef] bg-white px-3">
+        <span
+          className="h-5 w-5 shrink-0 rounded border border-[#d7e9ef]"
+          style={{
+            background:
+              selected?.hex === "transparent"
+                ? "linear-gradient(135deg, #fff 45%, #D7E9EF 46%, #D7E9EF 54%, #fff 55%)"
+                : selected?.hex ?? value,
+          }}
+        />
+        <select
+          className="h-full min-w-0 flex-1 bg-transparent text-xs"
+          onChange={(event) => onChange(event.target.value)}
+          value={selected?.hex ?? "#213255"}
+        >
+          {palette.map((option) => (
+            <option key={option.hex} value={option.hex}>
+              {option.name} · {option.hex === "transparent" ? "Sin color" : option.hex}
+            </option>
+          ))}
+        </select>
+      </span>
     </label>
   );
 }
-
-const vaicColorOptions = [
-  { label: "Quitar", value: "transparent" },
-  { label: "Azul VaicMedical", value: "#213255" },
-  { label: "Azul medio", value: "#34466f" },
-  { label: "Azul profundo", value: "#17243f" },
-  { label: "Celeste VaicMedical", value: "#58c3de" },
-  { label: "Celeste suave", value: "#eaf8fc" },
-  { label: "Celeste muy suave", value: "#f6fbfd" },
-  { label: "Borde celeste", value: "#d7e9ef" },
-  { label: "Blanco de soporte", value: "#ffffff" },
-];
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, "");
@@ -1109,7 +1126,7 @@ export function UploadGuide({
         Seleccionar archivo
       </span>
       <input
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={async (event) => {
           const file = event.target.files?.[0];
@@ -1176,7 +1193,7 @@ function ImageGalleryEditor({
         <label className="inline-flex cursor-pointer rounded-md bg-[#58c3de] px-3 py-2 text-xs font-bold text-[#213255]">
           Agregar
           <input
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             className="hidden"
             multiple
             onChange={(event) => void addFiles(event.target.files)}
@@ -1228,9 +1245,9 @@ function PopupPreview({
 
   return (
     <div className="grid min-h-[610px] place-items-center rounded-lg bg-[#213255]/65 p-7">
-      <div className="grid w-full max-w-3xl overflow-hidden rounded-[24px] bg-white shadow-2xl md:grid-cols-2">
+      <div className="grid w-full max-w-4xl overflow-hidden rounded-[24px] bg-white shadow-2xl md:grid-cols-[1.1fr_0.9fr]">
         <div
-          className="grid min-h-72 place-items-center bg-[#eaf8fc] bg-cover bg-center p-8 text-center text-sm text-[#667085]"
+          className="grid aspect-square min-h-72 place-items-center bg-white bg-contain bg-center bg-no-repeat text-center text-sm text-[#667085]"
           style={{
             backgroundImage: popupImage
               ? `url("${popupImage}")`

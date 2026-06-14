@@ -31,7 +31,8 @@ const navigation = [
   },
   { label: "Contacto", href: "/admin/contacto", icon: "07" },
   { label: "Ventana emergente", href: "/admin/ventana-emergente", icon: "08" },
-  { label: "Usuarios", href: "/admin/usuarios", icon: "09" },
+  { label: "Identidad visual", href: "/admin/identidad-visual", icon: "09" },
+  { label: "Usuarios", href: "/admin/usuarios", icon: "10" },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

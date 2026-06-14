@@ -31,6 +31,28 @@ export async function getSiteContent<T>(pageKey: string): Promise<T | null> {
   return rows[0]?.content || null;
 }
 
+export async function getSiteContentBundle<T>(
+  pageKeys: string[],
+): Promise<Record<string, T | null>> {
+  const config = getSupabaseAdminConfig();
+  if (!config || pageKeys.length === 0) return {};
+  const encodedKeys = pageKeys.map((key) => `"${key.replaceAll('"', "")}"`).join(",");
+  const response = await fetch(
+    `${config.url}/rest/v1/site_content?page_key=in.(${encodeURIComponent(encodedKeys)})&select=page_key,content`,
+    {
+      headers: getSupabaseAdminHeaders(config.serviceRoleKey),
+      next: {
+        revalidate: CONTENT_REVALIDATE_SECONDS,
+        tags: pageKeys.map((pageKey) => `site-content:${pageKey}`),
+      },
+    },
+  );
+  if (!response.ok) return Object.fromEntries(pageKeys.map((key) => [key, null]));
+  const rows = (await response.json()) as Array<{ page_key: string; content: T }>;
+  const stored = new Map(rows.map((row) => [row.page_key, row.content]));
+  return Object.fromEntries(pageKeys.map((key) => [key, stored.get(key) ?? null]));
+}
+
 export async function saveSiteContent(pageKey: string, content: unknown) {
   const config = getSupabaseAdminConfig();
   if (!config) return { ok: false as const, error: "Supabase aún no está configurado" };

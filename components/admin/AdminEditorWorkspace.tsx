@@ -89,11 +89,17 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
       editableFields: ["eyebrow", "title", "content"],
       buttons: [],
     },
-    "Misión y visión": {
+    Misión: {
       editableFields: [],
       buttons: [],
       items: [
         createCard("mision", "Misión", "Recuperar y mantener equipos médicos críticos con respuesta técnica clara, trazable y orientada a la continuidad de la atención."),
+      ],
+    },
+    Visión: {
+      editableFields: [],
+      buttons: [],
+      items: [
         createCard("vision", "Visión", "Ser un aliado confiable para instituciones que necesitan equipos disponibles, procesos ordenados y soporte técnico oportuno."),
       ],
     },
@@ -226,9 +232,18 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
     Formulario: {
       title: "Formulario de contacto",
       content:
-        "Campos para nombre, correo, teléfono, institución, mensaje y envío de solicitud.",
+        "Completa los datos para coordinar tu solicitud.",
       editableFields: ["title", "content"],
       buttons: [{ id: "send", label: "Enviar solicitud", href: "/contacto", visible: true }],
+      items: [
+        createCard("nombre", "Nombre", "Nombre completo"),
+        createCard("correo", "Correo", "correo@institucion.cl"),
+        createCard("telefono", "Teléfono", "+56 9..."),
+        createCard("institucion", "Institución", "Hospital, clínica o empresa"),
+        createCard("asunto", "Asunto", "Ej: Reparación de cama clínica"),
+        createCard("tipo", "Tipo de solicitud", "Seleccionar"),
+        createCard("mensaje", "Mensaje", "Describe la falla, mantención requerida o antecedentes relevantes."),
+      ],
     },
   },
 };
@@ -604,6 +619,7 @@ export function AdminEditorWorkspace({
             <div className="max-h-[calc(100vh-245px)] overflow-y-auto">
               <EditorFields
                 content={selectedContent}
+                section={selected}
                 onChange={updateField}
                 onUpdate={updateSection}
                 onDiscard={() => {
@@ -690,6 +706,7 @@ async function uploadDataUrl(value: string, name: string) {
 
 function EditorFields({
   content,
+  section,
   previewType,
   onChange,
   onUpdate,
@@ -698,6 +715,7 @@ function EditorFields({
   isSaving,
 }: {
   content: SectionContent;
+  section: string;
   previewType: "page" | "popup";
   onChange: (field: EditableField, value: string) => void;
   onUpdate: (changes: Partial<SectionContent>) => void;
@@ -749,8 +767,8 @@ function EditorFields({
         </>
       )}
       <AppearanceControls content={content} onUpdate={onUpdate} />
-      {content.allowItems !== false && content.items.length > 0 && (
-        <RepeatableItemsEditor content={content} onUpdate={onUpdate} />
+      {content.allowItems !== false && (
+        <RepeatableItemsEditor content={content} formMode={section === "Formulario"} onUpdate={onUpdate} />
       )}
       {content.allowButtons !== false && content.buttons.length > 0 && (
         <ButtonsEditor content={content} onUpdate={onUpdate} />
@@ -822,15 +840,24 @@ function AppearanceControls({
   onUpdate: (changes: Partial<SectionContent>) => void;
 }) {
   return (
-    <div className="grid gap-4 rounded-lg border border-[#d7e9ef] bg-[#f7fafb] p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#58c3de]">
-        Apariencia
-      </p>
-      <div className="grid grid-cols-2 gap-3">
-        <ColorInput label="Fondo" value={content.backgroundColor} onChange={(backgroundColor) => onUpdate({ backgroundColor })} />
-        <ColorInput label="Acento" value={content.accentColor} onChange={(accentColor) => onUpdate({ accentColor })} />
+    <div className="grid gap-4">
+      <div className="grid gap-4 rounded-lg border border-[#d7e9ef] bg-[#f7fafb] p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#58c3de]">
+          Apariencia de la sección
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <ColorInput label="Fondo" value={content.backgroundColor} onChange={(backgroundColor) => onUpdate({ backgroundColor })} />
+          <ColorInput label="Acento" value={content.accentColor} onChange={(accentColor) => onUpdate({ accentColor })} />
+        </div>
+        <p className="text-xs leading-5 text-[#667085]">
+          El acento modifica etiquetas, barras, líneas, números e iconos decorativos.
+        </p>
       </div>
-      {content.items.length > 0 && (
+      {content.allowItems !== false && (
+        <div className="grid gap-4 rounded-lg border border-[#d7e9ef] bg-[#f7fafb] p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#58c3de]">
+            Apariencia de los elementos
+          </p>
         <>
           <label className="text-xs font-semibold text-[#34466f]">
             Forma de los elementos
@@ -870,8 +897,8 @@ function AppearanceControls({
             </label>
           )}
           <div className="grid grid-cols-2 gap-3">
-            <ColorInput label="Color forma" value={content.itemColor} onChange={(itemColor) => onUpdate({ itemColor })} />
-            <ColorInput label="Color texto" value={content.textColor} onChange={(textColor) => onUpdate({ textColor })} />
+            <ColorInput label="Color forma" value={content.itemColor} onChange={(itemColor) => onUpdate({ itemColor, items: content.items.map((item) => ({ ...item, backgroundColor: itemColor })) })} />
+            <ColorInput label="Color texto" value={content.textColor} onChange={(textColor) => onUpdate({ textColor, items: content.items.map((item) => ({ ...item, textColor })) })} />
           </div>
           <label className="text-xs font-semibold text-[#34466f]">
             Columnas
@@ -885,6 +912,7 @@ function AppearanceControls({
             />
           </label>
         </>
+        </div>
       )}
     </div>
   );
@@ -892,9 +920,11 @@ function AppearanceControls({
 
 function RepeatableItemsEditor({
   content,
+  formMode,
   onUpdate,
 }: {
   content: SectionContent;
+  formMode: boolean;
   onUpdate: (changes: Partial<SectionContent>) => void;
 }) {
   function updateItem(index: number, changes: Partial<SectionContent["items"][number]>) {
@@ -936,6 +966,8 @@ function RepeatableItemsEditor({
                   textColor: content.textColor,
                   numberColor: content.accentColor,
                   image: "",
+                  fieldType: formMode ? "text" : undefined,
+                  required: false,
                 },
               ],
             })
@@ -969,6 +1001,24 @@ function RepeatableItemsEditor({
             <TextInput label="Número" value={item.number} onChange={(number) => updateItem(index, { number })} />
             <RichTextEditor label="Título del elemento" minHeight="65px" value={item.title} onChange={(title) => updateItem(index, { title })} />
             <RichTextEditor label="Texto del elemento" minHeight="90px" value={item.text} onChange={(text) => updateItem(index, { text })} />
+            {formMode && (
+              <div className="grid grid-cols-2 gap-3">
+                <label className="text-xs font-semibold text-[#34466f]">
+                  Tipo de campo
+                  <select className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3" onChange={(event) => updateItem(index, { fieldType: event.target.value as NonNullable<typeof item.fieldType> })} value={item.fieldType || "text"}>
+                    <option value="text">Texto</option>
+                    <option value="email">Correo</option>
+                    <option value="tel">Teléfono</option>
+                    <option value="textarea">Texto largo</option>
+                    <option value="select">Lista desplegable</option>
+                  </select>
+                </label>
+                <label className="mt-7 flex h-11 items-center justify-between rounded-lg border border-[#d7e9ef] bg-white px-3 text-xs font-semibold text-[#34466f]">
+                  Campo obligatorio
+                  <input checked={item.required ?? false} onChange={(event) => updateItem(index, { required: event.target.checked })} type="checkbox" />
+                </label>
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-2">
               <ColorInput label="Fondo caja" value={item.backgroundColor} onChange={(backgroundColor) => updateItem(index, { backgroundColor })} />
               <ColorInput label="Borde caja" value={item.borderColor} onChange={(borderColor) => updateItem(index, { borderColor })} />
@@ -1059,7 +1109,7 @@ function TextInput({ label, value, onChange }: { label: string; value: string; o
   return (
     <label className="text-xs font-semibold text-[#34466f]">
       {label}
-      <input className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3" onChange={(event) => onChange(event.target.value)} value={value} />
+      <input autoCorrect="on" lang="es" spellCheck className="mt-2 h-11 w-full rounded-lg border border-[#d7e9ef] bg-white px-3" onChange={(event) => onChange(event.target.value)} value={value} />
     </label>
   );
 }

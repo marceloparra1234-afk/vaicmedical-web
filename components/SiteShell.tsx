@@ -63,13 +63,24 @@ export function SiteShell({
 
   return (
     <div
-      className="flex min-h-screen flex-col bg-[#f6fbfd] text-[#213255]"
+      className="vaic-public flex min-h-screen flex-col bg-[#f6fbfd] text-[#213255]"
       style={{
         ["--site-content-width" as string]: `${visualIdentity.contentWidth}px`,
         ["--site-radius" as string]: `${visualIdentity.cornerRadius}px`,
+        ["--site-border-width" as string]: `${visualIdentity.borderWidth}px`,
+        ["--site-section-spacing" as string]: `${visualIdentity.sectionSpacing}px`,
+        ["--site-title-size" as string]: `${visualIdentity.titleSize}px`,
+        ["--site-button-radius" as string]: `${visualIdentity.buttonRadius}px`,
+        ["--site-icon-radius" as string]: `${visualIdentity.iconRadius}px`,
         fontFamily: selectedFont ? `"VaicCustom", Arial, sans-serif` : undefined,
       }}
     >
+      <style>{`
+        .vaic-public main > section { border-width: var(--site-border-width); }
+        .vaic-public main h1 { font-size: clamp(2.75rem, 5vw, var(--site-title-size)); }
+        .vaic-public main a[class*="rounded-full"], .vaic-public main button[class*="rounded"] { border-radius: var(--site-button-radius); }
+        .vaic-public main article[class*="rounded"], .vaic-public main div[class*="rounded-3xl"] { border-radius: var(--site-radius); }
+      `}</style>
       {selectedFont && (
         <style>{`@font-face{font-family:"VaicCustom";src:url("${selectedFont.url}");font-display:swap;}`}</style>
       )}

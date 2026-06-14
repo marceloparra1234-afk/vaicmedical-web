@@ -10,7 +10,7 @@ const pagePaths: Record<string, string> = {
   blog: "/blog",
   catalogo: "/catalogo",
   "catalogo-lineas-vista": "/catalogo",
-  "catalogo-productos-vista": "/catalogo/camas-clinicas-electricas",
+  "catalogo-productos-vista": "/catalogo/vaiteg",
   contacto: "/contacto",
 };
 
@@ -26,7 +26,8 @@ export const sectionSelectors: Record<string, Record<string, string>> = {
   },
   nosotros: {
     "Hero principal": "[data-editor-section='hero']",
-    "Misión y visión": "[data-editor-section='mision-vision']",
+    Misión: "[data-editor-section='mision']",
+    Visión: "[data-editor-section='vision']",
     Valores: "[data-editor-section='valores']",
     "Llamado a servicios": "[data-editor-section='cta-servicios']",
   },
@@ -249,7 +250,6 @@ function createPreviewDocument(sectionHtml: string, assets: string) {
 export function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
   target.style.display = content.visible ? "" : "none";
   target.style.backgroundColor = content.backgroundColor ?? "";
-  target.style.color = content.textColor ?? "";
 
   applySectionImage(target, content);
   applyGridColumns(target, content);
@@ -304,6 +304,25 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
     if (intro) intro.innerHTML = content.content;
   }
 
+  const formFields = ensureFormFields(target, content.items.length);
+  if (formFields.length) {
+    content.items.forEach((item, index) => {
+      const field = formFields[index];
+      if (!field) return;
+      field.style.display = item.visible ? "" : "none";
+      const label = field.querySelector<HTMLElement>("[data-form-label]");
+      const control = field.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>("input, textarea, select");
+      if (label) label.innerHTML = item.title;
+      if (control && !(control instanceof HTMLSelectElement)) {
+        control.placeholder = stripHtml(item.text);
+        control.required = item.required ?? false;
+        if (control instanceof HTMLInputElement && item.fieldType && !["textarea", "select"].includes(item.fieldType)) {
+          control.type = item.fieldType;
+        }
+      }
+    });
+  }
+
   const buttons = Array.from(target.querySelectorAll("a, button")).filter(
     (item) => !item.closest("nav"),
   );
@@ -322,7 +341,7 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
     }
   });
 
-  if (content.items.length) {
+  if (content.items.length && !formFields.length) {
     const cards = ensurePreviewCards(target, content.items.length);
     content.items.forEach((item, index) => {
       const card = cards[index];
@@ -359,6 +378,30 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
       if (cardParagraph instanceof HTMLElement) cardParagraph.innerHTML = item.text;
     });
   }
+}
+
+function stripHtml(value: string) {
+  return value.replace(/<[^>]*>/g, "");
+}
+
+function ensureFormFields(target: HTMLElement, count: number) {
+  const fields = Array.from(target.querySelectorAll<HTMLElement>("[data-form-field]"));
+  const template = fields[fields.length - 1];
+  const container = template?.parentElement;
+  if (!template || !container) return fields;
+
+  while (fields.length < count) {
+    const clone = template.cloneNode(true);
+    if (!(clone instanceof HTMLElement)) break;
+    clone.dataset.formField = `custom-${fields.length + 1}`;
+    container.appendChild(clone);
+    fields.push(clone);
+  }
+
+  fields.slice(count).forEach((field) => {
+    field.style.display = "none";
+  });
+  return fields;
 }
 
 function applySectionImage(target: HTMLElement, content: PreviewContent) {

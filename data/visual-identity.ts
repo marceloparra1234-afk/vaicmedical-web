@@ -17,6 +17,11 @@ export type VisualIdentity = {
   primaryFont: string;
   contentWidth: number;
   cornerRadius: number;
+  borderWidth: number;
+  sectionSpacing: number;
+  titleSize: number;
+  buttonRadius: number;
+  iconRadius: number;
   shadowStrength: "none" | "soft" | "medium";
   social: {
     instagram: string;
@@ -34,6 +39,11 @@ export const DEFAULT_VISUAL_IDENTITY: VisualIdentity = {
   primaryFont: "Geist",
   contentWidth: 1440,
   cornerRadius: 12,
+  borderWidth: 1,
+  sectionSpacing: 80,
+  titleSize: 64,
+  buttonRadius: 999,
+  iconRadius: 16,
   shadowStrength: "soft",
   social: {
     instagram: "",
@@ -49,4 +59,3 @@ export function normalizeHex(value: string) {
   if (/^#[0-9A-F]{6}$/.test(trimmed)) return trimmed;
   return "";
 }
-

@@ -37,6 +37,8 @@ export type PreviewContent = {
     textColor: string;
     numberColor: string;
     image: string;
+    fieldType?: "text" | "email" | "tel" | "textarea" | "select";
+    required?: boolean;
   }>;
 };
 

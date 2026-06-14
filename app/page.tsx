@@ -43,12 +43,12 @@ export default async function Home() {
   return (
     <main>
       <section className="w-full border-b border-[#d7e9ef] bg-white" data-editor-section="hero">
-        <div className="mx-auto grid max-w-[calc(100vw-4rem)] items-center gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-8 lg:py-14 lg:pl-[max(2rem,calc((100vw-80rem)/2))] lg:pr-8">
-          <div className="flex max-w-[33rem] flex-col items-center text-center">
+        <div className="mx-auto grid max-w-[1540px] items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)] lg:gap-14 lg:py-16">
+          <div className="flex max-w-[44rem] flex-col items-center text-center">
             <p className="mb-5 inline-flex max-w-full rounded-full border border-[#b9e8f2] bg-[#f6fbfd] px-5 py-2 text-sm font-semibold text-[#213255]">
               Mantención y reparación de equipos médicos
             </p>
-            <h1 className="text-5xl font-semibold leading-[1.03] text-[#213255] sm:text-6xl lg:text-7xl">
+            <h1 className="text-5xl font-semibold leading-[1.08] text-[#213255] sm:text-6xl lg:text-[64px]">
               Soporte técnico para mantener operativa la atención en salud.
             </h1>
             <p className="mt-6 max-w-[36rem] text-lg leading-8 text-[#34466f]">
@@ -73,7 +73,7 @@ export default async function Home() {
           </div>
 
           <div className="relative w-full">
-            <div className="aspect-[2.12/1] w-full overflow-hidden rounded-[2rem] border border-[#d7e9ef] bg-[#eaf8fc] shadow-2xl shadow-[#213255]/10">
+            <div className="aspect-[1.9/1] w-full overflow-hidden rounded-[2rem] border border-[#d7e9ef] bg-[#eaf8fc] shadow-2xl shadow-[#213255]/10">
               <Image
                 src="/medical-dashboard.svg"
                 alt="Equipos médicos en mantención y monitoreo técnico VaicMedical"

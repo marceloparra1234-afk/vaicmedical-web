@@ -123,10 +123,13 @@ export function RichTextEditor({
         </div>
 
         <div
+          autoCorrect="on"
           className="rich-editor-content p-3 text-sm leading-6 outline-none"
           contentEditable
+          lang="es"
           onInput={(event) => onChange(event.currentTarget.innerHTML)}
           ref={editorRef}
+          spellCheck
           style={{ minHeight }}
           suppressContentEditableWarning
         />

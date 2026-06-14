@@ -13,7 +13,7 @@ export default function ContactoPage() {
     <main className="bg-[#f6fbfd] text-[#213255]">
       <section className="relative overflow-hidden border-b border-[#d7e9ef] bg-white" data-editor-section="hero">
         <div className="absolute right-0 top-0 h-full w-1/2 bg-[#eaf8fc]" />
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12 lg:py-24" data-editor-section="contacto">
+        <div className="relative mx-auto grid max-w-[1500px] gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(620px,1.25fr)] lg:gap-16 lg:py-20" data-editor-section="contacto">
           <section data-editor-section="contacto-hero">
             <Link
               href="/"
@@ -26,7 +26,7 @@ export default function ContactoPage() {
               Contacto técnico
             </p>
 
-            <h1 className="mt-5 max-w-3xl text-6xl font-semibold leading-[1.02] md:text-7xl">
+            <h1 className="mt-5 max-w-3xl text-5xl font-semibold leading-[1.06] md:text-6xl">
               Coordinemos una evaluación técnica para tus equipos.
             </h1>
 
@@ -35,7 +35,7 @@ export default function ContactoPage() {
               necesitas o qué requerimiento técnico quieres programar.
             </p>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2" data-editor-section="contacto-info">
+            <div className="mt-10 grid gap-4 xl:grid-cols-2" data-editor-section="contacto-info">
               {infoItems.map(([label, value]) => (
                 <div
                   className="rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] p-5"

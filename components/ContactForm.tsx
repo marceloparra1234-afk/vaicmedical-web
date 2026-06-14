@@ -71,25 +71,28 @@ export function ContactForm() {
       <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#58c3de]">
         Formulario de contacto
       </p>
-      <h2 className="mt-3 text-3xl font-semibold text-[#213255]">
+      <h2 className="mt-3 text-3xl font-semibold text-[#213255]" data-editor-field="section-title">
         Describe tu requerimiento
       </h2>
-      <p className="mt-3 leading-7 text-[#34466f]">
+      <p className="mt-3 leading-7 text-[#34466f]" data-editor-field="section-intro">
         Completa los datos y prepararemos un correo con la información necesaria
         para iniciar la coordinación.
       </p>
 
       <div className="mt-8 grid gap-5 md:grid-cols-2">
-        <Field label="Nombre">
+        <Field id="nombre" label="Nombre">
           <input
+            autoCorrect="on"
             className="contact-input-light"
+            lang="es"
             name="nombre"
             placeholder="Nombre completo"
             required
+            spellCheck
           />
         </Field>
 
-        <Field label="Correo">
+        <Field id="correo" label="Correo">
           <input
             className="contact-input-light"
             name="correo"
@@ -99,7 +102,7 @@ export function ContactForm() {
           />
         </Field>
 
-        <Field label="Teléfono">
+        <Field id="telefono" label="Teléfono">
           <input
             className="contact-input-light"
             name="telefono"
@@ -107,7 +110,7 @@ export function ContactForm() {
           />
         </Field>
 
-        <Field label="Institución">
+        <Field id="institucion" label="Institución">
           <input
             className="contact-input-light"
             name="institucion"
@@ -115,7 +118,7 @@ export function ContactForm() {
           />
         </Field>
 
-        <Field label="Asunto">
+        <Field id="asunto" label="Asunto">
           <input
             className="contact-input-light"
             name="asunto"
@@ -123,7 +126,7 @@ export function ContactForm() {
           />
         </Field>
 
-        <Field label="Tipo de solicitud">
+        <Field id="tipo" label="Tipo de solicitud">
           <select className="contact-input-light" name="tipo" defaultValue="">
             <option value="" disabled>
               Seleccionar
@@ -136,13 +139,16 @@ export function ContactForm() {
       </div>
 
       <div className="mt-5">
-        <Field label="Mensaje">
+        <Field id="mensaje" label="Mensaje">
           <textarea
+            autoCorrect="on"
             className="contact-input-light"
+            lang="es"
             name="mensaje"
             rows={6}
             placeholder="Describe la falla, mantención requerida o antecedentes relevantes."
             required
+            spellCheck
           />
         </Field>
       </div>
@@ -184,15 +190,17 @@ export function ContactForm() {
 }
 
 function Field({
+  id,
   label,
   children,
 }: {
+  id: string;
   label: string;
   children: React.ReactNode;
 }) {
   return (
-    <label className="block text-sm font-bold text-[#34466f]">
-      {label}
+    <label className="block text-sm font-bold text-[#34466f]" data-form-field={id}>
+      <span data-form-label>{label}</span>
       {children}
     </label>
   );

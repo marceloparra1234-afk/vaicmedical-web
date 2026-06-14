@@ -16,6 +16,7 @@ export function AdminVisualIdentity() {
   const [status, setStatus] = useState("Cargando configuración...");
   const [customName, setCustomName] = useState("");
   const [customHex, setCustomHex] = useState("");
+  const [activeTab, setActiveTab] = useState<"settings" | "preview">("settings");
 
   useEffect(() => {
     fetch("/api/admin/content?pageKey=visual-identity")
@@ -86,6 +87,12 @@ export function AdminVisualIdentity() {
         text="Centraliza colores, tipografías, formas, ancho del sitio y enlaces sociales."
       />
 
+      <div className="mt-7 flex gap-2 border-b border-[#D7E9EF]">
+        <TabButton active={activeTab === "settings"} onClick={() => setActiveTab("settings")}>Configuración</TabButton>
+        <TabButton active={activeTab === "preview"} onClick={() => setActiveTab("preview")}>Vista previa</TabButton>
+      </div>
+
+      {activeTab === "settings" ? (
       <div className="mt-7 grid gap-6 xl:grid-cols-2">
         <SettingsPanel title="Paleta VaicMedical">
           <p className="text-sm leading-6 text-[#667085]">
@@ -185,6 +192,11 @@ export function AdminVisualIdentity() {
         <SettingsPanel title="Diseño general">
           <Range label="Ancho máximo del contenido" max={1920} min={960} onChange={(contentWidth) => update({ contentWidth })} suffix="px" value={identity.contentWidth} />
           <Range label="Redondeado general" max={32} min={0} onChange={(cornerRadius) => update({ cornerRadius })} suffix="px" value={identity.cornerRadius} />
+          <Range label="Grosor de bordes" max={4} min={0} onChange={(borderWidth) => update({ borderWidth })} suffix="px" value={identity.borderWidth} />
+          <Range label="Espaciado entre secciones" max={160} min={40} onChange={(sectionSpacing) => update({ sectionSpacing })} suffix="px" value={identity.sectionSpacing} />
+          <Range label="Tamaño máximo de títulos" max={88} min={40} onChange={(titleSize) => update({ titleSize })} suffix="px" value={identity.titleSize} />
+          <Range label="Redondeado de botones" max={999} min={0} onChange={(buttonRadius) => update({ buttonRadius })} suffix="px" value={identity.buttonRadius} />
+          <Range label="Redondeado de iconos" max={999} min={0} onChange={(iconRadius) => update({ iconRadius })} suffix="px" value={identity.iconRadius} />
           <label className="mt-5 block text-xs font-semibold">
             Intensidad de sombra
             <select className="mt-2 h-11 w-full rounded-lg border border-[#D7E9EF] bg-white px-3" onChange={(event) => update({ shadowStrength: event.target.value as VisualIdentity["shadowStrength"] })} value={identity.shadowStrength}>
@@ -193,9 +205,6 @@ export function AdminVisualIdentity() {
               <option value="medium">Media</option>
             </select>
           </label>
-          <div className="mt-5 rounded-lg border border-[#D7E9EF] bg-[#F6FBFD] p-4 text-sm text-[#667085]">
-            Próximos controles: estilos de botones, espaciado, jerarquía de títulos, formas e iconografía.
-          </div>
         </SettingsPanel>
 
         <SettingsPanel title="Redes sociales">
@@ -215,6 +224,9 @@ export function AdminVisualIdentity() {
           </div>
         </SettingsPanel>
       </div>
+      ) : (
+        <IdentityPreview identity={identity} />
+      )}
 
       <div className="sticky bottom-4 mt-6 flex items-center justify-between gap-4 rounded-xl border border-[#D7E9EF] bg-white/95 p-4 shadow-lg backdrop-blur">
         <span className="text-sm font-semibold text-[#34466F]" role="status">{status}</span>
@@ -228,6 +240,36 @@ export function AdminVisualIdentity() {
         </div>
       </div>
     </div>
+  );
+}
+
+function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return <button className={`border-b-2 px-5 py-3 text-sm font-bold ${active ? "border-[#58C3DE] text-[#213255]" : "border-transparent text-[#667085]"}`} onClick={onClick} type="button">{children}</button>;
+}
+
+function IdentityPreview({ identity }: { identity: VisualIdentity }) {
+  const shadow = identity.shadowStrength === "none" ? "none" : identity.shadowStrength === "medium" ? "0 18px 50px rgba(33,50,85,.18)" : "0 10px 30px rgba(33,50,85,.1)";
+  return (
+    <section className="mt-7 overflow-hidden border border-[#D7E9EF] bg-[#F6FBFD] p-6 sm:p-10" style={{ borderRadius: identity.cornerRadius, fontFamily: identity.primaryFont }}>
+      <div className="mx-auto bg-white p-7 sm:p-10" style={{ borderRadius: identity.cornerRadius, boxShadow: shadow, maxWidth: Math.min(identity.contentWidth, 1200) }}>
+        <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#58C3DE]">Etiqueta o acento</p>
+        <h2 className="mt-4 font-semibold leading-[1.08] text-[#213255]" style={{ fontSize: Math.min(identity.titleSize, 72) }}>Vista previa de identidad visual</h2>
+        <p className="mt-5 max-w-3xl text-lg leading-8 text-[#34466F]">Aquí puedes revisar cómo afectan los controles globales a títulos, texto, botones, tarjetas, bordes e iconos antes de guardar.</p>
+        <div className="mt-8 flex flex-wrap gap-4">
+          <button className="border bg-[#213255] px-6 py-3 font-bold text-white" style={{ borderRadius: identity.buttonRadius, borderWidth: identity.borderWidth }}>Botón principal</button>
+          <button className="border border-[#58C3DE] bg-white px-6 py-3 font-bold text-[#213255]" style={{ borderRadius: identity.buttonRadius, borderWidth: identity.borderWidth }}>Botón secundario</button>
+        </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
+          {["Tarjeta de contenido", "Forma e iconografía"].map((title, index) => (
+            <article className="border border-[#D7E9EF] bg-[#F6FBFD] p-6" key={title} style={{ borderRadius: identity.cornerRadius, borderWidth: identity.borderWidth }}>
+              <div className="grid h-12 w-12 place-items-center bg-[#58C3DE] font-bold text-[#213255]" style={{ borderRadius: identity.iconRadius }}>{index + 1}</div>
+              <h3 className="mt-5 text-xl font-bold text-[#213255]">{title}</h3>
+              <p className="mt-3 leading-7 text-[#34466F]">Ejemplo del tratamiento visual que se aplicará de forma coherente en el sitio.</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 

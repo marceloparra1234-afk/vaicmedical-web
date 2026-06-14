@@ -46,7 +46,7 @@ export default function NosotrosPage() {
 
       <section className="bg-[#eaf8fc]">
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8" data-editor-section="identidad-corporativa">
-          <div className="grid gap-5 md:grid-cols-2" data-editor-section="mision-vision">
+          <div className="grid gap-5 md:grid-cols-2">
             {[
               [
                 "Misión",

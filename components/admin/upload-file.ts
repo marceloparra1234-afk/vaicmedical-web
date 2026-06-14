@@ -1,6 +1,15 @@
 export type AdminUploadKind = "image" | "document" | "video" | "font";
 
 export async function uploadAdminFile(file: File, kind: AdminUploadKind) {
+  if (kind === "image") {
+    try {
+      const image = await createImageBitmap(file);
+      image.close();
+    } catch {
+      throw new Error("El archivo seleccionado no contiene una imagen válida");
+    }
+  }
+
   const response = await fetch("/api/admin/uploads", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -28,4 +37,3 @@ export async function uploadAdminFile(file: File, kind: AdminUploadKind) {
   if (!uploadResponse.ok) throw new Error("No se pudo subir el archivo");
   return result.url;
 }
-

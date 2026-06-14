@@ -54,6 +54,7 @@ export function SitePopup({ content }: { content?: Record<string, unknown> | nul
     : defaultPopup;
   const [visible, setVisible] = useState(false);
   const [popup] = useState(configuredPopup);
+  const [imageAvailable, setImageAvailable] = useState(Boolean(configuredPopup.image));
 
   useEffect(() => {
     if (
@@ -120,14 +121,16 @@ export function SitePopup({ content }: { content?: Record<string, unknown> | nul
         </button>
 
         <div className="relative aspect-square min-h-64 bg-white md:min-h-[600px]">
-          {popup.image && (
+          {popup.image && imageAvailable && (
             <Image
               alt="Mantención y reparación de equipos médicos VaicMedical"
               className="object-contain"
               fill
               priority
+              onError={() => setImageAvailable(false)}
               sizes="(max-width: 768px) 100vw, 660px"
               src={popup.image}
+              unoptimized
             />
           )}
         </div>

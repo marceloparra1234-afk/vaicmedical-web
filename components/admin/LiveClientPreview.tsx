@@ -368,11 +368,7 @@ function applySectionImage(target: HTMLElement, content: PreviewContent) {
       ? [content.sectionImage]
       : [];
   const image = target.querySelector("img");
-  if (!images.length) {
-    if (image instanceof HTMLImageElement) image.style.display = "none";
-    target.querySelector("[data-admin-carousel-dots]")?.remove();
-    return;
-  }
+  if (!images.length) return;
   const imageSource = images[0];
 
   if (image instanceof HTMLImageElement) {

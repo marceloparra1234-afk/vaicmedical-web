@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SitePopup } from "@/components/SitePopup";
 import { PublicContentHydrator } from "@/components/PublicContentHydrator";
-import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 import {
   DEFAULT_VISUAL_IDENTITY,
   type VisualIdentity,
@@ -48,12 +47,10 @@ export function SiteShell({
   children,
   visualIdentity = DEFAULT_VISUAL_IDENTITY,
   popupContent,
-  siteContent,
 }: {
   children: React.ReactNode;
   visualIdentity?: VisualIdentity;
   popupContent?: Record<string, unknown> | null;
-  siteContent: Record<string, Record<string, PreviewContent> | null>;
 }) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
@@ -76,7 +73,7 @@ export function SiteShell({
       {selectedFont && (
         <style>{`@font-face{font-family:"VaicCustom";src:url("${selectedFont.url}");font-display:swap;}`}</style>
       )}
-      <PublicContentHydrator contentByPage={siteContent} />
+      <PublicContentHydrator />
       <header className="sticky top-0 z-20 border-b border-[#d7e9ef] bg-[#f6fbfd]/92 backdrop-blur">
         <nav className="flex items-center justify-between px-6 py-4 sm:px-10 lg:px-14">
           <Link className="block" href="/" aria-label="VaicMedical inicio">

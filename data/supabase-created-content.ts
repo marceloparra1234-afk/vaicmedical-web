@@ -37,8 +37,8 @@ export async function getManagedCreatedContent(
   const response = await fetch(
     `${config.url}/rest/v1/created_content?content_type=eq.${type}&select=id,slug,content,created_at&order=created_at.desc`,
     {
-      cache: "no-store",
       headers: getSupabaseAdminHeaders(config.serviceRoleKey),
+      next: { revalidate: 300, tags: [`created-content:${type}`] },
     },
   );
   if (!response.ok) return [];

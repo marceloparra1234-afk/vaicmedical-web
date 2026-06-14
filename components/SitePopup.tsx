@@ -128,7 +128,6 @@ export function SitePopup() {
             priority
             sizes="(max-width: 768px) 100vw, 480px"
             src={popup.image}
-            unoptimized={popup.image.startsWith("http")}
           />
         </div>
 

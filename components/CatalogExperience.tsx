@@ -107,7 +107,6 @@ export function CatalogExperience({ lines, maxWidth }: { lines: CatalogLine[]; m
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
                     src={product.image}
-                    unoptimized={product.image.startsWith("http")}
                   />
                   {product.featured && (
                     <span className="absolute left-3 top-3 bg-[#213255] px-3 py-2 text-xs font-bold text-white">

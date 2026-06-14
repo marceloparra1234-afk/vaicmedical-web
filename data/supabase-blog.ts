@@ -42,11 +42,11 @@ export async function getManagedBlogPosts() {
   const response = await fetch(
     `${config.url}/rest/v1/created_content?content_type=eq.blog&select=id,slug,title:content-%3E%3Etitle,date:content-%3E%3Edate,excerpt:content-%3E%3Eexcerpt,primary_image:content-%3E%3EprimaryImage,secondary_images:content-%3EsecondaryImages,featured:content-%3Efeatured,created_at&order=created_at.desc`,
     {
-      cache: "no-store",
       headers: {
         apikey: config.serviceRoleKey,
         Authorization: `Bearer ${config.serviceRoleKey}`,
       },
+      next: { revalidate: 300, tags: ["created-content:blog"] },
     },
   );
 
@@ -93,11 +93,11 @@ export async function getManagedBlogPost(slug: string) {
   const response = await fetch(
     `${config.url}/rest/v1/created_content?content_type=eq.blog&slug=eq.${encodeURIComponent(slug)}&select=id,slug,content,created_at&limit=1`,
     {
-      cache: "no-store",
       headers: {
         apikey: config.serviceRoleKey,
         Authorization: `Bearer ${config.serviceRoleKey}`,
       },
+      next: { revalidate: 300, tags: ["created-content:blog"] },
     },
   );
   if (!response.ok) return null;

@@ -1,4 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
+
+const publicPaths: Record<string, string[]> = {
+  inicio: ["/"],
+  nosotros: ["/nosotros", "/"],
+  servicios: ["/servicios", "/"],
+  blog: ["/blog", "/"],
+  catalogo: ["/catalogo", "/"],
+  "catalogo-lineas-vista": ["/catalogo"],
+  "catalogo-productos-vista": ["/catalogo/[producto]"],
+  "catalog-settings": ["/catalogo", "/catalogo/[producto]"],
+  contacto: ["/contacto"],
+  "ventana-emergente": ["/"],
+};
+
+function refreshPublicContent(pageKey: string) {
+  revalidateTag(`site-content:${pageKey}`, { expire: 0 });
+  for (const path of publicPaths[pageKey] || []) {
+    revalidatePath(path, path.includes("[") ? "page" : undefined);
+  }
+}
 
 function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL;
@@ -74,6 +95,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No se pudo guardar el contenido" }, { status: 500 });
   }
 
+  refreshPublicContent(body.pageKey);
   return NextResponse.json({ ok: true });
 }
 
@@ -96,5 +118,6 @@ export async function DELETE(request: NextRequest) {
     },
   );
   if (!response.ok) return NextResponse.json({ error: "No se pudo eliminar el contenido" }, { status: 500 });
+  refreshPublicContent(pageKey);
   return NextResponse.json({ ok: true });
 }

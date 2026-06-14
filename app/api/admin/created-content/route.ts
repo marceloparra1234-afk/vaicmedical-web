@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 type CreatedContentBody = {
   type?: "blog" | "line" | "product";
@@ -20,6 +21,18 @@ function getSupabaseHeaders(serviceRoleKey: string) {
     Authorization: `Bearer ${serviceRoleKey}`,
     "Content-Type": "application/json",
   };
+}
+
+function refreshCreatedContent(type: "blog" | "line" | "product") {
+  revalidateTag(`created-content:${type}`, { expire: 0 });
+  revalidatePath("/");
+  if (type === "blog") {
+    revalidatePath("/blog");
+    revalidatePath("/blog/[slug]", "page");
+  } else {
+    revalidatePath("/catalogo");
+    revalidatePath("/catalogo/[producto]", "page");
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -122,6 +135,7 @@ export async function POST(request: NextRequest) {
   }
 
   const rows = (await response.json()) as Array<{ id: string }>;
+  refreshCreatedContent(body.type);
   return NextResponse.json({ ok: true, id: rows[0]?.id || null });
 }
 
@@ -155,5 +169,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "No se pudo eliminar" }, { status: 500 });
   }
 
+  refreshCreatedContent(type as "blog" | "line" | "product");
   return NextResponse.json({ ok: true });
 }

@@ -28,7 +28,6 @@ export function BlogGallery({
           priority
           sizes="(max-width: 1200px) 100vw, 1150px"
           src={activeImage}
-          unoptimized={activeImage.startsWith("http")}
         />
       </div>
       {images.length > 1 && (
@@ -52,7 +51,6 @@ export function BlogGallery({
                 fill
                 sizes="160px"
                 src={image}
-                unoptimized={image.startsWith("http")}
               />
             </button>
           ))}

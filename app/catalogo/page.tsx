@@ -1,7 +1,8 @@
+import { Suspense } from "react";
 import { CatalogExperience } from "@/components/CatalogExperience";
 import { getCatalogSettings, getPublicCatalog } from "@/data/catalog-service";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function CatalogoPage() {
   const [lines, settings] = await Promise.all([getPublicCatalog(), getCatalogSettings()]);
@@ -22,7 +23,9 @@ export default async function CatalogoPage() {
         </div>
       </section>
 
-      <CatalogExperience lines={lines} maxWidth={settings.maxWidth} />
+      <Suspense fallback={<div className="mx-auto min-h-96 px-5 py-16 sm:px-8" style={{ maxWidth: settings.maxWidth }} />}>
+        <CatalogExperience lines={lines} maxWidth={settings.maxWidth} />
+      </Suspense>
     </main>
   );
 }

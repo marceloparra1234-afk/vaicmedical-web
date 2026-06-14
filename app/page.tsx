@@ -21,7 +21,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function Home() {
   const [managedPosts, createdProducts, nosotros, servicios, blog, catalogo] =
@@ -199,7 +199,6 @@ export default async function Home() {
                     fill
                     sizes="(max-width: 640px) 100vw, 320px"
                     src={product.image}
-                    unoptimized={product.image.startsWith("http")}
                   />
                 </div>
                 <div className="p-6">
@@ -255,7 +254,6 @@ export default async function Home() {
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     src={post.primaryImage}
-                    unoptimized={post.primaryImage.startsWith("http")}
                   />
                 </div>
                 <article className="p-7">

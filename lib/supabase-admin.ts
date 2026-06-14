@@ -18,7 +18,13 @@ export async function getSiteContent<T>(pageKey: string): Promise<T | null> {
   if (!config) return null;
   const response = await fetch(
     `${config.url}/rest/v1/site_content?page_key=eq.${encodeURIComponent(pageKey)}&select=content&limit=1`,
-    { cache: "no-store", headers: getSupabaseAdminHeaders(config.serviceRoleKey) },
+    {
+      headers: getSupabaseAdminHeaders(config.serviceRoleKey),
+      next: {
+        revalidate: CONTENT_REVALIDATE_SECONDS,
+        tags: [`site-content:${pageKey}`],
+      },
+    },
   );
   if (!response.ok) return null;
   const rows = (await response.json()) as Array<{ content: T }>;
@@ -36,7 +42,13 @@ export async function saveSiteContent(pageKey: string, content: unknown) {
     },
     body: JSON.stringify({ page_key: pageKey, content, updated_at: new Date().toISOString() }),
   });
-  if (response.ok) return { ok: true as const };
+  if (response.ok) {
+    revalidateTag(`site-content:${pageKey}`, { expire: 0 });
+    return { ok: true as const };
+  }
   console.error("Supabase site_content save failed", response.status, await response.text());
   return { ok: false as const, error: "No se pudo guardar el contenido en Supabase" };
 }
+import { revalidateTag } from "next/cache";
+
+const CONTENT_REVALIDATE_SECONDS = 300;

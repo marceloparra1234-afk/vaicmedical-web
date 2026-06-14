@@ -26,7 +26,7 @@ export function ProductGallery({
         {activeIsVideo ? (
           <video className="h-full min-h-[420px] w-full object-contain sm:min-h-[560px]" controls src={activeImage} />
         ) : (
-          <Image alt={name} className="object-contain p-8 sm:p-14" fill priority sizes="(max-width: 1280px) 100vw, 65vw" src={activeImage} unoptimized={activeImage.startsWith("http")} />
+          <Image alt={name} className="object-contain p-8 sm:p-14" fill priority sizes="(max-width: 1280px) 100vw, 65vw" src={activeImage} />
         )}
       </div>
 
@@ -47,7 +47,7 @@ export function ProductGallery({
               onClick={() => setActiveImage(image)}
               type="button"
             >
-              {isVideo(image) ? <span className="grid h-full place-items-center text-xs font-bold text-[#213255]">Video {index + 1}</span> : <Image alt={`${name}, vista ${index + 1}`} className="object-contain p-2" fill sizes="150px" src={image} unoptimized={image.startsWith("http")} />}
+              {isVideo(image) ? <span className="grid h-full place-items-center text-xs font-bold text-[#213255]">Video {index + 1}</span> : <Image alt={`${name}, vista ${index + 1}`} className="object-contain p-2" fill sizes="150px" src={image} />}
             </button>
           );
         })}

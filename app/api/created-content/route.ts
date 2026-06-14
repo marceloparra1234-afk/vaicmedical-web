@@ -11,11 +11,11 @@ export async function GET(request: NextRequest) {
   const response = await fetch(
     `${url}/rest/v1/created_content?content_type=eq.${encodeURIComponent(type)}&select=id,slug,content,created_at&order=created_at.desc`,
     {
-      cache: "no-store",
       headers: {
         apikey: serviceRoleKey,
         Authorization: `Bearer ${serviceRoleKey}`,
       },
+      next: { revalidate: 300, tags: [`created-content:${type}`] },
     },
   );
   if (!response.ok) return NextResponse.json({ items: [] });

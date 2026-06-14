@@ -10,6 +10,8 @@ type ProductPageProps = {
   params: Promise<{ producto: string }>;
 };
 
+export const revalidate = 300;
+
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
@@ -171,7 +173,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       fill
                       sizes="120px"
                       src={item.image}
-                      unoptimized={item.image.startsWith("http")}
                     />
                   </div>
                   <div>

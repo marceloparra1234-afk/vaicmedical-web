@@ -16,7 +16,6 @@ export function AdminVisualIdentity() {
   const [status, setStatus] = useState("Cargando configuración...");
   const [customName, setCustomName] = useState("");
   const [customHex, setCustomHex] = useState("");
-  const [activeTab, setActiveTab] = useState<"settings" | "preview">("settings");
 
   useEffect(() => {
     fetch("/api/admin/content?pageKey=visual-identity")
@@ -87,13 +86,8 @@ export function AdminVisualIdentity() {
         text="Centraliza colores, tipografías, formas, ancho del sitio y enlaces sociales."
       />
 
-      <div className="mt-7 flex gap-2 border-b border-[#D7E9EF]">
-        <TabButton active={activeTab === "settings"} onClick={() => setActiveTab("settings")}>Configuración</TabButton>
-        <TabButton active={activeTab === "preview"} onClick={() => setActiveTab("preview")}>Vista previa</TabButton>
-      </div>
-
-      {activeTab === "settings" ? (
-      <div className="mt-7 grid gap-6 xl:grid-cols-2">
+      <div className="mt-7 grid gap-6 2xl:grid-cols-[minmax(0,1fr)_520px]">
+        <div className="grid gap-6 xl:grid-cols-2">
         <SettingsPanel title="Paleta VaicMedical">
           <p className="text-sm leading-6 text-[#667085]">
             Estos son los únicos colores disponibles en el editor mientras la paleta personalizada esté desactivada.
@@ -223,10 +217,9 @@ export function AdminVisualIdentity() {
             ))}
           </div>
         </SettingsPanel>
-      </div>
-      ) : (
+        </div>
         <IdentityPreview identity={identity} />
-      )}
+      </div>
 
       <div className="sticky bottom-4 mt-6 flex items-center justify-between gap-4 rounded-xl border border-[#D7E9EF] bg-white/95 p-4 shadow-lg backdrop-blur">
         <span className="text-sm font-semibold text-[#34466F]" role="status">{status}</span>
@@ -243,15 +236,12 @@ export function AdminVisualIdentity() {
   );
 }
 
-function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button className={`border-b-2 px-5 py-3 text-sm font-bold ${active ? "border-[#58C3DE] text-[#213255]" : "border-transparent text-[#667085]"}`} onClick={onClick} type="button">{children}</button>;
-}
-
 function IdentityPreview({ identity }: { identity: VisualIdentity }) {
   const shadow = identity.shadowStrength === "none" ? "none" : identity.shadowStrength === "medium" ? "0 18px 50px rgba(33,50,85,.18)" : "0 10px 30px rgba(33,50,85,.1)";
   return (
-    <section className="mt-7 overflow-hidden border border-[#D7E9EF] bg-[#F6FBFD] p-6 sm:p-10" style={{ borderRadius: identity.cornerRadius, fontFamily: identity.primaryFont }}>
-      <div className="mx-auto bg-white p-7 sm:p-10" style={{ borderRadius: identity.cornerRadius, boxShadow: shadow, maxWidth: Math.min(identity.contentWidth, 1200) }}>
+    <section className="h-fit overflow-hidden border border-[#D7E9EF] bg-[#F6FBFD] p-5 shadow-sm 2xl:sticky 2xl:top-28" style={{ borderRadius: identity.cornerRadius, fontFamily: identity.primaryFont }}>
+      <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-[#58C3DE]">Vista previa inmediata</p>
+      <div className="mx-auto bg-white p-6" style={{ borderRadius: identity.cornerRadius, boxShadow: shadow, maxWidth: Math.min(identity.contentWidth, 1200) }}>
         <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#58C3DE]">Etiqueta o acento</p>
         <h2 className="mt-4 font-semibold leading-[1.08] text-[#213255]" style={{ fontSize: Math.min(identity.titleSize, 72) }}>Vista previa de identidad visual</h2>
         <p className="mt-5 max-w-3xl text-lg leading-8 text-[#34466F]">Aquí puedes revisar cómo afectan los controles globales a títulos, texto, botones, tarjetas, bordes e iconos antes de guardar.</p>

@@ -16,23 +16,24 @@ export function ProductGallery({
 }: ProductGalleryProps) {
   const media = [primaryImage, ...gallery].filter(Boolean);
   const [activeImage, setActiveImage] = useState(media[0] || "");
-  const activeIsVideo = isVideo(activeImage);
+  const currentImage = media.includes(activeImage) ? activeImage : media[0] || "";
+  const activeIsVideo = isVideo(currentImage);
 
-  if (!activeImage) return null;
+  if (!currentImage) return null;
 
   return (
     <div>
       <div className="relative min-h-[420px] overflow-hidden rounded-[28px] border border-[#d7e9ef] bg-white sm:min-h-[560px]">
         {activeIsVideo ? (
-          <video className="h-full min-h-[420px] w-full object-contain sm:min-h-[560px]" controls src={activeImage} />
+          <video className="h-full min-h-[420px] w-full object-contain sm:min-h-[560px]" controls src={currentImage} />
         ) : (
-          <Image alt={name} className="object-contain p-8 sm:p-14" fill priority sizes="(max-width: 1280px) 100vw, 65vw" src={activeImage} />
+          <Image alt={name} className="object-contain p-8 sm:p-14" fill priority sizes="(max-width: 1280px) 100vw, 65vw" src={currentImage} />
         )}
       </div>
 
       <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3.5">
         {media.map((image, index) => {
-          const isActive = activeImage === image;
+          const isActive = currentImage === image;
 
           return (
             <button

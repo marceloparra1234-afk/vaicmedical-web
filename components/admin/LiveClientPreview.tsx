@@ -10,7 +10,7 @@ const pagePaths: Record<string, string> = {
   blog: "/blog",
   catalogo: "/catalogo",
   "catalogo-lineas-vista": "/catalogo",
-  "catalogo-productos-vista": "/catalogo/vaiteg",
+  "catalogo-productos-vista": "/catalogo/vaiteg-pro",
   contacto: "/contacto",
 };
 
@@ -250,6 +250,30 @@ function createPreviewDocument(sectionHtml: string, assets: string) {
 export function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
   target.style.display = content.visible ? "" : "none";
   target.style.backgroundColor = content.backgroundColor ?? "";
+  const productDesignTarget = target.dataset.editorSection?.startsWith("product-");
+
+  if (productDesignTarget) {
+    applyGridColumns(target, content);
+    findCards(target).forEach((card) => {
+      applyCardAppearance(
+        card,
+        {
+          id: "design",
+          number: "",
+          title: "",
+          text: "",
+          visible: true,
+          backgroundColor: content.itemColor,
+          borderColor: content.accentColor,
+          textColor: content.textColor,
+          numberColor: content.accentColor,
+          image: "",
+        },
+        content,
+      );
+    });
+    return;
+  }
 
   applySectionImage(target, content);
   applyGridColumns(target, content);

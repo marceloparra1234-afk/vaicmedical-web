@@ -40,8 +40,8 @@ export function SitePopup({ content }: { content?: Record<string, unknown> | nul
   const configuredPopup = section
     ? {
         eyebrow: stripHtml(section.eyebrow ?? section.subtitle ?? ""),
-        title: stripHtml(section.title ?? ""),
-        text: stripHtml(section.content ?? ""),
+        title: section.title ?? "",
+        text: section.content ?? "",
         image: section.sectionImages?.[0] ?? section.sectionImage ?? "",
         buttonLabel: section.buttons?.[0]?.label ?? "",
         buttonHref: section.buttons?.[0]?.href ?? "/contacto",
@@ -49,7 +49,7 @@ export function SitePopup({ content }: { content?: Record<string, unknown> | nul
         backgroundColor: section.backgroundColor ?? "#ffffff",
         accentColor: section.accentColor ?? "#58c3de",
         buttonColor: section.itemColor ?? "#213255",
-        textColor: section.textColor ?? "#213255",
+        textColor: section.textColor && section.textColor !== "#ffffff" ? section.textColor : "#213255",
       }
     : defaultPopup;
   const [visible, setVisible] = useState(false);
@@ -139,12 +139,8 @@ export function SitePopup({ content }: { content?: Record<string, unknown> | nul
           <p className="text-xs font-extrabold uppercase tracking-[0.22em]" style={{ color: popup.accentColor }}>
             {popup.eyebrow}
           </p>
-          <h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">
-            {popup.title}
-          </h2>
-          <p className="mt-5 text-base leading-8 text-[#34466f]">
-            {popup.text}
-          </p>
+          <h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl" dangerouslySetInnerHTML={{ __html: popup.title }} />
+          <div className="mt-5 text-base leading-8" dangerouslySetInnerHTML={{ __html: popup.text }} style={{ color: popup.textColor }} />
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link

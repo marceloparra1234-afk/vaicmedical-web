@@ -76,7 +76,7 @@ export function SiteShell({
       }}
     >
       <style>{`
-        .vaic-public main > section { border-width: var(--site-border-width); }
+        .vaic-public main > section { border-width: 0 !important; }
         .vaic-public main h1 { font-size: clamp(2.75rem, 5vw, var(--site-title-size)); }
         .vaic-public main a[class*="rounded-full"], .vaic-public main button[class*="rounded"] { border-radius: var(--site-button-radius); }
         .vaic-public main article[class*="rounded"], .vaic-public main div[class*="rounded-3xl"] { border-radius: var(--site-radius); }

@@ -476,7 +476,7 @@ function SingleDocumentInput({ file, label, onChange }: { file: MediaFile | null
         {file ? "Reemplazar" : "Agregar"}
         <input accept="application/pdf" className="hidden" onChange={(event) => { const selected = event.target.files?.[0]; if (selected) void uploadFile(selected, "document").then(onChange); }} type="file" />
       </label>
-      {file && <button className="ml-3 text-xs font-bold text-[#213255]" onClick={() => onChange(null)} type="button">Quitar</button>}
+      {file && <button className="ml-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700" onClick={() => onChange(null)} type="button">Quitar</button>}
     </div>
   );
 }
@@ -579,8 +579,8 @@ function PrimaryImageInput({
       <p className="mt-2 text-xs font-semibold text-[#34466f]">{status}</p>
       {image && (
         <div className="mt-4 overflow-hidden rounded-lg border border-[#d7e9ef] bg-white">
-          <div className="h-28 bg-cover bg-center" style={{ backgroundImage: `url("${image}")` }} />
-          <button className="w-full px-3 py-2 text-xs font-bold text-[#213255]" onClick={() => onChange("")} type="button">
+          <div className="h-28 bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url("${image}")` }} />
+          <button className="m-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700" onClick={() => onChange("")} type="button">
             Quitar imagen
           </button>
         </div>
@@ -629,17 +629,26 @@ function MediaInput({
         <input accept={accept} className="hidden" multiple onChange={(event) => addFiles(event.target.files)} type="file" />
       </label>
       {files.length > 0 && (
-        <div className="mt-4 grid gap-2">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {files.map((file) => (
-            <div className="flex items-center justify-between gap-2 rounded-md border border-[#d7e9ef] bg-white px-3 py-2" key={file.id}>
-              <span className="truncate text-xs font-semibold text-[#34466f]">{file.name}</span>
+            <div className="overflow-hidden rounded-lg border border-[#d7e9ef] bg-white shadow-sm" key={file.id}>
+              {file.type === "image" ? (
+                <div className="h-24 bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url("${file.url}")` }} />
+              ) : (
+                <div className="grid h-24 place-items-center bg-[#eaf8fc] px-3 text-center text-xs font-bold text-[#213255]">
+                  {file.type === "video" ? "Video" : "Documento"}
+                </div>
+              )}
+              <div className="grid gap-2 p-3">
+              <span className="break-words text-xs font-semibold leading-5 text-[#34466f]">{file.name}</span>
               <button
-                className="shrink-0 text-xs font-bold text-[#213255]"
+                className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700"
                 onClick={() => onChange(files.filter((item) => item.id !== file.id))}
                 type="button"
               >
                 Quitar
               </button>
+              </div>
             </div>
           ))}
         </div>

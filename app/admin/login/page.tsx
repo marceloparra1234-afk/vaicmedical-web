@@ -26,7 +26,8 @@ export default function AdminLoginPage() {
       setStatus("Usuario o contraseña incorrectos.");
       return;
     }
-    router.replace("/admin");
+    setStatus("Acceso confirmado. Abriendo panel...");
+    window.location.replace("/admin");
   }
 
   return (
@@ -43,7 +44,7 @@ export default function AdminLoginPage() {
           Contraseña
           <input className="mt-2 h-12 w-full rounded-lg border border-[#d7e9ef] px-3 text-sm outline-none focus:border-[#58c3de]" onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />
         </label>
-        <button className="mt-6 w-full rounded-lg bg-[#213255] px-5 py-3 text-sm font-bold text-white" type="submit">Ingresar</button>
+        <button className="mt-6 w-full rounded-lg bg-[#213255] px-5 py-3 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-70" disabled={status.startsWith("Ingresando")} type="submit">Ingresar</button>
         <p className="mt-4 min-h-5 text-center text-sm font-semibold text-[#34466f]">{status}</p>
       </form>
     </main>

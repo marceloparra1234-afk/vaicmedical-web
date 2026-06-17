@@ -21,6 +21,7 @@ type EditableField = "eyebrow" | "title" | "subtitle" | "content";
 type SectionContent = PreviewContent & {
   editableFields?: EditableField[];
   allowItems?: boolean;
+  allowElementAppearance?: boolean;
   allowButtons?: boolean;
   allowUpload?: boolean;
 };
@@ -246,6 +247,13 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
       ],
     },
   },
+  "catalogo-productos-vista": {
+    Galería: { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
+    "Información técnica": { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
+    Descripción: { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
+    Documentación: { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
+    "Productos relacionados": { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
+  },
 };
 
 const defaultSteps = [
@@ -389,19 +397,13 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
     sectionImage: value.sectionImage ?? "",
     sectionImages: value.sectionImages ?? (value.sectionImage ? [value.sectionImage] : []),
     columns: value.columns ?? 4,
-    buttons:
-      normalizeButtons(value.buttons ??
-      (isMethod
-        ? []
-        : [
-            { id: "primary", label: "Botón principal", href: "/", visible: true },
-            { id: "secondary", label: "Botón secundario", href: "/", visible: true },
-          ])),
+    buttons: normalizeButtons(value.buttons ?? []),
     items: normalizeItems(
       value.items ?? (isMethod ? defaultSteps : repeatableDefaults[section] ?? []),
     ),
     editableFields,
     allowItems: value.allowItems ?? true,
+    allowElementAppearance: value.allowElementAppearance ?? false,
     allowButtons: value.allowButtons ?? true,
     allowUpload: value.allowUpload ?? true,
   };
@@ -496,10 +498,14 @@ export function AdminEditorWorkspace({
       .then((result) => {
         if (result?.content) {
           const stored = result.content as Record<string, Partial<SectionContent>>;
+          const defaults = pageDefaults[contentKey] || {};
           const storedContent = Object.fromEntries(
             sections.map((section) => [
               section,
-              completeSection(section, stored[section] ?? {}),
+              completeSection(section, {
+                ...(defaults[section] || {}),
+                ...(stored[section] || {}),
+              }),
             ]),
           ) as Record<string, SectionContent>;
           setContent(storedContent);
@@ -853,7 +859,7 @@ function AppearanceControls({
           El acento modifica etiquetas, barras, líneas, números e iconos decorativos.
         </p>
       </div>
-      {content.allowItems !== false && (
+      {(content.allowItems !== false || content.allowElementAppearance) && (
         <div className="grid gap-4 rounded-lg border border-[#d7e9ef] bg-[#f7fafb] p-4">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#58c3de]">
             Apariencia de los elementos
@@ -1255,17 +1261,17 @@ function ImageGalleryEditor({
       {images.length > 0 && (
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {images.slice(0, 3).map((image, index) => (
-            <div className="overflow-hidden rounded-lg border border-[#d7e9ef] bg-white" key={`${image}-${index}`}>
+            <div className="overflow-hidden rounded-lg border border-[#d7e9ef] bg-white shadow-sm" key={`${image}-${index}`}>
               <div
-                className="h-24 bg-cover bg-center"
+                className="h-28 bg-contain bg-center bg-no-repeat"
                 style={{ backgroundImage: `url("${image}")` }}
               />
-              <div className="flex items-center justify-between px-3 py-2">
+              <div className="grid gap-2 px-3 py-3">
                 <span className="text-xs font-semibold text-[#34466f]">
                   Imagen {index + 1}
                 </span>
                 <button
-                  className="text-xs font-bold text-[#213255]"
+                  className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100"
                   onClick={() => onChange(images.filter((_, imageIndex) => imageIndex !== index))}
                   type="button"
                 >

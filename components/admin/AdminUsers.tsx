@@ -196,8 +196,37 @@ function UserField({ label, value, onChange, type = "text" }: { label: string; v
 }
 
 function PermissionsTab() {
-  const permissions = ["Visualizar panel de rendimiento", "Editar páginas", "Crear publicaciones", "Crear líneas y productos", "Gestionar usuarios"];
-  return <div><h2 className="font-bold">Permisos por usuario o rol</h2><div className="mt-5 grid gap-3 sm:grid-cols-2">{permissions.map((permission) => <label className="flex items-center gap-3 rounded-lg border border-[#d7e9ef] p-4 text-sm font-semibold" key={permission}><input className="h-4 w-4 accent-[#58c3de]" defaultChecked type="checkbox" />{permission}</label>)}</div></div>;
+  const permissions = ["Visualizar rendimiento", "Editar p\u00e1ginas", "Crear publicaciones", "Crear l\u00edneas y productos", "Editar dise\u00f1o del cat\u00e1logo", "Gestionar identidad visual", "Gestionar usuarios"];
+  return (
+    <div>
+      <h2 className="font-bold">{"Auditor\u00eda de permisos activos"}</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-[#667085]">
+        {"Todos los roles autenticados tienen acceso operativo a los m\u00f3dulos del editor. Si m\u00e1s adelante quieres restringir acciones por rol, esta matriz ser\u00e1 la base para activar bloqueos reales."}
+      </p>
+      <div className="mt-5 overflow-x-auto rounded-lg border border-[#d7e9ef]">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead className="bg-[#eef5f7] text-xs uppercase text-[#667085]">
+            <tr>
+              <th className="p-4">Permiso</th>
+              {roles.map((role) => <th className="p-4 text-center" key={role}>{role}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {permissions.map((permission) => (
+              <tr className="border-t border-[#d7e9ef]" key={permission}>
+                <td className="p-4 font-semibold">{permission}</td>
+                {roles.map((role) => (
+                  <td className="p-4 text-center" key={`${permission}-${role}`}>
+                    <span className="inline-flex rounded-full bg-[#eaf8fc] px-3 py-1 text-xs font-bold text-[#213255]">Activo</span>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 function RolesTab() {

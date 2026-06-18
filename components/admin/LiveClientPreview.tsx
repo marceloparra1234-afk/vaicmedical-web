@@ -300,6 +300,10 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
     sectionIntro.innerHTML = content.content;
   }
 
+  if (target.dataset.dynamicContent) {
+    return;
+  }
+
   const eyebrow = first(target, [
     "p.text-sm.font-semibold.uppercase",
     "p.text-xs.font-semibold.uppercase",
@@ -331,10 +335,6 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
   if (!sectionIntro) {
     const intro = paragraphs.find((item) => item.innerHTML !== content.subtitle);
     if (intro) intro.innerHTML = content.content;
-  }
-
-  if (target.dataset.dynamicContent) {
-    return;
   }
 
   const formFields = ensureFormFields(target, content.items.length);

@@ -75,7 +75,14 @@ const homeDefaults: Record<string, Partial<SectionContent>> = {
     subtitle: "Contacto",
     content:
       "Puedes solicitar una visita, coordinar una reparación o consultar por mantenciones programadas.",
+    itemColor: "#213255",
+    accentColor: "#58c3de",
+    textColor: "#ffffff",
+    columns: 4,
     buttons: [{ id: "support", label: "Solicitar soporte", href: "/contacto", visible: true }],
+    items: [
+      createCard("canal-directo", "Canal directo", "contacto@vaicmedical.cl"),
+    ],
   },
 };
 
@@ -510,13 +517,25 @@ export function AdminEditorWorkspace({
           const stored = result.content as Record<string, Partial<SectionContent>>;
           const defaults = pageDefaults[contentKey] || {};
           const storedContent = Object.fromEntries(
-            sections.map((section) => [
-              section,
-              completeSection(section, {
-                ...(defaults[section] || {}),
-                ...(stored[section] || {}),
-              }),
-            ]),
+            sections.map((section) => {
+              const defaultSection = defaults[section] || {};
+              const storedSection = stored[section] || {};
+              const needsContactCard =
+                contentKey === "inicio" &&
+                section === "Contacto" &&
+                !storedSection.items?.length;
+
+              return [
+                section,
+                completeSection(section, {
+                  ...defaultSection,
+                  ...storedSection,
+                  items: needsContactCard
+                    ? defaultSection.items
+                    : storedSection.items ?? defaultSection.items,
+                }),
+              ];
+            }),
           ) as Record<string, SectionContent>;
           setContent(storedContent);
           setLastSavedContent(storedContent);

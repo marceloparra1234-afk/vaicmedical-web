@@ -8,15 +8,32 @@ type LinkedButton = {
   label?: string;
   href?: string;
   visible?: boolean;
+  backgroundColor?: string;
+  borderColor?: string;
+  textColor?: string;
 };
 
 type LinkedSection = {
+  eyebrow?: string;
   title?: string;
   subtitle?: string;
   content?: string;
   sectionImage?: string;
   sectionImages?: string[];
   buttons?: LinkedButton[];
+  backgroundColor?: string;
+  itemColor?: string;
+  accentColor?: string;
+  textColor?: string;
+  columns?: number;
+  items?: Array<{
+    title?: string;
+    text?: string;
+    visible?: boolean;
+    backgroundColor?: string;
+    borderColor?: string;
+    textColor?: string;
+  }>;
 };
 
 const workflow = [
@@ -32,6 +49,10 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
       {children}
     </p>
   );
+}
+
+function stripHtml(value = "") {
+  return value.replace(/<[^>]*>/g, "");
 }
 
 export const dynamic = "force-dynamic";
@@ -54,6 +75,15 @@ export default async function Home() {
   const servicesSummary = servicios?.["Hero principal"];
   const blogSummary = blog?.["Hero principal"];
   const catalogSummary = catalogo?.["Hero principal"];
+  const contactSummary = inicio?.Contacto;
+  const contactCard = contactSummary?.items?.find((item) => item.visible !== false);
+  const contactEmail = stripHtml(contactCard?.text) || "contacto@vaicmedical.cl";
+  const contactButtons = contactSummary?.buttons?.filter((button) => button.visible !== false) || [];
+  const contactButton = contactButtons[0] || { label: "Solicitar soporte", href: "/contacto" };
+  const contactCardWidth = Math.min(
+    620,
+    Math.max(360, (contactSummary?.columns || 4) * 115),
+  );
   const heroContent = inicio?.["Hero principal"];
   const heroButtons = heroContent?.buttons?.filter((button) => button.visible !== false) || [];
   const heroPrimaryButton = heroButtons[0] || { label: "Solicitar soporte", href: "/contacto" };
@@ -255,7 +285,11 @@ export default async function Home() {
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <SectionLabel>Blog</SectionLabel>
-              <h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl" dangerouslySetInnerHTML={{ __html: blogSummary?.title || "Criterios técnicos para cuidar equipos médicos." }} />
+              <h2
+                className="mt-3 max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl"
+                data-editor-field="section-title"
+                dangerouslySetInnerHTML={{ __html: blogSummary?.title || "Criterios técnicos para cuidar equipos médicos." }}
+              />
             </div>
             <Link
               className="w-fit rounded-full border border-[#9eddea] bg-white px-7 py-4 font-semibold text-[#213255] transition hover:border-[#58c3de]"
@@ -278,6 +312,7 @@ export default async function Home() {
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     src={post.primaryImage}
+                    unoptimized={post.primaryImage.startsWith("data:")}
                   />
                 </div>
                 <article className="p-7">
@@ -303,35 +338,85 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="bg-white" data-editor-section="contacto">
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[1fr_0.75fr]">
+      <section
+        className="bg-white"
+        data-editor-section="contacto"
+        style={{ backgroundColor: contactSummary?.backgroundColor || undefined }}
+      >
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[1fr_auto]">
           <div>
-            <SectionLabel>Contacto</SectionLabel>
-            <h2 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl">
-              Coordinemos una evaluación técnica para tus equipos.
-            </h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-[#34466f]">
-              Puedes solicitar una visita, coordinar una reparación o consultar
-              por mantenciones programadas.
+            <p
+              className="text-sm font-semibold uppercase tracking-[0.18em]"
+              data-editor-field="section-eyebrow"
+              style={{ color: contactSummary?.accentColor || "#58c3de" }}
+            >
+              {contactSummary?.eyebrow || contactSummary?.subtitle || "Contacto"}
             </p>
+            <h2
+              className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl"
+              data-editor-field="section-title"
+              dangerouslySetInnerHTML={{
+                __html:
+                  contactSummary?.title ||
+                  "Coordinemos una evaluación técnica para tus equipos.",
+              }}
+            />
+            <p
+              className="mt-5 max-w-2xl text-lg leading-8 text-[#34466f]"
+              data-editor-field="section-intro"
+              dangerouslySetInnerHTML={{
+                __html:
+                  contactSummary?.content ||
+                  "Puedes solicitar una visita, coordinar una reparación o consultar por mantenciones programadas.",
+              }}
+            />
           </div>
-          <div className="rounded-3xl bg-[#213255] p-8 text-white">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]">
-              Canal directo
-            </p>
+          <article
+            className="w-full rounded-3xl border p-8 text-white"
+            style={{
+              maxWidth: `${contactCardWidth}px`,
+              backgroundColor:
+                contactCard?.backgroundColor ||
+                contactSummary?.itemColor ||
+                "#213255",
+              borderColor:
+                contactCard?.borderColor ||
+                contactSummary?.accentColor ||
+                "#58c3de",
+              color:
+                contactCard?.textColor ||
+                contactSummary?.textColor ||
+                "#ffffff",
+            }}
+          >
+            <p
+              className="text-sm font-semibold uppercase tracking-[0.18em]"
+              style={{ color: contactSummary?.accentColor || "#58c3de" }}
+              dangerouslySetInnerHTML={{ __html: contactCard?.title || "Canal directo" }}
+            />
             <a
               className="mt-5 block text-2xl font-semibold"
-              href="mailto:contacto@vaicmedical.cl"
-            >
-              contacto@vaicmedical.cl
-            </a>
+              href={`mailto:${contactEmail}`}
+              dangerouslySetInnerHTML={{ __html: contactCard?.text || "contacto@vaicmedical.cl" }}
+            />
             <Link
-              className="mt-8 inline-flex rounded-full bg-[#58c3de] px-7 py-4 font-semibold text-[#213255] transition hover:bg-white"
-              href="/contacto"
+              className="mt-8 inline-flex rounded-full border px-7 py-4 font-semibold transition hover:bg-white"
+              href={contactButton.href || "/contacto"}
+              style={{
+                backgroundColor:
+                  contactButton.backgroundColor ||
+                  contactSummary?.accentColor ||
+                  "#58c3de",
+                borderColor:
+                  contactButton.borderColor ||
+                  contactSummary?.accentColor ||
+                  "#58c3de",
+                color: contactButton.textColor || "#213255",
+              }}
             >
-              Solicitar soporte
+              {contactButton.label || "Solicitar soporte"}
             </Link>
-          </div>
+          </article>
         </div>
       </section>
     </main>

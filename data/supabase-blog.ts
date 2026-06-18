@@ -1,7 +1,5 @@
 import "server-only";
 
-import { blogPosts } from "@/data/blog-posts";
-
 export type ManagedBlogPost = {
   id?: string;
   slug: string;
@@ -22,22 +20,9 @@ function getSupabaseConfig() {
   return { url, serviceRoleKey };
 }
 
-function getFallbackPosts(): ManagedBlogPost[] {
-  return blogPosts.map((post) => ({
-    slug: post.slug,
-    title: post.title,
-    date: post.date,
-    excerpt: post.excerpt,
-    body: post.body.join("\n"),
-    primaryImage: post.image,
-    secondaryImages: [],
-    featured: false,
-  }));
-}
-
 export async function getManagedBlogPosts() {
   const config = getSupabaseConfig();
-  if (!config) return getFallbackPosts();
+  if (!config) return [];
 
   const response = await fetch(
     `${config.url}/rest/v1/created_content?content_type=eq.blog&select=id,slug,title:content-%3E%3Etitle,date:content-%3E%3Edate,excerpt:content-%3E%3Eexcerpt,primary_image:content-%3E%3EprimaryImage,secondary_images:content-%3EsecondaryImages,featured:content-%3Efeatured,created_at&order=created_at.desc`,
@@ -46,11 +31,11 @@ export async function getManagedBlogPosts() {
         apikey: config.serviceRoleKey,
         Authorization: `Bearer ${config.serviceRoleKey}`,
       },
-      next: { revalidate: 300, tags: ["created-content:blog"] },
+      cache: "no-store",
     },
   );
 
-  if (!response.ok) return getFallbackPosts();
+  if (!response.ok) return [];
 
   const rows = (await response.json()) as Array<{
     id: string;
@@ -64,31 +49,25 @@ export async function getManagedBlogPosts() {
     created_at: string;
   }>;
 
-  const stored = rows.map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    title: row.title || "Publicación sin título",
-    date: row.date || "",
-    excerpt: row.excerpt || "",
-    body: "",
-    primaryImage: row.primary_image || "/blog-article.svg",
-    secondaryImages: row.secondary_images || [],
-    featured: Boolean(row.featured),
-    createdAt: row.created_at,
-  }));
-
-  if (!stored.length) return getFallbackPosts();
-
-  return stored.sort(
-    (a, b) => Number(b.featured) - Number(a.featured),
-  );
+  return rows
+    .map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      title: row.title || "Publicación sin título",
+      date: row.date || "",
+      excerpt: row.excerpt || "",
+      body: "",
+      primaryImage: row.primary_image || "/blog-article.svg",
+      secondaryImages: row.secondary_images || [],
+      featured: Boolean(row.featured),
+      createdAt: row.created_at,
+    }))
+    .sort((a, b) => Number(b.featured) - Number(a.featured));
 }
 
 export async function getManagedBlogPost(slug: string) {
   const config = getSupabaseConfig();
-  if (!config) {
-    return getFallbackPosts().find((post) => post.slug === slug) || null;
-  }
+  if (!config) return null;
 
   const response = await fetch(
     `${config.url}/rest/v1/created_content?content_type=eq.blog&slug=eq.${encodeURIComponent(slug)}&select=id,slug,content,created_at&limit=1`,
@@ -97,7 +76,7 @@ export async function getManagedBlogPost(slug: string) {
         apikey: config.serviceRoleKey,
         Authorization: `Bearer ${config.serviceRoleKey}`,
       },
-      next: { revalidate: 300, tags: ["created-content:blog"] },
+      cache: "no-store",
     },
   );
   if (!response.ok) return null;

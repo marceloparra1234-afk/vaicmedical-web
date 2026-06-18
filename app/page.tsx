@@ -250,7 +250,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="bg-[#f6fbfd]" data-editor-section="blog">
+      <section className="bg-[#f6fbfd]" data-dynamic-content="blog-posts" data-editor-section="blog">
         <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>

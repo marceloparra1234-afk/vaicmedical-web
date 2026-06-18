@@ -333,6 +333,10 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
     if (intro) intro.innerHTML = content.content;
   }
 
+  if (target.dataset.dynamicContent) {
+    return;
+  }
+
   const formFields = ensureFormFields(target, content.items.length);
   if (formFields.length) {
     content.items.forEach((item, index) => {

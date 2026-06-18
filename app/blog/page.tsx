@@ -27,7 +27,7 @@ export default async function BlogPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-7xl gap-5 px-5 pb-20 sm:px-8 md:grid-cols-3" data-editor-section="publicaciones">
+      <section className="mx-auto grid max-w-7xl gap-5 px-5 pb-20 sm:px-8 md:grid-cols-3" data-dynamic-content="blog-posts" data-editor-section="publicaciones">
         {posts.map((post) => (
           <Link
             key={post.slug}
@@ -56,6 +56,11 @@ export default async function BlogPage() {
             </p>
           </Link>
         ))}
+        {!posts.length && (
+          <div className="rounded-3xl border border-[#d7e9ef] bg-white p-8 text-[#34466f] md:col-span-3">
+            Aún no hay publicaciones cargadas.
+          </div>
+        )}
       </section>
     </main>
   );

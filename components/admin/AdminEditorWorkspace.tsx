@@ -171,12 +171,9 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
     },
     "Listado de publicaciones": {
       editableFields: [],
+      allowItems: false,
       buttons: [],
-      items: [
-        createCard("post-1", "Señales de desgaste en camas clínicas", "Indicadores que conviene detectar antes de una falla crítica.", "/blog-article.svg"),
-        createCard("post-2", "Mantención preventiva en camillas", "Puntos esenciales que conviene revisar.", "/blog-article.svg"),
-        createCard("post-3", "Cómo documentar reparaciones", "Información útil para mejorar continuidad técnica.", "/blog-article.svg"),
-      ],
+      items: [],
     },
   },
   catalogo: {
@@ -352,11 +349,7 @@ const repeatableDefaults: Record<string, SectionContent["items"]> = {
   "Mantención preventiva": [createCard("preventiva", "Mantención preventiva", "Revisión programada, ajustes, limpieza técnica y control de condiciones.")],
   "Reparación correctiva": [createCard("correctiva", "Reparación correctiva", "Diagnóstico y reparación de equipos médicos.")],
   "Soporte técnico": [createCard("soporte", "Soporte técnico", "Respuesta en terreno, evaluación de fallas e informes técnicos.")],
-  "Listado de publicaciones": [
-    createCard("post-1", "Publicación técnica", "Breve reseña de la publicación.", "/blog-article.svg"),
-    createCard("post-2", "Noticia VaicMedical", "Breve reseña de la noticia.", "/blog-article.svg"),
-    createCard("post-3", "Artículo especializado", "Breve reseña del artículo.", "/blog-article.svg"),
-  ],
+  "Listado de publicaciones": [],
   "Navegación de líneas": [
     createCard("linea-1", "Camas clínicas y camillas", "Equipos de traslado y hospitalización."),
     createCard("linea-2", "Pabellón y procedimientos", "Equipos utilizados en pabellón."),

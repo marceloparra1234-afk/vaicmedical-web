@@ -36,7 +36,7 @@ type PopupSection = {
 };
 
 export function SitePopup({ content }: { content?: Record<string, unknown> | null }) {
-  const section = content?.["Configuración"] as PopupSection | undefined;
+  const section = getPopupSection(content);
   const configuredPopup = section
     ? {
         eyebrow: stripHtml(section.eyebrow ?? section.subtitle ?? ""),
@@ -124,7 +124,7 @@ export function SitePopup({ content }: { content?: Record<string, unknown> | nul
           {popup.image && imageAvailable && (
             <Image
               alt="Mantención y reparación de equipos médicos VaicMedical"
-              className="object-contain"
+              className="object-cover"
               fill
               priority
               onError={() => setImageAvailable(false)}
@@ -143,14 +143,16 @@ export function SitePopup({ content }: { content?: Record<string, unknown> | nul
           <div className="mt-5 text-base leading-8" dangerouslySetInnerHTML={{ __html: popup.text }} style={{ color: popup.textColor }} />
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              className="inline-flex rounded-xl px-6 py-3 text-sm font-bold text-white transition"
-              href={popup.buttonHref}
-              onClick={closePopup}
-              style={{ backgroundColor: popup.buttonColor }}
-            >
-              {popup.buttonLabel}
-            </Link>
+            {popup.buttonLabel && (
+              <Link
+                className="inline-flex rounded-xl px-6 py-3 text-sm font-bold text-white transition"
+                href={popup.buttonHref}
+                onClick={closePopup}
+                style={{ backgroundColor: popup.buttonColor }}
+              >
+                {popup.buttonLabel}
+              </Link>
+            )}
             <button
               className="rounded-xl border border-[#d7e9ef] px-6 py-3 text-sm font-bold text-[#213255] transition hover:border-[#58c3de] hover:text-[#58c3de]"
               onClick={closePopup}
@@ -163,6 +165,20 @@ export function SitePopup({ content }: { content?: Record<string, unknown> | nul
       </div>
     </div>
   );
+}
+
+function getPopupSection(content?: Record<string, unknown> | null) {
+  if (!content) return undefined;
+  return (
+    (content["Configuración"] as PopupSection | undefined) ||
+    (Object.entries(content).find(([key]) =>
+      normalizeText(key).startsWith("configur"),
+    )?.[1] as PopupSection | undefined)
+  );
+}
+
+function normalizeText(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
 function stripHtml(value: string) {

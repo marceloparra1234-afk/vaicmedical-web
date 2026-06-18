@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 import {
@@ -17,13 +17,23 @@ const pageKeys: Record<string, string> = {
   "/contacto": "contacto",
 };
 
-export function PublicContentHydrator() {
+export function PublicContentHydrator({
+  initialContent = {},
+}: {
+  initialContent?: Record<string, Record<string, PreviewContent> | null>;
+}) {
   const pathname = usePathname();
+  const pageKey =
+    pageKeys[pathname] ||
+    (pathname.startsWith("/catalogo/") ? "catalogo-productos-vista" : "");
+
+  useLayoutEffect(() => {
+    const content = pageKey ? initialContent[pageKey] : null;
+    if (!pageKey || !content) return;
+    applyPageContent(pageKey, content);
+  }, [initialContent, pageKey]);
 
   useEffect(() => {
-    const pageKey =
-      pageKeys[pathname] ||
-      (pathname.startsWith("/catalogo/") ? "catalogo-productos-vista" : "");
     if (!pageKey) return;
 
     let cancelled = false;
@@ -34,16 +44,7 @@ export function PublicContentHydrator() {
         .then(async (response) => (response.ok ? response.json() : null))
         .then((result) => {
           if (cancelled || !result?.content) return;
-          const selectors = sectionSelectors[pageKey] || {};
-          Object.entries(result.content as Record<string, PreviewContent>).forEach(
-            ([section, content]) => {
-              const selector = selectors[section];
-              if (!selector || !content) return;
-              document.querySelectorAll<HTMLElement>(selector).forEach((target) => {
-                applyContentToTarget(target, content);
-              });
-            },
-          );
+          applyPageContent(pageKey, result.content as Record<string, PreviewContent>);
         })
         .catch(() => undefined);
     }
@@ -68,7 +69,18 @@ export function PublicContentHydrator() {
       window.removeEventListener("storage", handleContentUpdated);
       window.removeEventListener("vaicmedical:content-updated", handleContentUpdated);
     };
-  }, [pathname]);
+  }, [pageKey]);
 
   return null;
+}
+
+function applyPageContent(pageKey: string, content: Record<string, PreviewContent>) {
+  const selectors = sectionSelectors[pageKey] || {};
+  Object.entries(content).forEach(([section, sectionContent]) => {
+    const selector = selectors[section];
+    if (!selector || !sectionContent) return;
+    document.querySelectorAll<HTMLElement>(selector).forEach((target) => {
+      applyContentToTarget(target, sectionContent);
+    });
+  });
 }

@@ -4,7 +4,20 @@ import { getHomeCatalogHighlights } from "@/data/catalog-service";
 import { getManagedBlogPosts } from "@/data/supabase-blog";
 import { getSiteContent } from "@/lib/supabase-admin";
 
-type LinkedSection = { title?: string; content?: string };
+type LinkedButton = {
+  label?: string;
+  href?: string;
+  visible?: boolean;
+};
+
+type LinkedSection = {
+  title?: string;
+  subtitle?: string;
+  content?: string;
+  sectionImage?: string;
+  sectionImages?: string[];
+  buttons?: LinkedButton[];
+};
 
 const workflow = [
   ["Solicitud", "Recibimos el requerimiento y clasificamos la criticidad."],
@@ -21,13 +34,15 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function Home() {
-  const [managedPosts, createdProducts, nosotros, servicios, blog, catalogo] =
+  const [managedPosts, createdProducts, inicio, nosotros, servicios, blog, catalogo] =
     await Promise.all([
       getManagedBlogPosts(),
       getHomeCatalogHighlights(),
+      getSiteContent<Record<string, LinkedSection>>("inicio"),
       getSiteContent<Record<string, LinkedSection>>("nosotros"),
       getSiteContent<Record<string, LinkedSection>>("servicios"),
       getSiteContent<Record<string, LinkedSection>>("blog"),
@@ -39,6 +54,11 @@ export default async function Home() {
   const servicesSummary = servicios?.["Hero principal"];
   const blogSummary = blog?.["Hero principal"];
   const catalogSummary = catalogo?.["Hero principal"];
+  const heroContent = inicio?.["Hero principal"];
+  const heroButtons = heroContent?.buttons?.filter((button) => button.visible !== false) || [];
+  const heroPrimaryButton = heroButtons[0] || { label: "Solicitar soporte", href: "/contacto" };
+  const heroSecondaryButton = heroButtons[1] || { label: "Ver servicios", href: "/servicios" };
+  const heroImage = heroContent?.sectionImages?.[0] || heroContent?.sectionImage || "/medical-dashboard.svg";
 
   return (
     <main>
@@ -46,28 +66,32 @@ export default async function Home() {
         <div className="mx-auto grid max-w-[1540px] items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)] lg:gap-14 lg:py-16">
           <div className="flex max-w-[44rem] flex-col items-center text-center">
             <p className="mb-5 inline-flex max-w-full rounded-full border border-[#b9e8f2] bg-[#f6fbfd] px-5 py-2 text-sm font-semibold text-[#213255]">
-              Mantención y reparación de equipos médicos
+              {heroContent?.subtitle || "Mantenci\u00f3n y reparaci\u00f3n de equipos m\u00e9dicos"}
             </p>
-            <h1 className="text-5xl font-semibold leading-[1.08] text-[#213255] sm:text-6xl lg:text-[64px]">
-              Soporte técnico para mantener operativa la atención en salud.
-            </h1>
-            <p className="mt-6 max-w-[36rem] text-lg leading-8 text-[#34466f]">
-              Reparamos y mantenemos camas clínicas, camillas, mesas
-              quirúrgicas, lámparas, monitores multiparámetros y otros equipos
-              esenciales para la continuidad asistencial.
-            </p>
+            <h1
+              className="text-5xl font-semibold leading-[1.08] text-[#213255] sm:text-6xl lg:text-[64px]"
+              dangerouslySetInnerHTML={{ __html: heroContent?.title || "Soporte t\u00e9cnico para mantener operativa la atenci\u00f3n en salud." }}
+            />
+            <div
+              className="mt-6 max-w-[36rem] text-lg leading-8 text-[#34466f]"
+              dangerouslySetInnerHTML={{
+                __html:
+                  heroContent?.content ||
+                  "Reparamos y mantenemos camas cl\u00ednicas, camillas, mesas quir\u00fargicas, l\u00e1mparas, monitores multipar\u00e1metros y otros equipos esenciales para la continuidad asistencial.",
+              }}
+            />
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
                 className="rounded-full bg-[#213255] px-7 py-4 text-center font-semibold text-white transition hover:bg-[#34466f]"
-                href="/contacto"
+                href={heroPrimaryButton.href || "/contacto"}
               >
-                Solicitar soporte
+                {heroPrimaryButton.label || "Solicitar soporte"}
               </Link>
               <Link
                 className="rounded-full border border-[#9eddea] bg-white px-7 py-4 text-center font-semibold text-[#213255] transition hover:border-[#58c3de]"
-                href="/servicios"
+                href={heroSecondaryButton.href || "/servicios"}
               >
-                Ver servicios
+                {heroSecondaryButton.label || "Ver servicios"}
               </Link>
             </div>
           </div>
@@ -75,7 +99,7 @@ export default async function Home() {
           <div className="relative w-full">
             <div className="aspect-[1.9/1] w-full overflow-hidden rounded-[2rem] border border-[#d7e9ef] bg-[#eaf8fc] shadow-2xl shadow-[#213255]/10">
               <Image
-                src="/medical-dashboard.svg"
+                src={heroImage}
                 alt="Equipos médicos en mantención y monitoreo técnico VaicMedical"
                 width={1400}
                 height={560}

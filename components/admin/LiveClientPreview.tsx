@@ -253,6 +253,11 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
   const productDesignTarget = target.dataset.editorSection?.startsWith("product-");
 
   if (productDesignTarget) {
+    const productNote = target.querySelector("[data-editor-field='section-intro']");
+    if (productNote instanceof HTMLElement) {
+      productNote.innerHTML = content.content;
+      productNote.style.display = content.content ? "" : "none";
+    }
     applyGridColumns(target, content);
     findCards(target).forEach((card) => {
       applyCardAppearance(

@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { BlogGallery } from "@/components/BlogGallery";
 import { getManagedBlogPost } from "@/data/supabase-blog";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function BlogArticlePage({
   params,

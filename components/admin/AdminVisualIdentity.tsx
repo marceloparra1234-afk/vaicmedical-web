@@ -238,10 +238,24 @@ export function AdminVisualIdentity() {
 
 function IdentityPreview({ identity }: { identity: VisualIdentity }) {
   const shadow = identity.shadowStrength === "none" ? "none" : identity.shadowStrength === "medium" ? "0 18px 50px rgba(33,50,85,.18)" : "0 10px 30px rgba(33,50,85,.1)";
+  const selectedFont = identity.fonts.find((font) => font.name === identity.primaryFont);
+  const previewFont = selectedFont ? `"VaicIdentityPreview", Arial, sans-serif` : "Geist, Arial, sans-serif";
   return (
-    <section className="h-fit overflow-hidden border border-[#D7E9EF] bg-[#F6FBFD] p-5 shadow-sm 2xl:sticky 2xl:top-28" style={{ borderRadius: identity.cornerRadius, fontFamily: identity.primaryFont }}>
+    <section className="h-fit overflow-hidden border border-[#D7E9EF] bg-[#F6FBFD] p-5 shadow-sm 2xl:sticky 2xl:top-28" style={{ borderRadius: identity.cornerRadius, fontFamily: previewFont }}>
+      {selectedFont && (
+        <style>{`@font-face{font-family:"VaicIdentityPreview";src:url("${selectedFont.url}");font-display:swap;}`}</style>
+      )}
       <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-[#58C3DE]">Vista previa inmediata</p>
-      <div className="mx-auto bg-white p-6" style={{ borderRadius: identity.cornerRadius, boxShadow: shadow, maxWidth: Math.min(identity.contentWidth, 1200) }}>
+      <div
+        className="mx-auto border border-[#D7E9EF] bg-white p-6"
+        style={{
+          borderRadius: identity.cornerRadius,
+          borderWidth: identity.borderWidth,
+          boxShadow: shadow,
+          maxWidth: "100%",
+          width: `${Math.min(identity.contentWidth, 1200)}px`,
+        }}
+      >
         <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#58C3DE]">Etiqueta o acento</p>
         <h2 className="mt-4 font-semibold leading-[1.08] text-[#213255]" style={{ fontSize: Math.min(identity.titleSize, 72) }}>Vista previa de identidad visual</h2>
         <p className="mt-5 max-w-3xl text-lg leading-8 text-[#34466F]">Aquí puedes revisar cómo afectan los controles globales a títulos, texto, botones, tarjetas, bordes e iconos antes de guardar.</p>
@@ -249,9 +263,9 @@ function IdentityPreview({ identity }: { identity: VisualIdentity }) {
           <button className="border bg-[#213255] px-6 py-3 font-bold text-white" style={{ borderRadius: identity.buttonRadius, borderWidth: identity.borderWidth }}>Botón principal</button>
           <button className="border border-[#58C3DE] bg-white px-6 py-3 font-bold text-[#213255]" style={{ borderRadius: identity.buttonRadius, borderWidth: identity.borderWidth }}>Botón secundario</button>
         </div>
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
+        <div className="grid md:grid-cols-2" style={{ gap: Math.max(12, Math.round(identity.sectionSpacing / 5)), marginTop: Math.max(24, Math.round(identity.sectionSpacing / 2)) }}>
           {["Tarjeta de contenido", "Forma e iconografía"].map((title, index) => (
-            <article className="border border-[#D7E9EF] bg-[#F6FBFD] p-6" key={title} style={{ borderRadius: identity.cornerRadius, borderWidth: identity.borderWidth }}>
+            <article className="border border-[#D7E9EF] bg-[#F6FBFD] p-6" key={title} style={{ borderRadius: identity.cornerRadius, borderWidth: identity.borderWidth, boxShadow: shadow }}>
               <div className="grid h-12 w-12 place-items-center bg-[#58C3DE] font-bold text-[#213255]" style={{ borderRadius: identity.iconRadius }}>{index + 1}</div>
               <h3 className="mt-5 text-xl font-bold text-[#213255]">{title}</h3>
               <p className="mt-3 leading-7 text-[#34466F]">Ejemplo del tratamiento visual que se aplicará de forma coherente en el sitio.</p>

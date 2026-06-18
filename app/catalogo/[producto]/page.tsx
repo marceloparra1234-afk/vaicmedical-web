@@ -5,12 +5,18 @@ import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/ProductGallery";
 import type { CatalogDocument } from "@/data/catalog-products";
 import { getCatalogSettings, getPublicProduct } from "@/data/catalog-service";
+import { getSiteContent } from "@/lib/supabase-admin";
 
 type ProductPageProps = {
   params: Promise<{ producto: string }>;
 };
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+type ProductViewSection = {
+  content?: string;
+};
 
 export async function generateMetadata({
   params,
@@ -28,7 +34,11 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { producto: slug } = await params;
-  const [detail, settings] = await Promise.all([getPublicProduct(slug), getCatalogSettings()]);
+  const [detail, settings, productViewContent] = await Promise.all([
+    getPublicProduct(slug),
+    getCatalogSettings(),
+    getSiteContent<Record<string, ProductViewSection>>("catalogo-productos-vista"),
+  ]);
 
   if (!detail) notFound();
 
@@ -38,6 +48,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     .slice(0, 3);
   const whatsappMessage = encodeURIComponent(`Quiero cotizar: ${product.name}`);
   const hasGallery = Boolean(product.image || product.gallery.length);
+  const serviceNote =
+    getSectionByPrefix(productViewContent, "Informaci")?.content ||
+    "La disponibilidad y alcance del producto se confirman despu\u00e9s de revisar el requerimiento y la documentaci\u00f3n disponible.";
   const documents: Array<{
     label: string;
     item: CatalogDocument | null;
@@ -85,10 +98,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <h1 className="mt-3.5 text-[38px] font-bold leading-[1.1]">
               {product.name}
             </h1>
-            <p className="mt-5 text-base leading-7 text-[#667085]">
-              {product.description}
-            </p>
-
             {(product.brand || product.model || product.type || product.tags) && (
               <div className="mt-7 grid gap-3">
                 {product.brand && <Info label="Marca" value={product.brand} />}
@@ -96,6 +105,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.type && <Info label="Categoría" value={product.type} />}
                 {product.tags && <Info label="Etiquetas" value={product.tags} />}
               </div>
+            )}
+
+            {product.description && (
+              <p className="mt-7 text-base leading-7 text-[#667085]">
+                {product.description}
+              </p>
             )}
 
             <div className="mt-8 grid gap-3">
@@ -118,10 +133,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </Link>
             </div>
 
-            <p className="mt-4.5 text-xs leading-6 text-[#667085]">
-              La disponibilidad y alcance del servicio se confirman después de
-              evaluar el equipo y sus condiciones de operación.
-            </p>
+            {serviceNote && (
+              <div
+                className="mt-4.5 text-xs leading-6 text-[#667085]"
+                data-editor-field="section-intro"
+                dangerouslySetInnerHTML={{ __html: serviceNote }}
+              />
+            )}
           </aside>
         </div>
 
@@ -198,4 +216,20 @@ function Info({ label, value }: { label: string; value: string }) {
       <span className="text-right font-bold text-[#213255]">{value}</span>
     </div>
   );
+}
+
+function getSectionByPrefix(
+  content: Record<string, ProductViewSection> | null,
+  prefix: string,
+) {
+  if (!content) return undefined;
+  const normalizedPrefix = normalizeText(prefix);
+  const entry = Object.entries(content).find(([key]) =>
+    normalizeText(key).startsWith(normalizedPrefix),
+  );
+  return entry?.[1];
+}
+
+function normalizeText(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }

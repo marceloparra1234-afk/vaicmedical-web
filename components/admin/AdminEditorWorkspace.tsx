@@ -249,10 +249,27 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
   },
   "catalogo-productos-vista": {
     Galería: { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
-    "Información técnica": { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
+    "Información técnica": {
+      content: "La disponibilidad y alcance del producto se confirman despu\u00e9s de revisar el requerimiento y la documentaci\u00f3n disponible.",
+      editableFields: ["content"],
+      allowItems: false,
+      allowElementAppearance: true,
+      allowButtons: false,
+      allowUpload: false,
+    },
     Descripción: { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
     Documentación: { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
     "Productos relacionados": { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
+  },
+  "ventana-emergente": {
+    Configuración: {
+      eyebrow: "Soporte t\u00e9cnico VaicMedical",
+      title: "\u00bfNecesitas evaluar o reparar un equipo m\u00e9dico?",
+      content: "Coordinamos diagn\u00f3stico, mantenci\u00f3n y reparaci\u00f3n de equipos cl\u00ednicos, con seguimiento t\u00e9cnico y documentaci\u00f3n de cada intervenci\u00f3n.",
+      editableFields: ["eyebrow", "title", "content"],
+      buttons: [{ id: "popup-main", label: "Solicitar evaluaci\u00f3n", href: "/contacto", visible: true }],
+      allowItems: false,
+    },
   },
 };
 
@@ -1029,7 +1046,7 @@ function RepeatableItemsEditor({
               <ColorInput label="Fondo caja" value={item.backgroundColor} onChange={(backgroundColor) => updateItem(index, { backgroundColor })} />
               <ColorInput label="Borde caja" value={item.borderColor} onChange={(borderColor) => updateItem(index, { borderColor })} />
               <ColorInput label="Texto caja" value={item.textColor} onChange={(textColor) => updateItem(index, { textColor })} />
-              <ColorInput label="NÃºmero/icono" value={item.numberColor} onChange={(numberColor) => updateItem(index, { numberColor })} />
+              <ColorInput label="Número/icono" value={item.numberColor} onChange={(numberColor) => updateItem(index, { numberColor })} />
             </div>
             <label className="text-xs font-semibold text-[#34466f]">
               Imagen de la caja

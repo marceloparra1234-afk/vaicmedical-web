@@ -5,6 +5,7 @@ import {
   DEFAULT_VISUAL_IDENTITY,
   type VisualIdentity,
 } from "@/data/visual-identity";
+import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 import { getSiteContentBundle } from "@/lib/supabase-admin";
 import "./globals.css";
 
@@ -29,9 +30,18 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const publicContentKeys = [
+    "inicio",
+    "nosotros",
+    "servicios",
+    "blog",
+    "catalogo",
+    "contacto",
+    "catalogo-productos-vista",
+  ];
   const stored = await getSiteContentBundle<
     Partial<VisualIdentity> | Record<string, unknown>
-  >(["visual-identity", "ventana-emergente"]);
+  >(["visual-identity", "ventana-emergente", ...publicContentKeys]);
   const storedIdentity = stored["visual-identity"] as Partial<VisualIdentity> | null;
   const popupContent = stored["ventana-emergente"] as Record<string, unknown> | null;
   const visualIdentity: VisualIdentity = storedIdentity
@@ -41,6 +51,12 @@ export default async function RootLayout({
         social: { ...DEFAULT_VISUAL_IDENTITY.social, ...storedIdentity.social },
       }
     : DEFAULT_VISUAL_IDENTITY;
+  const initialPublicContent = Object.fromEntries(
+    publicContentKeys.map((key) => [
+      key,
+      stored[key] as Record<string, PreviewContent> | null,
+    ]),
+  );
 
   return (
     <html
@@ -48,7 +64,13 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <SiteShell popupContent={popupContent} visualIdentity={visualIdentity}>{children}</SiteShell>
+        <SiteShell
+          initialPublicContent={initialPublicContent}
+          popupContent={popupContent}
+          visualIdentity={visualIdentity}
+        >
+          {children}
+        </SiteShell>
       </body>
     </html>
   );

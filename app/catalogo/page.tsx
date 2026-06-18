@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { CatalogExperience } from "@/components/CatalogExperience";
 import { getCatalogSettings, getPublicCatalog } from "@/data/catalog-service";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function CatalogoPage() {
   const [lines, settings] = await Promise.all([getPublicCatalog(), getCatalogSettings()]);

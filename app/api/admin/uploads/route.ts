@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     kind?: keyof typeof limits;
   };
   const kind = body.kind || "image";
+
   if (!body.name || !body.size || !body.mimeType || !limits[kind]) {
     return NextResponse.json({ error: "Archivo inválido" }, { status: 400 });
   }
@@ -54,20 +55,23 @@ export async function POST(request: NextRequest) {
   }
 
   const path = `${kind}/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}-${sanitizeFilename(body.name)}`;
-  const response = await fetch(
-    `${url}/storage/v1/object/upload/sign/site-media/${path}`,
-    {
-      method: "POST",
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        "Content-Type": "application/json",
-      },
-      body: "{}",
+  const response = await fetch(`${url}/storage/v1/object/upload/sign/site-media/${path}`, {
+    method: "POST",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      "Content-Type": "application/json",
     },
-  );
+    body: "{}",
+  });
+
   if (!response.ok) {
-    return NextResponse.json({ error: "No se pudo preparar la carga" }, { status: 500 });
+    const detail = await response.text();
+    console.error("Supabase signed upload failed", response.status, detail);
+    return NextResponse.json(
+      { error: `No se pudo preparar la carga en Supabase (${response.status}). ${detail}` },
+      { status: 500 },
+    );
   }
 
   const signed = (await response.json()) as { url: string };

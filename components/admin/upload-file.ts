@@ -10,13 +10,14 @@ export async function uploadAdminFile(file: File, kind: AdminUploadKind) {
     }
   }
 
+  const mimeType = file.type || guessMimeType(file.name);
   const response = await fetch("/api/admin/uploads", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: file.name,
       size: file.size,
-      mimeType: file.type || "application/octet-stream",
+      mimeType,
       kind,
     }),
   });
@@ -31,9 +32,21 @@ export async function uploadAdminFile(file: File, kind: AdminUploadKind) {
 
   const uploadResponse = await fetch(result.uploadUrl, {
     method: "PUT",
-    headers: { "Content-Type": file.type || "application/octet-stream" },
+    headers: { "Content-Type": mimeType },
     body: file,
   });
-  if (!uploadResponse.ok) throw new Error("No se pudo subir el archivo");
+  if (!uploadResponse.ok) {
+    const detail = await uploadResponse.text().catch(() => "");
+    throw new Error(`No se pudo subir el archivo a Supabase (${uploadResponse.status}). ${detail}`);
+  }
   return result.url;
+}
+
+function guessMimeType(name: string) {
+  const extension = name.split(".").pop()?.toLowerCase();
+  if (extension === "ttf") return "font/ttf";
+  if (extension === "otf") return "font/otf";
+  if (extension === "woff") return "font/woff";
+  if (extension === "woff2") return "font/woff2";
+  return "application/octet-stream";
 }

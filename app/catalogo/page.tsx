@@ -1,17 +1,23 @@
 import { Suspense } from "react";
 import { CatalogExperience } from "@/components/CatalogExperience";
+import type { PreviewContent } from "@/components/admin/ClientPagePreview";
 import { getCatalogSettings, getPublicCatalog } from "@/data/catalog-service";
+import { getSiteContent } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function CatalogoPage() {
-  const [lines, settings] = await Promise.all([getPublicCatalog(), getCatalogSettings()]);
+  const [lines, settings, catalogContent] = await Promise.all([
+    getPublicCatalog(),
+    getCatalogSettings(),
+    getSiteContent<Record<string, Partial<PreviewContent>>>("catalogo"),
+  ]);
 
   return (
     <main className="min-h-screen bg-[#f6fbfd]">
       <section className="border-b border-[#d7e9ef] bg-white" data-editor-section="hero">
-        <div className="mx-auto px-4 py-16 sm:px-6 lg:px-8 lg:py-20" style={{ maxWidth: Math.max(settings.maxWidth, 1800) }}>
+        <div className="w-full px-5 py-16 sm:px-8 lg:px-12 lg:py-20">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#58c3de]" data-editor-field="section-eyebrow">
             Catálogo
           </p>
@@ -24,8 +30,12 @@ export default async function CatalogoPage() {
         </div>
       </section>
 
-      <Suspense fallback={<div className="mx-auto min-h-96 px-4 py-16 sm:px-6 lg:px-8" style={{ maxWidth: Math.max(settings.maxWidth, 1800) }} />}>
-        <CatalogExperience lines={lines} maxWidth={settings.maxWidth} />
+      <Suspense fallback={<div className="min-h-96 w-full px-5 py-16 sm:px-8 lg:px-12" />}>
+        <CatalogExperience
+          content={catalogContent}
+          lines={lines}
+          maxWidth={settings.maxWidth}
+        />
       </Suspense>
     </main>
   );

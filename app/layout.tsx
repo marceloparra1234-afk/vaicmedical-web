@@ -48,6 +48,7 @@ export default async function RootLayout({
     ? {
         ...DEFAULT_VISUAL_IDENTITY,
         ...storedIdentity,
+        fonts: mergeFonts(DEFAULT_VISUAL_IDENTITY.fonts, storedIdentity.fonts),
         social: { ...DEFAULT_VISUAL_IDENTITY.social, ...storedIdentity.social },
       }
     : DEFAULT_VISUAL_IDENTITY;
@@ -74,4 +75,17 @@ export default async function RootLayout({
       </body>
     </html>
   );
+}
+
+function mergeFonts(
+  defaults: VisualIdentity["fonts"],
+  stored: VisualIdentity["fonts"] | undefined,
+) {
+  const fonts = [...defaults];
+  for (const font of stored || []) {
+    if (!fonts.some((item) => item.url === font.url || item.name === font.name)) {
+      fonts.push(font);
+    }
+  }
+  return fonts;
 }

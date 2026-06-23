@@ -35,7 +35,7 @@ export type VisualIdentity = {
 export const DEFAULT_VISUAL_IDENTITY: VisualIdentity = {
   allowCustomColors: false,
   customColors: [],
-  fonts: [],
+  fonts: [{ name: "Optima LT Std Bold", url: "/fonts/OptimaLTStd-Bold.ttf" }],
   primaryFont: "Geist",
   contentWidth: 1440,
   cornerRadius: 12,

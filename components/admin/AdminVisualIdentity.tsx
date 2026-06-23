@@ -26,6 +26,7 @@ export function AdminVisualIdentity() {
           ? {
               ...DEFAULT_VISUAL_IDENTITY,
               ...stored,
+              fonts: mergeFonts(DEFAULT_VISUAL_IDENTITY.fonts, stored.fonts),
               social: { ...DEFAULT_VISUAL_IDENTITY.social, ...stored.social },
             }
           : DEFAULT_VISUAL_IDENTITY;
@@ -234,6 +235,19 @@ export function AdminVisualIdentity() {
       </div>
     </div>
   );
+}
+
+function mergeFonts(
+  defaults: VisualIdentity["fonts"],
+  stored: VisualIdentity["fonts"] | undefined,
+) {
+  const fonts = [...defaults];
+  for (const font of stored || []) {
+    if (!fonts.some((item) => item.url === font.url || item.name === font.name)) {
+      fonts.push(font);
+    }
+  }
+  return fonts;
 }
 
 function IdentityPreview({ identity }: { identity: VisualIdentity }) {

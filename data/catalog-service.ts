@@ -11,7 +11,7 @@ export type CatalogSettings = {
 
 export const defaultCatalogSettings: CatalogSettings = {
   whatsappNumber: "56927792285",
-  maxWidth: 1500,
+  maxWidth: 1800,
 };
 
 export async function getCatalogSettings() {
@@ -43,10 +43,14 @@ export async function getPublicCatalog(): Promise<CatalogLine[]> {
           (product) =>
             product.active !== false &&
             !product.deletedAt &&
-            product.line === line.title,
+            (product.line === line.slug || product.line === line.title),
         )
-        .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || (a.title || "").localeCompare(b.title || "", "es"))
-        .map(managedToProduct),
+        .sort(
+          (a, b) =>
+            Number(Boolean(b.featured)) - Number(Boolean(a.featured)) ||
+            (a.title || "").localeCompare(b.title || "", "es"),
+        )
+        .map((product) => managedToProduct(product, line.slug, line.title || "")),
     }));
 }
 
@@ -61,7 +65,30 @@ export async function getPublicProduct(slug: string) {
 
 export async function getHomeCatalogHighlights() {
   const catalog = await getPublicCatalog();
-  const featuredLines = catalog.filter((line) => line.featured).slice(0, 3);
+  const featuredProducts = catalog.flatMap((line) =>
+    line.products
+      .filter((product) => product.featured)
+      .map((product) => ({ ...product, lineName: line.name })),
+  );
+  const regularProducts = catalog.flatMap((line) =>
+    line.products
+      .filter((product) => !product.featured)
+      .map((product) => ({ ...product, lineName: line.name })),
+  );
+  const products = [...featuredProducts, ...regularProducts];
+
+  if (products.length) {
+    return products.map((product) => ({
+      slug: product.slug,
+      name: product.name,
+      lineName: product.lineName || "Producto",
+      description: product.description,
+      image: product.image || "/service-maintenance.svg",
+      href: `/catalogo/${product.slug}`,
+    }));
+  }
+
+  const featuredLines = catalog.filter((line) => line.featured);
   if (featuredLines.length) {
     return featuredLines.map((line) => ({
       slug: line.id,
@@ -73,25 +100,7 @@ export async function getHomeCatalogHighlights() {
     }));
   }
 
-  const featuredProducts = catalog
-    .flatMap((line) =>
-      line.products
-        .filter((product) => product.featured)
-        .map((product) => ({ ...product, lineName: line.name })),
-    )
-    .slice(0, 3);
-  if (featuredProducts.length) {
-    return featuredProducts.map((product) => ({
-      slug: product.slug,
-      name: product.name,
-      lineName: product.lineName,
-      description: product.description,
-      image: product.image,
-      href: `/catalogo/${product.slug}`,
-    }));
-  }
-
-  return catalog.slice(0, 3).map((line) => ({
+  return catalog.map((line) => ({
     slug: line.id,
     name: line.name,
     lineName: "Línea de productos",
@@ -101,15 +110,21 @@ export async function getHomeCatalogHighlights() {
   }));
 }
 
-function managedToProduct(product: ManagedCreatedContent): CatalogProduct {
+function managedToProduct(
+  product: ManagedCreatedContent,
+  lineId: string,
+  lineName: string,
+): CatalogProduct {
   const document = (item?: { name: string; url: string } | null): CatalogDocument | null =>
     item?.url ? { name: item.name, url: item.url } : null;
 
   return {
     slug: product.slug,
     name: product.title || "Producto",
+    lineId,
+    lineName,
     featured: product.featured,
-    type: product.subline || product.line || "Producto",
+    type: product.subline || lineName || "Producto",
     description: product.excerpt || "",
     longDescription: product.body || "",
     brand: product.brand || "",

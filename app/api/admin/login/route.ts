@@ -44,5 +44,12 @@ export async function POST(request: NextRequest) {
     path: "/",
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    user: {
+      email: user?.email || "",
+      name: user?.name || user?.email || "",
+      role: user?.role || "",
+    },
+  });
 }

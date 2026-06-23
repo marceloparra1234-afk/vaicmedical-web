@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
@@ -22,9 +22,13 @@ export default function AdminLoginPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
+    const result = await response.json().catch(() => null);
     if (!response.ok) {
-      setStatus("Usuario o contraseña incorrectos.");
+      setStatus("Usuario o contraseÃ±a incorrectos.");
       return;
+    }
+    if (result?.user) {
+      localStorage.setItem("vaicmedical:admin-user", JSON.stringify(result.user));
     }
     setStatus("Acceso confirmado. Abriendo panel...");
     window.location.replace("/admin");
@@ -41,7 +45,7 @@ export default function AdminLoginPage() {
           <input className="mt-2 h-12 w-full rounded-lg border border-[#d7e9ef] px-3 text-sm outline-none focus:border-[#58c3de]" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} />
         </label>
         <label className="mt-4 block text-xs font-bold text-[#34466f]">
-          Contraseña
+          ContraseÃ±a
           <input className="mt-2 h-12 w-full rounded-lg border border-[#d7e9ef] px-3 text-sm outline-none focus:border-[#58c3de]" onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />
         </label>
         <button className="mt-6 w-full rounded-lg bg-[#213255] px-5 py-3 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-70" disabled={status.startsWith("Ingresando")} type="submit">Ingresar</button>
@@ -50,3 +54,4 @@ export default function AdminLoginPage() {
     </main>
   );
 }
+

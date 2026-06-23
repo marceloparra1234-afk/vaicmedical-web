@@ -15,7 +15,14 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type ProductViewSection = {
+  title?: string;
   content?: string;
+  backgroundColor?: string;
+  itemColor?: string;
+  accentColor?: string;
+  textColor?: string;
+  columns?: number;
+  shape?: "arrow" | "rectangle" | "rounded" | "circle" | "hexagon" | "custom";
 };
 
 export async function generateMetadata({
@@ -51,6 +58,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const serviceNote =
     getSectionByPrefix(productViewContent, "Informaci")?.content ||
     "La disponibilidad y alcance del producto se confirman despu\u00e9s de revisar el requerimiento y la documentaci\u00f3n disponible.";
+  const relatedStyle = getSectionByPrefix(productViewContent, "Productos relacionados");
+  const relatedColumns = Math.min(4, Math.max(1, relatedStyle?.columns || 3));
   const documents: Array<{
     label: string;
     item: CatalogDocument | null;
@@ -175,14 +184,39 @@ export default async function ProductPage({ params }: ProductPageProps) {
         )}
 
         {related.length > 0 && (
-          <section className="mt-14" data-editor-section="product-related">
-            <h2 className="text-[28px] font-bold">Productos relacionados</h2>
-            <div className="mt-5 grid max-w-[980px] gap-5 lg:grid-cols-3">
+          <section
+            className="mt-14 rounded-[28px] p-0"
+            data-editor-section="product-related"
+            style={{ backgroundColor: relatedStyle?.backgroundColor || "transparent" }}
+          >
+            <h2
+              className="text-[28px] font-bold"
+              data-editor-field="section-title"
+              style={{ color: relatedStyle?.textColor || "#213255" }}
+              dangerouslySetInnerHTML={{
+                __html: relatedStyle?.title || "Productos relacionados",
+              }}
+            />
+            <div
+              className="mt-5 grid gap-5"
+              style={{ gridTemplateColumns: `repeat(${relatedColumns}, minmax(0, 1fr))` }}
+            >
               {related.map((item) => (
                 <Link
-                  className="grid grid-cols-[120px_1fr] items-center gap-4 rounded-[22px] border border-[#d7e9ef] bg-white p-3.5 transition hover:border-[#58c3de]"
+                  className="grid grid-cols-[120px_1fr] items-center gap-4 border p-3.5 transition hover:border-[#58c3de]"
                   href={`/catalogo/${item.slug}`}
                   key={item.slug}
+                  style={{
+                    backgroundColor: relatedStyle?.itemColor || "#ffffff",
+                    borderColor: relatedStyle?.accentColor || "#d7e9ef",
+                    borderRadius:
+                      relatedStyle?.shape === "rectangle"
+                        ? 0
+                        : relatedStyle?.shape === "circle"
+                          ? 999
+                          : 22,
+                    color: relatedStyle?.textColor || "#213255",
+                  }}
                 >
                   <div className="relative h-[92px] w-[120px] overflow-hidden rounded-2xl bg-[#eef8fb]">
                     <Image
@@ -190,12 +224,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       className="object-contain p-2"
                       fill
                       sizes="120px"
-                      src={item.image}
+                      src={item.image || "/service-maintenance.svg"}
                     />
                   </div>
                   <div>
                     <h3 className="font-bold">{item.name}</h3>
-                    <p className="mt-1.5 text-xs text-[#667085]">
+                    <p
+                      className="mt-1.5 text-xs"
+                      style={{ color: relatedStyle?.textColor || "#667085" }}
+                    >
                       Modelo: {item.model}
                     </p>
                   </div>

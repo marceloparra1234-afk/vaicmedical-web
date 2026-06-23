@@ -6,6 +6,8 @@ export type CatalogDocument = {
 export type CatalogProduct = {
   slug: string;
   name: string;
+  lineId?: string;
+  lineName?: string;
   featured?: boolean;
   type: string;
   description: string;

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { HomeCatalogCarousel } from "@/components/HomeCatalogCarousel";
 import { getHomeCatalogHighlights } from "@/data/catalog-service";
 import { getManagedBlogPosts } from "@/data/supabase-blog";
 import { getSiteContent } from "@/lib/supabase-admin";
@@ -69,7 +70,7 @@ export default async function Home() {
       getSiteContent<Record<string, LinkedSection>>("blog"),
       getSiteContent<Record<string, LinkedSection>>("catalogo"),
     ]);
-  const featuredProducts = createdProducts.slice(0, 3);
+  const featuredProducts = createdProducts;
   const latestPosts = managedPosts.slice(0, 3);
   const aboutSummary = nosotros?.["Hero principal"];
   const servicesSummary = servicios?.["Hero principal"];
@@ -239,43 +240,8 @@ export default async function Home() {
               Ver catálogo
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {featuredProducts.map((product) => (
-              <Link
-                className="group overflow-hidden rounded-3xl border border-[#d7e9ef] bg-[#f6fbfd] transition hover:-translate-y-1 hover:border-[#58c3de] hover:bg-white hover:shadow-lg"
-                href={product.href}
-                key={product.slug}
-              >
-                <div className="relative aspect-square border-b border-[#d7e9ef] bg-[#eaf8fc]">
-                  <Image
-                    alt={product.name}
-                    className="object-contain p-7 transition duration-300 group-hover:scale-105"
-                    fill
-                    sizes="(max-width: 640px) 100vw, 320px"
-                    src={product.image}
-                  />
-                </div>
-                <div className="p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#58c3de]">
-                    {product.lineName}
-                  </p>
-                  <h3 className="mt-2 text-xl font-semibold text-[#213255]">
-                    {product.name}
-                  </h3>
-                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#34466f]">
-                    {product.description}
-                  </p>
-                  <p className="mt-4 text-sm font-semibold text-[#58c3de]">
-                    Ver producto
-                  </p>
-                </div>
-              </Link>
-            ))}
-            {!featuredProducts.length && (
-              <p className="border border-[#d7e9ef] bg-[#f6fbfd] p-7 text-[#34466f] sm:col-span-2">
-                Próximamente encontrarás nuestros productos.
-              </p>
-            )}
+          <div>
+            <HomeCatalogCarousel products={featuredProducts} />
           </div>
         </div>
       </section>

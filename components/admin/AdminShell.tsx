@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const navigation = [
   { label: "Rendimiento", href: "/admin", icon: "01" },
@@ -38,13 +38,26 @@ const navigation = [
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [adminUser, setAdminUser] = useState<{ name?: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("vaicmedical:admin-user");
+      setAdminUser(stored ? JSON.parse(stored) : null);
+    } catch {
+      setAdminUser(null);
+    }
+  }, []);
 
   if (pathname === "/admin/login") return children;
 
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
+    localStorage.removeItem("vaicmedical:admin-user");
     window.location.href = "/admin/login";
   }
+
+  const initials = getInitials(adminUser?.name || adminUser?.email || "Usuario");
 
   return (
     <div className="min-h-screen bg-[#eef5f7] text-[#213255]">
@@ -151,7 +164,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               Cerrar sesión
             </button>
             <div className="grid h-10 w-10 place-items-center rounded-full bg-[#213255] text-xs font-bold text-white">
-              MP
+              {initials}
             </div>
           </div>
         </header>
@@ -159,4 +172,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
+}
+
+function getInitials(value: string) {
+  const clean = value.trim();
+  if (!clean) return "US";
+  const source = clean.includes("@") ? clean.split("@")[0].replace(/[._-]+/g, " ") : clean;
+  const parts = source.split(/\s+/).filter(Boolean);
+  return (parts[0]?.[0] || "U").concat(parts[1]?.[0] || parts[0]?.[1] || "S").toUpperCase();
 }

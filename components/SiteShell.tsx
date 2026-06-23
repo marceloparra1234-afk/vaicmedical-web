@@ -153,7 +153,11 @@ export function SiteShell({
                     rel="noreferrer"
                     target="_blank"
                   >
-                    {network.slice(0, 2)}
+                    {network.toLowerCase() === "instagram" ? (
+                      <InstagramIcon />
+                    ) : (
+                      network.slice(0, 2)
+                    )}
                   </a>
                 ))}
               </div>
@@ -211,5 +215,15 @@ export function SiteShell({
 
       <SitePopup content={popupContent} />
     </div>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+      <rect height="17" rx="5" stroke="currentColor" strokeWidth="2" width="17" x="3.5" y="3.5" />
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17.2" cy="6.8" fill="currentColor" r="1.2" />
+    </svg>
   );
 }

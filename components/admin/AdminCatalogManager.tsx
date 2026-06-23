@@ -29,7 +29,7 @@ export function AdminCatalogManager() {
   const [lineFilter, setLineFilter] = useState("");
   const [status, setStatus] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("56927792285");
-  const [maxWidth, setMaxWidth] = useState(1500);
+  const [maxWidth, setMaxWidth] = useState(1800);
   const [showTrash, setShowTrash] = useState(false);
   const [lineModal, setLineModal] = useState<Item | null | undefined>(undefined);
 
@@ -57,7 +57,7 @@ export function AdminCatalogManager() {
       setLines(lineResult.items || []);
       setProducts(productResult.items || []);
       setWhatsappNumber(settingsResult.content?.whatsappNumber || "56927792285");
-      setMaxWidth(settingsResult.content?.maxWidth || 1500);
+      setMaxWidth(settingsResult.content?.maxWidth || 1800);
     });
     return () => {
       cancelled = true;
@@ -176,7 +176,7 @@ export function AdminCatalogManager() {
           <input className="mt-2 h-11 w-full border border-[#d7e9ef] px-3" onChange={(event) => setWhatsappNumber(event.target.value.replace(/\D/g, ""))} value={whatsappNumber} />
         </label>
         <label className="text-xs font-bold text-[#34466f]">Ancho público: {maxWidth}px
-          <input className="mt-4 w-full accent-[#58c3de]" max={1800} min={960} onChange={(event) => setMaxWidth(Number(event.target.value))} type="range" value={maxWidth} />
+          <input className="mt-4 w-full accent-[#58c3de]" max={1920} min={960} onChange={(event) => setMaxWidth(Number(event.target.value))} type="range" value={maxWidth} />
         </label>
         <button className="h-11 bg-[#213255] px-5 text-sm font-bold text-white" onClick={saveSettings} type="button">Guardar configuración</button>
       </section>
@@ -235,7 +235,7 @@ export function AdminCatalogManager() {
           ))}
         </div>
       )}
-      {lineModal !== undefined && <LineModal initial={lineModal} onClose={() => setLineModal(undefined)} onSaved={async () => { setLineModal(undefined); await reload(); }} />}
+      {lineModal !== undefined && <LineModal initial={lineModal} onClose={() => setLineModal(undefined)} onSaved={async () => { setLineModal(undefined); await reload(); }} products={products} />}
     </div>
   );
 }
@@ -290,7 +290,7 @@ function normalize(value: string) {
   return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 }
 
-function LineModal({ initial, onClose, onSaved }: { initial: Item | null; onClose: () => void; onSaved: () => void }) {
+function LineModal({ initial, onClose, onSaved, products }: { initial: Item | null; onClose: () => void; onSaved: () => void; products: Item[] }) {
   const [title, setTitle] = useState(initial?.title || "");
   const [excerpt, setExcerpt] = useState(initial?.excerpt || "");
   const [sublines, setSublines] = useState<string[]>(initial?.sublines || []);
@@ -309,6 +309,23 @@ function LineModal({ initial, onClose, onSaved }: { initial: Item | null; onClos
       body: JSON.stringify({ type: "line", slug, content: { ...initial, slug, title, excerpt, sublines, order, featured, active, primaryImage: image } }),
     });
     if (!response.ok) return setStatus("No se pudo guardar la línea.");
+    if (initial?.title && initial.title !== title) {
+      await Promise.all(
+        products
+          .filter((product) => product.line === initial.title)
+          .map((product) =>
+            fetch("/api/admin/created-content", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "product",
+                slug: product.slug,
+                content: { ...product, line: title, builtIn: false },
+              }),
+            }),
+          ),
+      );
+    }
     onSaved();
   }
 

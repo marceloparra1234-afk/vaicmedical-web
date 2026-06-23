@@ -202,9 +202,16 @@ export function AdminCreateContent({ type }: CreateContentProps) {
 
       if (response.ok) {
         setStatus("Publicado en Supabase y disponible para el sitio.");
+        const wasEditing = Boolean(editingSlug);
         setEditingSlug("");
         await loadBlogPosts();
         if (type === "blog") setActiveTab("manage");
+        if (!wasEditing && (type === "product" || type === "line")) {
+          setForm({
+            ...initialState,
+            date: new Date().toISOString().slice(0, 10),
+          });
+        }
         return;
       }
 

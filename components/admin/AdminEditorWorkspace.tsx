@@ -263,7 +263,14 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
     },
     Descripción: { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
     Documentación: { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
-    "Productos relacionados": { editableFields: [], allowItems: false, allowElementAppearance: true, allowButtons: false, allowUpload: false },
+    "Productos relacionados": {
+      title: "Productos relacionados",
+      editableFields: ["title"],
+      allowItems: false,
+      allowElementAppearance: true,
+      allowButtons: false,
+      allowUpload: false,
+    },
   },
   "ventana-emergente": {
     Configuración: {

@@ -30,8 +30,12 @@ export function CatalogExperience({ lines, maxWidth }: { lines: CatalogLine[]; m
   }
 
   return (
-    <section className="mx-auto px-5 py-14 sm:px-8" data-editor-section="catalogo" style={{ maxWidth }}>
-      <div className="grid gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
+    <section
+      className="mx-auto w-full px-4 py-14 sm:px-6 lg:px-8"
+      data-editor-section="catalogo"
+      style={{ maxWidth: Math.max(maxWidth, 1800) }}
+    >
+      <div className="grid gap-8 lg:grid-cols-[290px_minmax(0,1fr)]">
         <aside className="self-start border-t border-[#d7e9ef] pt-5 lg:sticky lg:top-28">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#58c3de]">
             Líneas de productos
@@ -56,20 +60,34 @@ export function CatalogExperience({ lines, maxWidth }: { lines: CatalogLine[]; m
                     {item.products.length} producto{item.products.length === 1 ? "" : "s"}
                   </span>
                 </button>
-                {item.id === line.id && item.sublines?.length ? (
+                {item.sublines?.length ? (
                   <div className="mt-3 grid gap-1 border-l border-[#58c3de] pl-3">
                     <button
-                      className={`py-1 text-left text-xs ${!subline ? "font-bold text-[#58c3de]" : "text-[#34466f]"}`}
-                      onClick={() => setSubline("")}
+                      className={`py-1 text-left text-xs ${
+                        item.id === line.id && !subline
+                          ? "font-bold text-[#58c3de]"
+                          : "text-[#34466f]"
+                      }`}
+                      onClick={() => {
+                        setLineId(item.id);
+                        setSubline("");
+                      }}
                       type="button"
                     >
                       Todos
                     </button>
                     {item.sublines.map((name) => (
                       <button
-                        className={`py-1 text-left text-xs ${subline === name ? "font-bold text-[#58c3de]" : "text-[#34466f]"}`}
+                        className={`py-1 text-left text-xs ${
+                          item.id === line.id && subline === name
+                            ? "font-bold text-[#58c3de]"
+                            : "text-[#34466f]"
+                        }`}
                         key={name}
-                        onClick={() => setSubline(name)}
+                        onClick={() => {
+                          setLineId(item.id);
+                          setSubline(name);
+                        }}
                         type="button"
                       >
                         {name}
@@ -97,7 +115,7 @@ export function CatalogExperience({ lines, maxWidth }: { lines: CatalogLine[]; m
             </div>
           </header>
 
-          <div className="mt-7 grid gap-x-5 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-7 grid gap-x-5 gap-y-8 md:grid-cols-2 2xl:grid-cols-3">
             {products.map((product) => (
               <Link className="group min-w-0" href={`/catalogo/${product.slug}`} key={product.slug}>
                 {product.image && <div className="relative aspect-[4/3] overflow-hidden border border-[#d7e9ef] bg-white">

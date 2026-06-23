@@ -38,7 +38,7 @@ export async function getManagedCreatedContent(
     `${config.url}/rest/v1/created_content?content_type=eq.${type}&select=id,slug,content,created_at&order=created_at.desc`,
     {
       headers: getSupabaseAdminHeaders(config.serviceRoleKey),
-      next: { revalidate: 300, tags: [`created-content:${type}`] },
+      cache: "no-store",
     },
   );
   if (!response.ok) return [];

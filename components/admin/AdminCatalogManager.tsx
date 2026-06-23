@@ -93,7 +93,7 @@ export function AdminCatalogManager() {
   }
 
   async function remove(type: "line" | "product", item: Item) {
-    if (!window.confirm("Â¿Enviar este elemento a la papelera por 30 dÃ­as?")) return;
+    if (!window.confirm("¿Enviar este elemento a la papelera por 30 días?")) return;
     await save(type, item, { deletedAt: new Date().toISOString(), active: false });
   }
 
@@ -128,20 +128,20 @@ export function AdminCatalogManager() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pageKey: "catalog-settings", content: { whatsappNumber, maxWidth } }),
     });
-    setStatus(response.ok ? "ConfiguraciÃ³n del catÃ¡logo guardada." : "No se pudo guardar la configuraciÃ³n.");
+    setStatus(response.ok ? "Configuración del catálogo guardada." : "No se pudo guardar la configuración.");
   }
 
   return (
     <div className="mx-auto max-w-[1600px]">
       <PageHeading
-        eyebrow="Editor / CatÃ¡logo"
-        title="LÃ­neas y productos"
-        text="Administra el contenido del catÃ¡logo. Las lÃ­neas organizan; los productos son el contenido principal."
+        eyebrow="Editor / Catálogo"
+        title="Líneas y productos"
+        text="Administra el contenido del catálogo. Las líneas organizan; los productos son el contenido principal."
       />
 
       <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <Metric label="LÃ­neas" value={lines.filter((item) => !item.deletedAt).length} />
-        <Metric label="LÃ­neas activas" value={lines.filter((item) => !item.deletedAt && item.active !== false).length} />
+        <Metric label="Líneas" value={lines.filter((item) => !item.deletedAt).length} />
+        <Metric label="Líneas activas" value={lines.filter((item) => !item.deletedAt && item.active !== false).length} />
         <Metric label="Productos" value={products.filter((item) => !item.deletedAt).length} />
         <Metric label="Productos activos" value={products.filter((item) => !item.deletedAt && item.active !== false).length} />
         <Metric label="Destacados" value={products.filter((item) => !item.deletedAt && item.featured).length} />
@@ -153,7 +153,7 @@ export function AdminCatalogManager() {
             Productos ({products.length})
           </Tab>
           <Tab active={tab === "lines"} onClick={() => setTab("lines")}>
-            LÃ­neas ({lines.length})
+            Líneas ({lines.length})
           </Tab>
           <Tab active={showTrash} onClick={() => setShowTrash((value) => !value)}>
             Papelera
@@ -161,7 +161,7 @@ export function AdminCatalogManager() {
         </div>
         <div className="flex gap-2">
           <button className="rounded-lg border border-[#58c3de] bg-white px-4 py-3 text-sm font-bold text-[#213255]" onClick={() => setLineModal(null)} type="button">
-            Crear lÃ­nea
+            Crear línea
           </button>
           <Link className="rounded-lg bg-[#213255] px-4 py-3 text-sm font-bold text-white" href="/admin/catalogo/productos/crear">
             Crear producto
@@ -175,18 +175,18 @@ export function AdminCatalogManager() {
         <label className="text-xs font-bold text-[#34466f]">WhatsApp principal
           <input className="mt-2 h-11 w-full border border-[#d7e9ef] px-3" onChange={(event) => setWhatsappNumber(event.target.value.replace(/\D/g, ""))} value={whatsappNumber} />
         </label>
-        <label className="text-xs font-bold text-[#34466f]">Ancho pÃºblico: {maxWidth}px
+        <label className="text-xs font-bold text-[#34466f]">Ancho público: {maxWidth}px
           <input className="mt-4 w-full accent-[#58c3de]" max={1920} min={960} onChange={(event) => setMaxWidth(Number(event.target.value))} type="range" value={maxWidth} />
         </label>
-        <button className="h-11 bg-[#213255] px-5 text-sm font-bold text-white" onClick={saveSettings} type="button">Guardar configuraciÃ³n</button>
+        <button className="h-11 bg-[#213255] px-5 text-sm font-bold text-white" onClick={saveSettings} type="button">Guardar configuración</button>
       </section>
 
       {tab === "products" ? (
         <>
           <section className="mt-6 grid gap-3 border-b border-[#d7e9ef] pb-6 lg:grid-cols-[1fr_320px_auto]">
-            <input className="h-12 border border-[#d7e9ef] bg-white px-4 outline-none focus:border-[#58c3de]" onChange={(event) => setQuery(event.target.value)} placeholder="Buscar nombre, modelo, cÃ³digo o descripciÃ³n" value={query} />
+            <input className="h-12 border border-[#d7e9ef] bg-white px-4 outline-none focus:border-[#58c3de]" onChange={(event) => setQuery(event.target.value)} placeholder="Buscar nombre, modelo, código o descripción" value={query} />
             <select className="h-12 border border-[#d7e9ef] bg-white px-4" onChange={(event) => setLineFilter(event.target.value)} value={lineFilter}>
-              <option value="">Todas las lÃ­neas</option>
+              <option value="">Todas las líneas</option>
               {lines.map((line) => <option key={line.slug} value={line.title}>{line.title}</option>)}
             </select>
             <button className="h-12 border border-[#d7e9ef] bg-white px-4 text-sm font-bold" onClick={() => { setQuery(""); setLineFilter(""); }} type="button">
@@ -271,7 +271,7 @@ function ProductRow({
           <h2 className="font-bold text-[#213255]">{item.title}</h2>
           {item.featured && <span className="bg-[#eaf8fc] px-2 py-1 text-[10px] font-bold text-[#213255]">Destacado</span>}
         </div>
-        <p className="mt-1 text-sm text-[#34466f]">{item.line || "Sin lÃ­nea"} Â· {item.model || "Sin modelo"}</p>
+        <p className="mt-1 text-sm text-[#34466f]">{item.line || "Sin línea"} · {item.model || "Sin modelo"}</p>
         <p className="mt-2 text-xs font-semibold text-[#58c3de]">{item.active === false ? "Inactivo" : "Activo"}</p>
       </div>
       <div className="flex flex-wrap gap-2 md:justify-end">
@@ -301,14 +301,14 @@ function LineModal({ initial, onClose, onSaved, products }: { initial: Item | nu
   const [status, setStatus] = useState("");
 
   async function saveLine() {
-    if (!title.trim()) return setStatus("Agrega el nombre de la lÃ­nea.");
+    if (!title.trim()) return setStatus("Agrega el nombre de la línea.");
     const slug = initial?.slug || slugify(title);
     const response = await fetch("/api/admin/created-content", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "line", slug, content: { ...initial, slug, title, excerpt, sublines: sublines.map((item) => item.trim()).filter(Boolean), order, featured, active, primaryImage: image } }),
     });
-    if (!response.ok) return setStatus("No se pudo guardar la lÃ­nea.");
+    if (!response.ok) return setStatus("No se pudo guardar la línea.");
     if (initial?.title && initial.title !== title) {
       await Promise.all(
         products
@@ -332,10 +332,10 @@ function LineModal({ initial, onClose, onSaved, products }: { initial: Item | nu
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-[#213255]/55 p-5">
       <section className="max-h-[90vh] w-full max-w-2xl overflow-auto bg-white p-6 shadow-2xl">
-        <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#58c3de]">CatÃ¡logo</p><h2 className="mt-2 text-2xl font-bold">{initial ? "Editar lÃ­nea" : "Crear lÃ­nea"}</h2></div><button className="border border-[#d7e9ef] px-3 py-2 text-sm font-bold" onClick={onClose} type="button">Cerrar</button></div>
+        <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#58c3de]">Catálogo</p><h2 className="mt-2 text-2xl font-bold">{initial ? "Editar línea" : "Crear línea"}</h2></div><button className="border border-[#d7e9ef] px-3 py-2 text-sm font-bold" onClick={onClose} type="button">Cerrar</button></div>
         <div className="mt-6 grid gap-4">
-          <Field label="Nombre de la lÃ­nea" onChange={setTitle} value={title} />
-          <label className="text-xs font-bold text-[#34466f]">DescripciÃ³n<textarea className="mt-2 min-h-28 w-full border border-[#d7e9ef] p-3 text-sm" onChange={(event) => setExcerpt(event.target.value)} value={excerpt} /></label>
+          <Field label="Nombre de la línea" onChange={setTitle} value={title} />
+          <label className="text-xs font-bold text-[#34466f]">Descripción<textarea className="mt-2 min-h-28 w-full border border-[#d7e9ef] p-3 text-sm" onChange={(event) => setExcerpt(event.target.value)} value={excerpt} /></label>
                     <div className="rounded-lg border border-[#d7e9ef] bg-[#f6fbfd] p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -352,7 +352,7 @@ function LineModal({ initial, onClose, onSaved, products }: { initial: Item | nu
             </div>
             <div className="mt-4 grid gap-2">
               {sublines.map((subline, index) => (
-                <div className="grid gap-2 sm:grid-cols-[1fr_auto]" key={`${index}-${subline}`}>
+                <div className="grid gap-2 sm:grid-cols-[1fr_auto]" key={index}>
                   <input
                     className="h-11 rounded-lg border border-[#d7e9ef] bg-white px-3 text-sm"
                     onChange={(event) =>
@@ -390,7 +390,7 @@ function LineModal({ initial, onClose, onSaved, products }: { initial: Item | nu
           {image && <div><div className="h-36 rounded-lg border border-[#d7e9ef] bg-[#eaf8fc] bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url("${image}")` }} /><button className="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700" onClick={() => setImage("")} type="button">Quitar imagen</button></div>}
           <div className="flex gap-5"><label className="flex items-center gap-2 text-sm font-semibold"><input checked={active} onChange={(event) => setActive(event.target.checked)} type="checkbox" />Activa</label><label className="flex items-center gap-2 text-sm font-semibold"><input checked={featured} onChange={(event) => setFeatured(event.target.checked)} type="checkbox" />Destacada</label></div>
         </div>
-        <div className="mt-6 flex items-center justify-between gap-3 border-t border-[#d7e9ef] pt-5"><p className="text-sm font-semibold text-[#34466f]">{status}</p><button className="bg-[#213255] px-5 py-3 text-sm font-bold text-white" onClick={saveLine} type="button">Guardar lÃ­nea</button></div>
+        <div className="mt-6 flex items-center justify-between gap-3 border-t border-[#d7e9ef] pt-5"><p className="text-sm font-semibold text-[#34466f]">{status}</p><button className="bg-[#213255] px-5 py-3 text-sm font-bold text-white" onClick={saveLine} type="button">Guardar línea</button></div>
       </section>
     </div>
   );

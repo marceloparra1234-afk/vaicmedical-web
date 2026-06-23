@@ -24,7 +24,7 @@ export default function AdminLoginPage() {
     });
     const result = await response.json().catch(() => null);
     if (!response.ok) {
-      setStatus("Usuario o contraseÃ±a incorrectos.");
+      setStatus("Usuario o contraseña incorrectos.");
       return;
     }
     if (result?.user) {
@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
           <input className="mt-2 h-12 w-full rounded-lg border border-[#d7e9ef] px-3 text-sm outline-none focus:border-[#58c3de]" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} />
         </label>
         <label className="mt-4 block text-xs font-bold text-[#34466f]">
-          ContraseÃ±a
+          Contraseña
           <input className="mt-2 h-12 w-full rounded-lg border border-[#d7e9ef] px-3 text-sm outline-none focus:border-[#58c3de]" onChange={(event) => setPassword(event.target.value)} required type="password" value={password} />
         </label>
         <button className="mt-6 w-full rounded-lg bg-[#213255] px-5 py-3 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-70" disabled={status.startsWith("Ingresando")} type="submit">Ingresar</button>

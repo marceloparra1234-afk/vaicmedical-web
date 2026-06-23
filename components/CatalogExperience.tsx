@@ -28,6 +28,8 @@ export function CatalogExperience({
   const navBackground = navigationStyle?.backgroundColor || "#ffffff";
   const navAccent = navigationStyle?.accentColor || "#58c3de";
   const navText = navigationStyle?.textColor || "#213255";
+  const countLabels = getCountLabels(navigationStyle?.subtitle);
+  const allLabel = stripHtml(navigationStyle?.content || "Todos");
   const productBackground = lineStyle?.itemColor || "#ffffff";
   const productAccent = lineStyle?.accentColor || "#d7e9ef";
   const productText = lineStyle?.textColor || "#213255";
@@ -42,7 +44,7 @@ export function CatalogExperience({
     return (
       <section className="w-full px-5 py-16 sm:px-8 lg:px-12">
         <p className="rounded-lg border border-[#d7e9ef] bg-white p-8 text-[#34466f]">
-          PrÃ³ximamente encontrarÃ¡s nuestros productos.
+          Próximamente encontrarás nuestros productos.
         </p>
       </section>
     );
@@ -59,8 +61,14 @@ export function CatalogExperience({
           className="self-start rounded-3xl border p-5 lg:sticky lg:top-28"
           style={{ backgroundColor: navBackground, borderColor: navAccent }}
         >
-          <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: navAccent }}>{stripHtml(navigationStyle?.title || navigationStyle?.eyebrow || "Líneas de productos")}</p>
-          <nav className="mt-4 grid" aria-label="LÃ­neas del catÃ¡logo">
+          <div
+            className="rich-preview text-xs font-bold uppercase tracking-[0.18em]"
+            style={{ color: navAccent }}
+            dangerouslySetInnerHTML={{
+              __html: navigationStyle?.title || navigationStyle?.eyebrow || "Líneas de productos",
+            }}
+          />
+          <nav className="mt-4 grid" aria-label="Líneas del catálogo">
             {lines.map((item) => (
               <div className="border-t py-4" key={item.id} style={{ borderColor: navAccent }}>
                 <button
@@ -71,7 +79,7 @@ export function CatalogExperience({
                   }}
                   style={{ backgroundColor: item.id === line.id ? navAccent : "transparent", color: item.id === line.id ? "#ffffff" : navText }} type="button">{item.name}
                   <span className="mt-1 block text-xs font-normal opacity-80">
-                    {item.products.length} producto{item.products.length === 1 ? "" : "s"}
+                    {item.products.length} {item.products.length === 1 ? countLabels.singular : countLabels.plural}
                   </span>
                 </button>
                 {item.sublines?.length ? (
@@ -84,7 +92,7 @@ export function CatalogExperience({
                       }}
                       type="button"
                     >
-                      Todos
+                      {allLabel}
                     </button>
                     {item.sublines.map((name) => (
                       <button
@@ -142,7 +150,7 @@ export function CatalogExperience({
                   </h3>
                   {(product.brand || product.model) && (
                     <p className="mt-2 text-sm opacity-80">
-                      {[product.brand, product.model].filter(Boolean).join(" Â· ")}
+                      {[product.brand, product.model].filter(Boolean).join(" · ")}
                     </p>
                   )}
                   {product.tags && (
@@ -161,7 +169,7 @@ export function CatalogExperience({
 
           {!products.length && (
             <p className="mt-7 border border-[#d7e9ef] bg-white p-7 text-sm text-[#34466f]">
-              No hay productos que coincidan con la bÃºsqueda.
+              No hay productos que coincidan con la búsqueda.
             </p>
           )}
         </div>
@@ -173,6 +181,16 @@ export function CatalogExperience({
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, '').trim();
+}
+
+function getCountLabels(value: string | undefined) {
+  const [singular, plural] = stripHtml(value || "producto|productos")
+    .split("|")
+    .map((item) => item.trim());
+  return {
+    singular: singular || "producto",
+    plural: plural || singular || "productos",
+  };
 }
 
 function findSection(content: CatalogEditorContent, pattern: string) {

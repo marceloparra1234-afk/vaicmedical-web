@@ -97,6 +97,16 @@ export function AdminCatalogManager() {
     await save(type, item, { deletedAt: new Date().toISOString(), active: false });
   }
 
+  async function destroy(type: "line" | "product", item: Item) {
+    if (!window.confirm("¿Eliminar definitivamente este elemento? Esta acción no se puede deshacer.")) return;
+    const response = await fetch(
+      `/api/admin/created-content?type=${type}&slug=${encodeURIComponent(item.slug)}`,
+      { method: "DELETE" },
+    );
+    setStatus(response.ok ? "Elemento eliminado definitivamente." : "No se pudo eliminar definitivamente.");
+    if (response.ok) await reload();
+  }
+
   async function duplicateProduct(item: Item) {
     const uniqueId = crypto.randomUUID();
     const slug = `${item.slug}-copia-${uniqueId}`;
@@ -199,6 +209,7 @@ export function AdminCatalogManager() {
                 item={product}
                 key={product.slug}
                 onDelete={() => remove("product", product)}
+                onDestroy={() => destroy("product", product)}
                 onDuplicate={() => duplicateProduct(product)}
                 onFeature={() => save("product", product, { featured: !product.featured })}
                 onRecover={() => save("product", product, { deletedAt: "", active: true })}
@@ -251,6 +262,7 @@ function Metric({ label, value }: { label: string; value: number }) {
 function ProductRow({
   item,
   onDelete,
+  onDestroy,
   onDuplicate,
   onFeature,
   onRecover,
@@ -258,6 +270,7 @@ function ProductRow({
 }: {
   item: Item;
   onDelete: () => void;
+  onDestroy: () => void;
   onDuplicate: () => void;
   onFeature: () => void;
   onRecover: () => void;
@@ -281,6 +294,7 @@ function ProductRow({
         {!item.deletedAt && <button className="rounded-md border border-[#58c3de] px-3 py-2 text-xs font-bold" onClick={onFeature} type="button">{item.featured ? "Quitar destacado" : "Destacar"}</button>}
         {!item.deletedAt && <button className="rounded-md border border-[#d7e9ef] px-3 py-2 text-xs font-bold" onClick={onDelete} type="button">Eliminar</button>}
         {item.deletedAt && <button className="rounded-md border border-[#58c3de] px-3 py-2 text-xs font-bold" onClick={onRecover} type="button">Recuperar</button>}
+        {item.deletedAt && <button className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700" onClick={onDestroy} type="button">Eliminar definitivamente</button>}
       </div>
     </article>
   );

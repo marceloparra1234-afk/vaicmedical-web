@@ -197,14 +197,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 __html: relatedStyle?.title || "Productos relacionados",
               }}
             />
-            {relatedStyle?.content && (
-              <div
-                className="mt-3 max-w-3xl text-sm leading-6"
-                data-editor-field="section-intro"
-                style={{ color: relatedStyle?.textColor || "#667085" }}
-                dangerouslySetInnerHTML={{ __html: relatedStyle.content }}
-              />
-            )}
+            <div
+              className="mt-3 max-w-3xl text-sm leading-6"
+              data-editor-field="section-intro"
+              style={{
+                color: relatedStyle?.textColor || "#667085",
+                display: relatedStyle?.content ? undefined : "none",
+              }}
+              dangerouslySetInnerHTML={{ __html: relatedStyle?.content || "" }}
+            />
             <div
               className="mt-5 grid gap-5"
               style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${relatedColumns >= 3 ? "260px" : "300px"}, 1fr))` }}

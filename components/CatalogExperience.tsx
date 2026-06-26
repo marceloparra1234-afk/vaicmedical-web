@@ -63,6 +63,7 @@ export function CatalogExperience({
         >
           <div
             className="rich-preview text-xs font-bold uppercase tracking-[0.18em]"
+            data-editor-field="section-title"
             style={{ color: navAccent }}
             dangerouslySetInnerHTML={{
               __html: navigationStyle?.title || navigationStyle?.eyebrow || "Líneas de productos",
@@ -116,7 +117,7 @@ export function CatalogExperience({
 
         <div className="min-w-0 rounded-3xl border p-6 sm:p-8" data-editor-section="linea-01" style={{ backgroundColor: lineStyle?.backgroundColor || "transparent", borderColor: lineStyle?.accentColor || "transparent" }}>
           <header className="border-b pb-7" style={{ borderColor: productAccent }}>
-            <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: lineStyle?.accentColor || "#58c3de" }}>{stripHtml(lineStyle?.eyebrow || "Línea seleccionada")}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em]" data-editor-field="section-eyebrow" style={{ color: lineStyle?.accentColor || "#58c3de" }}>{stripHtml(lineStyle?.eyebrow || "Línea seleccionada")}</p>
             <div className="mt-3">
               <h2 className="text-3xl font-semibold sm:text-4xl" style={{ color: productText }}>
                 {line.name}
@@ -202,6 +203,25 @@ function findSection(content: CatalogEditorContent, pattern: string) {
 }
 
 function normalizeText(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return repairMojibake(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function repairMojibake(value: string) {
+  return value
+    .replaceAll("Ã¡", "á")
+    .replaceAll("Ã©", "é")
+    .replaceAll("Ã­", "í")
+    .replaceAll("Ã³", "ó")
+    .replaceAll("Ãº", "ú")
+    .replaceAll("Ã±", "ñ")
+    .replaceAll("Ã", "Á")
+    .replaceAll("Ã‰", "É")
+    .replaceAll("Ã", "Í")
+    .replaceAll("Ã“", "Ó")
+    .replaceAll("Ãš", "Ú")
+    .replaceAll("Ã‘", "Ñ");
 }
 

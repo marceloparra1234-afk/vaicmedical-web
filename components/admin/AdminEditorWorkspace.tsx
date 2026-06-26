@@ -486,7 +486,39 @@ function normalizeItems(items: SectionContent["items"]) {
 }
 
 function normalizeLabel(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return repairMojibake(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function repairMojibake(value: string) {
+  return value
+    .replaceAll("Ã¡", "á")
+    .replaceAll("Ã©", "é")
+    .replaceAll("Ã­", "í")
+    .replaceAll("Ã³", "ó")
+    .replaceAll("Ãº", "ú")
+    .replaceAll("Ã±", "ñ")
+    .replaceAll("Ã", "Á")
+    .replaceAll("Ã‰", "É")
+    .replaceAll("Ã", "Í")
+    .replaceAll("Ã“", "Ó")
+    .replaceAll("Ãš", "Ú")
+    .replaceAll("Ã‘", "Ñ");
+}
+
+function findStoredSection(
+  stored: Record<string, Partial<SectionContent>>,
+  section: string,
+) {
+  return (
+    stored[section] ||
+    Object.entries(stored).find(
+      ([key]) => normalizeLabel(key) === normalizeLabel(section),
+    )?.[1] ||
+    {}
+  );
 }
 
 function createInitialContent(contentKey: string, sections: string[]) {
@@ -562,7 +594,7 @@ export function AdminEditorWorkspace({
           const storedContent = Object.fromEntries(
             sections.map((section) => {
               const defaultSection = defaults[section] || {};
-              const storedSection = stored[section] || {};
+              const storedSection = findStoredSection(stored, section);
               const needsContactCard =
                 contentKey === "inicio" &&
                 section === "Contacto" &&

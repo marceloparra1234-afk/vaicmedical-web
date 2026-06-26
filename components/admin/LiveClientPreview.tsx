@@ -250,14 +250,30 @@ function createPreviewDocument(sectionHtml: string, assets: string) {
 export function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
   target.style.display = content.visible ? "" : "none";
   target.style.backgroundColor = content.backgroundColor ?? "";
+  const catalogNavigationTarget =
+    target.dataset.editorSection === "catalogo" &&
+    Boolean(target.querySelector("aside nav"));
+  if (catalogNavigationTarget) {
+    applyCatalogNavigationPreview(target, content);
+    return;
+  }
+
   const productDesignTarget = target.dataset.editorSection?.startsWith("product-");
 
   if (productDesignTarget) {
+    const productTitle = target.querySelector("[data-editor-field='section-title']");
+    if (productTitle instanceof HTMLElement) {
+      productTitle.innerHTML = content.title;
+      productTitle.style.color = content.textColor ?? "";
+    }
+
     const productNote = target.querySelector("[data-editor-field='section-intro']");
     if (productNote instanceof HTMLElement) {
       productNote.innerHTML = content.content;
       productNote.style.display = content.content ? "" : "none";
+      productNote.style.color = content.textColor ?? "";
     }
+
     applyGridColumns(target, content);
     findCards(target).forEach((card) => {
       applyCardAppearance(
@@ -412,6 +428,69 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, "");
+}
+
+function applyCatalogNavigationPreview(target: HTMLElement, content: PreviewContent) {
+  const aside = target.querySelector("aside");
+  const accent = content.accentColor || "#58c3de";
+  const textColor = content.textColor || "#213255";
+  const background = content.backgroundColor || "#ffffff";
+
+  if (aside instanceof HTMLElement) {
+    aside.style.backgroundColor = background;
+    aside.style.borderColor = accent;
+  }
+
+  const navTitle = aside?.querySelector("[data-editor-field='section-title'], .rich-preview");
+  if (navTitle instanceof HTMLElement) {
+    navTitle.innerHTML = content.title;
+    navTitle.style.color = accent;
+  }
+
+  const { singular, plural } = getCountLabels(content.subtitle);
+  const allLabel = stripHtml(content.content || "Todos");
+  const rows = Array.from(target.querySelectorAll<HTMLElement>("aside nav > div"));
+  rows.forEach((row) => {
+    row.style.borderColor = accent;
+  });
+
+  const lineButtons = rows
+    .map((row) => Array.from(row.children).find((child) => child instanceof HTMLButtonElement))
+    .filter((button): button is HTMLButtonElement => button instanceof HTMLButtonElement);
+
+  lineButtons.forEach((button, index) => {
+    const selected = index === 0;
+    button.style.backgroundColor = selected ? accent : "transparent";
+    button.style.color = selected ? "#ffffff" : textColor;
+
+    const count = button.querySelector("span");
+    if (count instanceof HTMLElement) {
+      const numeric = Number(count.textContent?.match(/\d+/)?.[0] || 0);
+      count.textContent = `${numeric} ${numeric === 1 ? singular : plural}`;
+      count.style.color = "inherit";
+    }
+  });
+
+  const sublineGroups = Array.from(target.querySelectorAll<HTMLElement>("aside nav div div"));
+  sublineGroups.forEach((group) => {
+    group.style.borderColor = accent;
+    const sublineButtons = Array.from(group.querySelectorAll<HTMLButtonElement>("button"));
+    sublineButtons.forEach((button, index) => {
+      if (index === 0) button.textContent = allLabel;
+      button.style.color = index === 0 ? accent : textColor;
+    });
+  });
+}
+
+function getCountLabels(value: string | undefined) {
+  const [singular, plural] = stripHtml(value || "producto|productos")
+    .split("|")
+    .map((item) => item.trim());
+
+  return {
+    singular: singular || "producto",
+    plural: plural || singular || "productos",
+  };
 }
 
 function ensureFormFields(target: HTMLElement, count: number) {
@@ -643,6 +722,12 @@ function first(root: Element, selectors: string[]) {
 }
 
 function findCards(target: HTMLElement) {
+  if (target.dataset.editorSection === "product-related") {
+    return Array.from(target.querySelectorAll("a[href*='/catalogo/']")).filter(
+      (element): element is HTMLElement => element instanceof HTMLElement,
+    );
+  }
+
   const candidates = Array.from(
     target.querySelectorAll("article, [class*='rounded-3xl'], [class*='rounded-[22px]'], [class*='rounded-[26px]']"),
   ).filter((element): element is HTMLElement => element instanceof HTMLElement);

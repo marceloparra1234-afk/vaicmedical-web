@@ -34,6 +34,7 @@ export function CatalogExperience({
   const productBackground = lineStyle?.itemColor || "#ffffff";
   const productAccent = lineStyle?.accentColor || "#d7e9ef";
   const productText = lineStyle?.textColor || "#213255";
+  const lineTitleOverride = getEditableLineTitle(lineStyle?.title);
   const lineDescriptionOverride = getEditableLineDescription(lineStyle?.content);
   const products = useMemo(() => {
     if (!line) return [];
@@ -75,12 +76,20 @@ export function CatalogExperience({
             {lines.map((item) => (
               <div className="border-t py-4" key={item.id} style={{ borderColor: navAccent }}>
                 <button
-                  className="w-full rounded-2xl px-3 py-2 text-left text-sm font-semibold transition"
+                  className="w-full rounded-2xl border px-3 py-2 text-left text-sm font-semibold transition"
                   onClick={() => {
                     setLineId(item.id);
                     setSubline("");
                   }}
-                  style={{ backgroundColor: item.id === line.id ? navAccent : navItemBackground, color: item.id === line.id ? "#ffffff" : navText }} type="button">{item.name}
+                  style={{
+                    backgroundColor: navItemBackground,
+                    borderColor: item.id === line.id ? navAccent : "transparent",
+                    color: navText,
+                    boxShadow: item.id === line.id ? `inset 0 0 0 1px ${navAccent}` : "none",
+                  }}
+                  type="button"
+                >
+                  {item.name}
                   <span className="mt-1 block text-xs font-normal opacity-80">
                     {item.products.length} {item.products.length === 1 ? countLabels.singular : countLabels.plural}
                   </span>
@@ -121,9 +130,12 @@ export function CatalogExperience({
           <header className="border-b pb-7" style={{ borderColor: productAccent }}>
             <p className="text-xs font-bold uppercase tracking-[0.18em]" data-editor-field="section-eyebrow" style={{ color: lineStyle?.accentColor || "#58c3de" }}>{stripHtml(lineStyle?.eyebrow || "Línea seleccionada")}</p>
             <div className="mt-3">
-              <h2 className="text-3xl font-semibold sm:text-4xl" style={{ color: productText }}>
-                {line.name}
-              </h2>
+              <h2
+                className="text-3xl font-semibold sm:text-4xl"
+                data-editor-field="section-title"
+                dangerouslySetInnerHTML={{ __html: lineTitleOverride || line.name }}
+                style={{ color: productText }}
+              />
               <p
                 className="mt-3 max-w-3xl text-base leading-7"
                 data-editor-field="section-intro"
@@ -187,6 +199,15 @@ export function CatalogExperience({
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, '').trim();
+}
+
+function getEditableLineTitle(value: string | undefined) {
+  const plain = stripHtml(value || "");
+  if (!plain) return "";
+  if (normalizeText(plain) === normalizeText("Camas clínicas y camillas")) {
+    return "";
+  }
+  return value || "";
 }
 
 function getEditableLineDescription(value: string | undefined) {

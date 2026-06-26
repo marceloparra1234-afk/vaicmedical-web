@@ -313,7 +313,10 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
 
   const sectionTitle = target.querySelector("[data-editor-field='section-title']");
   if (sectionTitle instanceof HTMLElement) {
-    sectionTitle.innerHTML = content.title;
+    if (target.dataset.editorSection !== "linea-01" || content.title) {
+      sectionTitle.innerHTML = content.title;
+    }
+    sectionTitle.style.color = content.textColor ?? "";
   }
 
   const sectionIntro = target.querySelector("[data-editor-field='section-intro']");
@@ -470,8 +473,10 @@ function applyCatalogNavigationPreview(target: HTMLElement, content: PreviewCont
 
   lineButtons.forEach((button, index) => {
     const selected = index === 0;
-    button.style.backgroundColor = selected ? accent : itemBackground;
-    button.style.color = selected ? "#ffffff" : textColor;
+    button.style.backgroundColor = itemBackground;
+    button.style.borderColor = selected ? accent : "transparent";
+    button.style.boxShadow = selected ? `inset 0 0 0 1px ${accent}` : "none";
+    button.style.color = textColor;
 
     const count = button.querySelector("span");
     if (count instanceof HTMLElement) {

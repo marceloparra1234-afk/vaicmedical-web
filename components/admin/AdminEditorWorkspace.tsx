@@ -212,9 +212,9 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
     },
     "Vista de línea": {
       eyebrow: "Línea seleccionada",
-      title: "Camas clínicas y camillas",
+      title: "",
       content: "",
-      editableFields: ["eyebrow", "content"],
+      editableFields: ["eyebrow", "title", "content"],
       allowElementAppearance: true,
       buttons: [],
       backgroundColor: "transparent",
@@ -428,17 +428,27 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
   const isCatalogNavigation = normalizedSection.includes("navegaci");
   const isCatalogLineView = normalizedSection.includes("vista de l");
   const isRelatedProducts = normalizedSection.includes("productos relacionados");
+  const titleValue =
+    isCatalogLineView &&
+    normalizeLabel(value.title ?? "") === normalizeLabel("Camas clínicas y camillas")
+      ? ""
+      : value.title;
+  const contentValue =
+    isCatalogLineView &&
+    normalizeLabel(value.content ?? "") === normalizeLabel("Equipos de traslado y hospitalización.")
+      ? ""
+      : value.content;
   const editableFields: EditableField[] = isCatalogNavigation
     ? ["title", "subtitle", "content"]
     : isCatalogLineView
-      ? ["eyebrow", "content"]
+      ? ["eyebrow", "title", "content"]
       : isRelatedProducts
         ? ["title", "content"]
         : value.editableFields ?? ["title", "subtitle", "content"];
   return {
-    title: value.title ?? `<strong>${section}</strong>`,
+    title: titleValue ?? `<strong>${section}</strong>`,
     subtitle: value.subtitle ?? "Texto secundario de la sección",
-    content: value.content ?? "Contenido editable de esta sección.",
+    content: contentValue ?? "Contenido editable de esta sección.",
     visible: value.visible ?? true,
     eyebrow: value.eyebrow ?? (isMethod ? "" : section),
     shape: value.shape ?? (isMethod ? "arrow" : "rounded"),
@@ -951,6 +961,9 @@ function editorFieldLabel(section: string, field: EditableField) {
   }
   if (normalized.includes("vista de l") && field === "eyebrow") {
     return "Etiqueta sobre la línea";
+  }
+  if (normalized.includes("vista de l") && field === "title") {
+    return "Título de línea";
   }
   if (normalized.includes("vista de l") && field === "content") {
     return "Texto descriptivo de línea";

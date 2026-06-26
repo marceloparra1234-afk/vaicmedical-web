@@ -236,10 +236,19 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
         "Puedes solicitar una visita, coordinar una reparación o consultar por mantenciones programadas.",
       editableFields: ["eyebrow", "title", "content"],
       buttons: [],
+      backgroundColor: "#ffffff",
+      itemColor: "#eaf8fc",
+      accentColor: "#58c3de",
+      textColor: "#213255",
     },
     "Información de contacto": {
       editableFields: [],
       buttons: [],
+      allowElementAppearance: true,
+      backgroundColor: "transparent",
+      itemColor: "#f6fbfd",
+      accentColor: "#d7e9ef",
+      textColor: "#213255",
       items: [
         createCard("correo", "Correo", "contacto@vaicmedical.cl"),
         createCard("cobertura", "Cobertura", "Atención en terreno según coordinación."),
@@ -248,11 +257,21 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
       ],
     },
     Formulario: {
+      subtitle: "Formulario de contacto",
+      eyebrow: "Solicitud técnica",
       title: "Formulario de contacto",
       content:
         "Completa los datos para coordinar tu solicitud.",
-      editableFields: ["title", "content"],
-      buttons: [{ id: "send", label: "Enviar solicitud", href: "/contacto", visible: true }],
+      editableFields: ["eyebrow", "subtitle", "title", "content"],
+      allowElementAppearance: true,
+      backgroundColor: "#ffffff",
+      itemColor: "#eaf8fc",
+      accentColor: "#58c3de",
+      textColor: "#213255",
+      buttons: [
+        { id: "send", label: "Enviar solicitud", href: "/contacto", visible: true },
+        { id: "direct", label: "Escribir directo", href: "mailto:contacto@vaicmedical.cl", visible: true, backgroundColor: "#eaf8fc", borderColor: "#58c3de", textColor: "#213255" },
+      ],
       items: [
         createCard("nombre", "Nombre", "Nombre completo"),
         createCard("correo", "Correo", "correo@institucion.cl"),
@@ -261,6 +280,7 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
         createCard("asunto", "Asunto", "Ej: Reparación de cama clínica"),
         createCard("tipo", "Tipo de solicitud", "Seleccionar"),
         createCard("mensaje", "Mensaje", "Describe la falla, mantención requerida o antecedentes relevantes."),
+        createCard("correo-directo", "Correo directo", "También puedes escribir a contacto@vaicmedical.cl con antecedentes del equipo, ubicación y criticidad del requerimiento."),
       ],
     },
   },
@@ -462,7 +482,10 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
     columns: value.columns ?? 4,
     buttons: normalizeButtons(value.buttons ?? []),
     items: normalizeItems(
-      value.items ?? (isMethod ? defaultSteps : repeatableDefaults[section] ?? []),
+      ensureRequiredSectionItems(
+        section,
+        value.items ?? (isMethod ? defaultSteps : repeatableDefaults[section] ?? []),
+      ),
     ),
     editableFields,
     allowItems: isRelatedProducts ? false : value.allowItems ?? true,
@@ -493,6 +516,21 @@ function normalizeItems(items: SectionContent["items"]) {
     numberColor: item.numberColor ?? "#58c3de",
     image: item.image ?? "",
   }));
+}
+
+function ensureRequiredSectionItems(
+  section: string,
+  items: SectionContent["items"],
+) {
+  if (section !== "Formulario") return items;
+  const requiredItems = [
+    createCard("correo-directo", "Correo directo", "También puedes escribir a contacto@vaicmedical.cl con antecedentes del equipo, ubicación y criticidad del requerimiento."),
+  ];
+  const existingIds = new Set(items.map((item) => item.id));
+  return [
+    ...items,
+    ...requiredItems.filter((item) => !existingIds.has(item.id)),
+  ];
 }
 
 function normalizeLabel(value: string) {

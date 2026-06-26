@@ -67,7 +67,7 @@ export const sectionSelectors: Record<string, Record<string, string>> = {
     "Productos relacionados": "[data-editor-section='product-related']",
   },
   contacto: {
-    "Hero principal": "[data-editor-section='contacto-hero']",
+    "Hero principal": "[data-editor-section='hero']",
     "Información de contacto": "[data-editor-section='contacto-info']",
     Formulario: "[data-editor-section='formulario']",
   },
@@ -250,6 +250,7 @@ function createPreviewDocument(sectionHtml: string, assets: string) {
 export function applyContentToTarget(target: HTMLElement, content: PreviewContent) {
   target.style.display = content.visible ? "" : "none";
   target.style.backgroundColor = content.backgroundColor ?? "";
+  applyContactHeroExtras(target, content);
   const catalogNavigationTarget =
     target.dataset.editorSection === "catalogo" &&
     Boolean(target.querySelector("aside nav"));
@@ -306,8 +307,12 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
 
   const sectionEyebrow = target.querySelector("[data-editor-field='section-eyebrow']");
   if (sectionEyebrow instanceof HTMLElement) {
-    sectionEyebrow.innerHTML = content.eyebrow;
-    sectionEyebrow.style.display = content.eyebrow ? "" : "none";
+    sectionEyebrow.innerHTML =
+      target.dataset.editorSection === "formulario" ? content.subtitle : content.eyebrow;
+    sectionEyebrow.style.display =
+      (target.dataset.editorSection === "formulario" ? content.subtitle : content.eyebrow)
+        ? ""
+        : "none";
     sectionEyebrow.style.color = content.accentColor ?? "";
   }
 
@@ -356,7 +361,7 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
       heading &&
       Boolean(item.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING),
   );
-  if (subtitle) {
+  if (subtitle && !sectionIntro) {
     subtitle.innerHTML = content.subtitle;
     subtitle.style.display = content.subtitle ? "" : "none";
   }
@@ -365,9 +370,12 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
     if (intro) intro.innerHTML = content.content;
   }
 
-  const formFields = ensureFormFields(target, content.items.length);
+  applyContactFormExtras(target, content);
+
+  const editableFormItems = getEditableFormItems(content);
+  const formFields = ensureFormFields(target, editableFormItems.length);
   if (formFields.length) {
-    content.items.forEach((item, index) => {
+    editableFormItems.forEach((item, index) => {
       const field = formFields[index];
       if (!field) return;
       field.style.display = item.visible ? "" : "none";
@@ -440,6 +448,57 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, "");
+}
+
+function getEditableFormItems(content: PreviewContent) {
+  return content.items.filter((item) => item.id !== "correo-directo");
+}
+
+function applyContactHeroExtras(target: HTMLElement, content: PreviewContent) {
+  if (target.dataset.editorSection !== "hero" || !target.querySelector("[data-editor-section='contacto']")) {
+    return;
+  }
+
+  const splitBackground = target.querySelector<HTMLElement>(".absolute.right-0.top-0");
+  if (splitBackground) {
+    splitBackground.style.backgroundColor = content.itemColor || "";
+  }
+}
+
+function applyContactFormExtras(target: HTMLElement, content: PreviewContent) {
+  if (target.dataset.editorSection !== "formulario") return;
+
+  const form = target.querySelector("form");
+  if (form instanceof HTMLElement) {
+    form.style.backgroundColor = content.backgroundColor || "";
+    form.style.borderColor = content.accentColor || "";
+    form.style.color = content.textColor || "";
+  }
+
+  const visual = target.querySelector<HTMLElement>("[data-editor-field='section-image']");
+  if (visual instanceof HTMLElement) {
+    visual.style.backgroundColor = content.itemColor || "";
+    visual.style.borderColor = content.accentColor || "";
+  }
+
+  const directItem = content.items.find((item) => item.id === "correo-directo");
+  const directCard = target.querySelector<HTMLElement>("[data-contact-direct-card]");
+  if (directCard && directItem) {
+    directCard.style.display = directItem.visible ? "" : "none";
+    directCard.style.backgroundColor = directItem.backgroundColor || content.itemColor || "";
+    directCard.style.borderColor = directItem.borderColor || content.accentColor || "";
+    directCard.style.color = directItem.textColor || content.textColor || "";
+    const directTitle = directCard.querySelector<HTMLElement>("[data-contact-direct-title]");
+    const directText = directCard.querySelector<HTMLElement>("[data-contact-direct-text]");
+    if (directTitle) {
+      directTitle.innerHTML = directItem.title;
+      directTitle.style.color = directItem.textColor || content.textColor || "";
+    }
+    if (directText) {
+      directText.innerHTML = directItem.text;
+      directText.style.color = directItem.textColor || content.textColor || "";
+    }
+  }
 }
 
 function applyCatalogNavigationPreview(target: HTMLElement, content: PreviewContent) {

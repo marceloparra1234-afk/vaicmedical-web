@@ -23,6 +23,7 @@ export function RichTextEditor({
   minHeight = "120px",
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
+  const rangeRef = useRef<Range | null>(null);
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) {
@@ -30,10 +31,63 @@ export function RichTextEditor({
     }
   }, [value]);
 
+  function saveSelection() {
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    if (!editor || !selection?.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    if (editor.contains(range.commonAncestorContainer)) {
+      rangeRef.current = range.cloneRange();
+    }
+  }
+
+  function restoreSelection() {
+    const selection = window.getSelection();
+    const range = rangeRef.current;
+    if (!selection || !range) return;
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+
   function runCommand(command: string, commandValue?: string) {
+    restoreSelection();
     editorRef.current?.focus();
     document.execCommand(command, false, commandValue);
     onChange(editorRef.current?.innerHTML || "");
+    saveSelection();
+  }
+
+  function applyInlineStyle(property: "color" | "backgroundColor", color: string) {
+    const editor = editorRef.current;
+    if (!editor) return;
+    restoreSelection();
+    editor.focus();
+
+    const selection = window.getSelection();
+    if (!selection?.rangeCount || selection.isCollapsed) {
+      document.execCommand(property === "color" ? "foreColor" : "hiliteColor", false, color);
+      onChange(editor.innerHTML);
+      saveSelection();
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const span = document.createElement("span");
+    span.style[property] = color;
+
+    try {
+      range.surroundContents(span);
+    } catch {
+      span.appendChild(range.extractContents());
+      range.insertNode(span);
+    }
+
+    selection.removeAllRanges();
+    const nextRange = document.createRange();
+    nextRange.selectNodeContents(span);
+    selection.addRange(nextRange);
+    rangeRef.current = nextRange.cloneRange();
+    onChange(editor.innerHTML);
   }
 
   function createLink() {
@@ -73,28 +127,20 @@ export function RichTextEditor({
           </ToolbarButton>
           <ColorControl
             label="Color del texto"
-            onChange={(color) => runCommand("foreColor", color)}
+            onChange={(color) => applyInlineStyle("color", color)}
             onRemove={() => runCommand("removeFormat")}
           />
           <ColorControl
             label="Color de resaltado"
-            onChange={(color) => runCommand("hiliteColor", color)}
-            onRemove={() => runCommand("hiliteColor", "transparent")}
-            value="#eaf8fc"
+            onChange={(color) => applyInlineStyle("backgroundColor", color)}
+            onRemove={() => applyInlineStyle("backgroundColor", "transparent")}
+            value="#EAF8FC"
           />
 
-          <ToolbarButton
-            command="insertUnorderedList"
-            label="Lista con viñetas"
-            onRun={runCommand}
-          >
+          <ToolbarButton command="insertUnorderedList" label="Lista con viñetas" onRun={runCommand}>
             •
           </ToolbarButton>
-          <ToolbarButton
-            command="insertOrderedList"
-            label="Lista numerada"
-            onRun={runCommand}
-          >
+          <ToolbarButton command="insertOrderedList" label="Lista numerada" onRun={runCommand}>
             1.
           </ToolbarButton>
           <ToolbarButton command="justifyLeft" label="Alinear izquierda" onRun={runCommand}>
@@ -127,7 +173,12 @@ export function RichTextEditor({
           className="rich-editor-content p-3 text-sm leading-6 outline-none"
           contentEditable
           lang="es"
-          onInput={(event) => onChange(event.currentTarget.innerHTML)}
+          onInput={(event) => {
+            saveSelection();
+            onChange(event.currentTarget.innerHTML);
+          }}
+          onKeyUp={saveSelection}
+          onMouseUp={saveSelection}
           ref={editorRef}
           spellCheck
           style={{ minHeight }}
@@ -181,7 +232,7 @@ function ColorControl({
     >
       <select
         aria-label={label}
-        className="h-8 w-28 bg-transparent px-2 text-xs"
+        className="h-8 w-32 bg-transparent px-2 text-xs"
         defaultValue={value}
         onChange={(event) =>
           event.target.value === "remove" ? onRemove() : onChange(event.target.value)

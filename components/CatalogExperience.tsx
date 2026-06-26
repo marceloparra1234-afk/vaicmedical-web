@@ -28,11 +28,13 @@ export function CatalogExperience({
   const navBackground = navigationStyle?.backgroundColor || "#ffffff";
   const navAccent = navigationStyle?.accentColor || "#58c3de";
   const navText = navigationStyle?.textColor || "#213255";
+  const navItemBackground = navigationStyle?.itemColor || "transparent";
   const countLabels = getCountLabels(navigationStyle?.subtitle);
   const allLabel = stripHtml(navigationStyle?.content || "Todos");
   const productBackground = lineStyle?.itemColor || "#ffffff";
   const productAccent = lineStyle?.accentColor || "#d7e9ef";
   const productText = lineStyle?.textColor || "#213255";
+  const lineDescriptionOverride = getEditableLineDescription(lineStyle?.content);
   const products = useMemo(() => {
     if (!line) return [];
     return subline
@@ -78,7 +80,7 @@ export function CatalogExperience({
                     setLineId(item.id);
                     setSubline("");
                   }}
-                  style={{ backgroundColor: item.id === line.id ? navAccent : "transparent", color: item.id === line.id ? "#ffffff" : navText }} type="button">{item.name}
+                  style={{ backgroundColor: item.id === line.id ? navAccent : navItemBackground, color: item.id === line.id ? "#ffffff" : navText }} type="button">{item.name}
                   <span className="mt-1 block text-xs font-normal opacity-80">
                     {item.products.length} {item.products.length === 1 ? countLabels.singular : countLabels.plural}
                   </span>
@@ -122,30 +124,33 @@ export function CatalogExperience({
               <h2 className="text-3xl font-semibold sm:text-4xl" style={{ color: productText }}>
                 {line.name}
               </h2>
-              <p className="mt-3 max-w-3xl text-base leading-7" style={{ color: productText }}>
-                {line.description}
-              </p>
+              <p
+                className="mt-3 max-w-3xl text-base leading-7"
+                data-editor-field="section-intro"
+                dangerouslySetInnerHTML={{ __html: lineDescriptionOverride || line.description }}
+                style={{ color: productText }}
+              />
             </div>
           </header>
 
-          <div className="mt-7 grid gap-x-5 gap-y-8 md:grid-cols-2 2xl:grid-cols-3">
+          <div className="mt-7 grid items-stretch gap-x-5 gap-y-8 md:grid-cols-2 2xl:grid-cols-3">
             {products.map((product) => (
-              <Link className="group min-w-0" href={`/catalogo/${product.slug}`} key={product.slug}>
-                {product.image && <div className="relative aspect-[4/3] overflow-hidden border bg-white" style={{ borderColor: productAccent }}>
+              <Link className="group flex h-full min-w-0 flex-col" href={`/catalogo/${product.slug}`} key={product.slug}>
+                <div className="relative aspect-[4/3] overflow-hidden border bg-white" style={{ borderColor: productAccent }}>
                   <Image
                     alt={product.name}
                     className="object-contain p-7 transition duration-300 group-hover:scale-105"
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                    src={product.image}
+                    src={product.image || "/service-maintenance.svg"}
                   />
                   {product.featured && (
                     <span className="absolute left-3 top-3 px-3 py-2 text-xs font-bold text-white" style={{ backgroundColor: navAccent }}>
                       Destacado
                     </span>
                   )}
-                </div>}
-                <article className="border-x border-b p-5" style={{ backgroundColor: productBackground, borderColor: productAccent, color: productText }}>
+                </div>
+                <article className="flex flex-1 flex-col border-x border-b p-5" style={{ backgroundColor: productBackground, borderColor: productAccent, color: productText }}>
                   <h3 className="mt-2 text-xl font-semibold">
                     {product.name}
                   </h3>
@@ -159,7 +164,7 @@ export function CatalogExperience({
                       {product.tags}
                     </p>
                   )}
-                  <p className="mt-4 line-clamp-3 text-sm leading-6 opacity-80">
+                  <p className="mt-4 line-clamp-3 flex-1 text-sm leading-6 opacity-80">
                     {product.description}
                   </p>
                   <p className="mt-5 text-sm font-bold" style={{ color: navAccent }}>Ver producto</p>
@@ -184,13 +189,27 @@ function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, '').trim();
 }
 
+function getEditableLineDescription(value: string | undefined) {
+  const plain = stripHtml(value || "");
+  if (!plain) return "";
+  if (normalizeText(plain) === normalizeText("Equipos de traslado y hospitalización.")) {
+    return "";
+  }
+  return value || "";
+}
+
 function getCountLabels(value: string | undefined) {
-  const [singular, plural] = stripHtml(value || "producto|productos")
+  const labels = stripHtml(value || "producto|productos")
     .split("|")
     .map((item) => item.trim());
+  const [singular, explicitPlural] = labels;
+  const plural =
+    explicitPlural ||
+    (singular && singular.endsWith("s") ? singular : `${singular || "producto"}s`);
+
   return {
     singular: singular || "producto",
-    plural: plural || singular || "productos",
+    plural,
   };
 }
 

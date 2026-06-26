@@ -292,6 +292,11 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
         },
         content,
       );
+      card.querySelectorAll("h1, h2, h3, h4, p, span").forEach((element) => {
+        if (element instanceof HTMLElement) {
+          element.style.color = content.textColor ?? "";
+        }
+      });
     });
     return;
   }
@@ -313,7 +318,11 @@ export function applyContentToTarget(target: HTMLElement, content: PreviewConten
 
   const sectionIntro = target.querySelector("[data-editor-field='section-intro']");
   if (sectionIntro instanceof HTMLElement) {
-    sectionIntro.innerHTML = content.content;
+    if (target.dataset.editorSection !== "linea-01" || content.content) {
+      sectionIntro.innerHTML = content.content;
+      sectionIntro.style.display = content.content ? "" : "none";
+    }
+    sectionIntro.style.color = content.textColor ?? "";
   }
 
   if (target.dataset.dynamicContent) {
@@ -435,6 +444,7 @@ function applyCatalogNavigationPreview(target: HTMLElement, content: PreviewCont
   const accent = content.accentColor || "#58c3de";
   const textColor = content.textColor || "#213255";
   const background = content.backgroundColor || "#ffffff";
+  const itemBackground = content.itemColor || "transparent";
 
   if (aside instanceof HTMLElement) {
     aside.style.backgroundColor = background;
@@ -460,7 +470,7 @@ function applyCatalogNavigationPreview(target: HTMLElement, content: PreviewCont
 
   lineButtons.forEach((button, index) => {
     const selected = index === 0;
-    button.style.backgroundColor = selected ? accent : "transparent";
+    button.style.backgroundColor = selected ? accent : itemBackground;
     button.style.color = selected ? "#ffffff" : textColor;
 
     const count = button.querySelector("span");
@@ -483,13 +493,17 @@ function applyCatalogNavigationPreview(target: HTMLElement, content: PreviewCont
 }
 
 function getCountLabels(value: string | undefined) {
-  const [singular, plural] = stripHtml(value || "producto|productos")
+  const labels = stripHtml(value || "producto|productos")
     .split("|")
     .map((item) => item.trim());
+  const [singular, explicitPlural] = labels;
+  const plural =
+    explicitPlural ||
+    (singular && singular.endsWith("s") ? singular : `${singular || "producto"}s`);
 
   return {
     singular: singular || "producto",
-    plural: plural || singular || "productos",
+    plural,
   };
 }
 

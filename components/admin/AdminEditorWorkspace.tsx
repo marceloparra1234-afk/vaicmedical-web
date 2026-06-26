@@ -213,8 +213,8 @@ const pageDefaults: Record<string, Record<string, Partial<SectionContent>>> = {
     "Vista de línea": {
       eyebrow: "Línea seleccionada",
       title: "Camas clínicas y camillas",
-      content: "Equipos de traslado y hospitalización.",
-      editableFields: ["eyebrow"],
+      content: "",
+      editableFields: ["eyebrow", "content"],
       allowElementAppearance: true,
       buttons: [],
       backgroundColor: "transparent",
@@ -431,7 +431,7 @@ function completeSection(section: string, value: Partial<SectionContent>): Secti
   const editableFields: EditableField[] = isCatalogNavigation
     ? ["title", "subtitle", "content"]
     : isCatalogLineView
-      ? ["eyebrow"]
+      ? ["eyebrow", "content"]
       : isRelatedProducts
         ? ["title", "content"]
         : value.editableFields ?? ["title", "subtitle", "content"];
@@ -952,6 +952,9 @@ function editorFieldLabel(section: string, field: EditableField) {
   if (normalized.includes("vista de l") && field === "eyebrow") {
     return "Etiqueta sobre la línea";
   }
+  if (normalized.includes("vista de l") && field === "content") {
+    return "Texto descriptivo de línea";
+  }
   if (normalized.includes("productos relacionados")) {
     if (field === "title") return "Título de productos relacionados";
     if (field === "content") return "Texto introductorio";
@@ -1026,8 +1029,9 @@ function AppearanceControls({
               />
             </label>
           )}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
             <ColorInput label="Color forma" value={content.itemColor} onChange={(itemColor) => onUpdate({ itemColor, items: content.items.map((item) => ({ ...item, backgroundColor: itemColor })) })} />
+            <ColorInput label="Color borde" value={content.accentColor} onChange={(accentColor) => onUpdate({ accentColor, items: content.items.map((item) => ({ ...item, borderColor: accentColor, numberColor: accentColor })) })} />
             <ColorInput label="Color texto" value={content.textColor} onChange={(textColor) => onUpdate({ textColor, items: content.items.map((item) => ({ ...item, textColor })) })} />
           </div>
           <label className="text-xs font-semibold text-[#34466f]">
